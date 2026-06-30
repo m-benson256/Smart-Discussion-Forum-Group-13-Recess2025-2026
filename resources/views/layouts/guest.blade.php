@@ -106,8 +106,9 @@
     </script>
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-900  items-center text-[#ffffff] ">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-900 ">
+    <body class="font-sans min-h-screen bg-cover bg-center bg-no-repeat items-center text-[#ffffff]"
+          style="background-image: url('{{ asset('Gemini_Image_2.png') }}');">
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0  ">
             <div>
                 <a href="/">
                     
