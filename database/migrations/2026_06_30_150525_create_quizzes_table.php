@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('quizzes', function (Blueprint $table) {
-            $table->id();
+           $table->integer('Duration'); // minutes [cite: 31]
+            $table->string('Topic', 200); [cite: 31]
+            $table->dateTime('StartTime'); [cite: 31]
+            $table->foreignId('LecturerID')->constrained('lecturers', 'LecturerID')->onDelete('cascade'); // Posted by Lecturer [cite: 31, 35]
             $table->timestamps();
         });
     }
