@@ -12,13 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('quizzes', function (Blueprint $table) {
-<<<<<<< HEAD
             $table->integer('Duration'); // minutes [cite: 31]
-=======
-           $table->integer('Duration'); // minutes [cite: 31]
->>>>>>> 91f1542f290a84aadc81093b0d6628d3d48ee384
-            $table->string('Topic', 200); [cite: 31]
-            $table->dateTime('StartTime'); [cite: 31]
+            $table->string('Topic', 200); 
+            $table->dateTime('StartTime'); 
             $table->foreignId('LecturerID')->constrained('lecturers', 'LecturerID')->onDelete('cascade'); // Posted by Lecturer [cite: 31, 35]
             $table->timestamps();
         });

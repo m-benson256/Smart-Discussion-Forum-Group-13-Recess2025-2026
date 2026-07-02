@@ -46,6 +46,17 @@ CREATE TABLE `cache_locks` (
   KEY `cache_locks_expiration_index` (`expiration`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `categories` (
+  `CategoryID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `CategoryName` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`CategoryID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -118,6 +129,16 @@ DROP TABLE IF EXISTS `lecturers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `lecturers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `member_user_interests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `member_user_interests` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -245,6 +266,17 @@ CREATE TABLE `topics` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `user_interests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `user_interests` (
+  `InterestID` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `InterestName` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`InterestID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -298,3 +330,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (14,'2026_06_30_150
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (15,'2026_06_30_150525_create_quizzes_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (16,'2026_06_30_150741_create_quiz_attempts_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (17,'2026_06_30_150947_create_announcements_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (18,'2026_07_02_104722_create_categories_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (19,'2026_07_02_105534_create_user_interests_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (20,'2026_07_02_105914_create_member_user_interests_table',2);

@@ -12,11 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('group_members', function (Blueprint $table) {
-<<<<<<< HEAD
             $table->id();
-=======
-             $table->id();
->>>>>>> 91f1542f290a84aadc81093b0d6628d3d48ee384
             $table->foreignId('member_id')->constrained('members', 'UserID')->onDelete('cascade');
             $table->foreignId('group_id')->constrained('groups', 'GroupID')->onDelete('cascade');
             $table->timestamps();

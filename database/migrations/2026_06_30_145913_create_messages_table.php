@@ -12,15 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-<<<<<<< HEAD
-             $table->id('PostID'); // PK [cite: 23]
-=======
-            $table->id('PostID'); // PK [cite: 23]
->>>>>>> 91f1542f290a84aadc81093b0d6628d3d48ee384
-             $table->text('Content'); [cite: 23]
-             $table->foreignId('TopicID')->constrained('topics', 'TopicID')->onDelete('cascade'); // Belongs to topic [cite: 35]
-             $table->foreignId('UserID')->constrained('members', 'UserID')->onDelete('cascade'); // Sent by Member [cite: 35]
-             $table->timestamp('DateOfPost')->useCurrent(); [cite: 23]
+             $table->id('PostID'); 
+             $table->text('Content'); 
+             $table->foreignId('TopicID')->constrained('topics', 'TopicID')->onDelete('cascade'); 
+             $table->foreignId('UserID')->constrained('members', 'UserID')->onDelete('cascade'); 
+             $table->timestamp('DateOfPost')->useCurrent(); 
             $table->timestamps();
         });
     }

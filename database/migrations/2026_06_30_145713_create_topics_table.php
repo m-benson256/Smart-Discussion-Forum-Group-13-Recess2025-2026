@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('topics', function (Blueprint $table) {
-            $table->id('TopicID'); // PK [cite: 25]
-            $table->string('Title', 200); [cite: 25]
-            $table->string('Category', 100)->nullable(); // ML-classified category [cite: 8, 25]
+            $table->id('TopicID'); 
+            $table->string('Title', 200); 
+            $table->string('Category', 100)->nullable(); // ML-classified category 
             $table->foreignId('GroupID')->constrained('groups', 'GroupID')->onDelete('cascade'); // Relationship group has topics [cite: 35]
             $table->foreignId('UserID')->constrained('members', 'UserID')->onDelete('cascade'); // Created by Member [cite: 35]
             $table->timestamp('DateOfCreation')->useCurrent(); 

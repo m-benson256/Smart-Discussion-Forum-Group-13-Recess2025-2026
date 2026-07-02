@@ -12,19 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', function (Blueprint $table) {
-<<<<<<< HEAD
              $table->id('ID'); // PK [cite: 28]
-=======
-           $table->id('ID'); // PK [cite: 28]
->>>>>>> 91f1542f290a84aadc81093b0d6628d3d48ee384
-             $table->string('Title', 200); [cite: 28]
-             $table->timestamp('TimeOfAnnouncement')->useCurrent(); [cite: 28]
+             $table->string('Title', 200); 
+             $table->timestamp('TimeOfAnnouncement')->useCurrent(); 
              $table->foreignId('QuizID')->constrained('quizzes', 'QuizID')->onDelete('cascade'); // Announcement about Quiz [cite: 28, 35]
              $table->timestamps();
-<<<<<<< HEAD
             
-=======
->>>>>>> 91f1542f290a84aadc81093b0d6628d3d48ee384
         });
     }
 

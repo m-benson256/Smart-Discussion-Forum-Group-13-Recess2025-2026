@@ -19,7 +19,6 @@ return new class extends Migration
             $table->enum('role', ['student', 'lecturer', 'admin'])->default('student');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamp('last_activity_at')->nullable();
-            $table->string('user_interests', 255)->nullable();
             $table->timestamps();
         });
     }
