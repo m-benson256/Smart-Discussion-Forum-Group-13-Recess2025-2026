@@ -39,6 +39,14 @@ class RegisteredUserController extends Controller
             'terms' => ['required', 'accepted'], 
         ]);
 
+        // 2. THE CHOSEN CONSTRAINT: Block invalid domains before saving to database
+    $email = $request->email;
+    if (!str_ends_with($email, '@students.ed') && !str_ends_with($email, '@lecturers.ed')) {
+        return back()->withErrors([
+            'email' => 'Registration is restricted. You must use an official @students.ed or @lecturers.ed account.'
+        ])->withInput(); // Keeps their name filled in so they don't lose progress
+    }
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -48,6 +56,17 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Dynamic redirection right after account registration
+    if (str_ends_with($user->email, '@lecturers.ed')) {
+        return redirect(route('lecturer.dashboard'));
+    }
+
+    if (str_ends_with($user->email, '@students.ed')) {
+        return redirect(route('student.dashboard'));
+    }
+
+   
 
         return redirect(route('dashboard', absolute: false));
     }

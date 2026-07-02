@@ -115,7 +115,7 @@
                 </a>
             </div>
 
-            <div class="w-full sm:max-w-md text-white mt-6 px-6 py-4 bg-white/5 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl rounded-2xl">
+            <div class="w-full sm:max-w-md text-white mt-6 px-6 py-4 bg-white/10 backdrop-blur-md border border-white/20 overflow-hidden shadow-2xl rounded-2xl">
                 {{ $slot }}
             </div>
         </div>
