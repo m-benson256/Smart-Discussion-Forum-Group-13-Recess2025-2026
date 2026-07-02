@@ -12,7 +12,9 @@ class LecturerController extends Controller
      */
     public function index()
     {
-        //
+        
+        return view('lecturer.dashboard'); // Loads resources/views/lecturer/dashboard.blade.php
+
     }
 
     /**
