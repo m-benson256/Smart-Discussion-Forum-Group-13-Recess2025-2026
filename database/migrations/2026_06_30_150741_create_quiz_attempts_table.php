@@ -12,8 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('quiz_attempts', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+           $table->id('ID'); // PK [cite: 33]
+             $table->float('Score')->nullable(); [cite: 33]
+             $table->dateTime('SubmissionTime')->nullable(); [cite: 33]
+             $table->foreignId('StudentID')->constrained('students', 'StudentID')->onDelete('cascade'); // Made by student [cite: 33, 35]
+             $table->foreignId('QuizID')->constrained('quizzes', 'QuizID')->onDelete('cascade'); // Made for Quiz [cite: 33, 35]
+             $table->boolean('AutoSubmitted')->default(false); [cite: 33]
+             $table->timestamps();
         });
     }
 
