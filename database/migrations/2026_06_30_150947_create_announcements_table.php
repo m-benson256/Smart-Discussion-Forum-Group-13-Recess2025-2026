@@ -12,8 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('announcements', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+           $table->id('ID'); // PK [cite: 28]
+             $table->string('Title', 200); [cite: 28]
+             $table->timestamp('TimeOfAnnouncement')->useCurrent(); [cite: 28]
+             $table->foreignId('QuizID')->constrained('quizzes', 'QuizID')->onDelete('cascade'); // Announcement about Quiz [cite: 28, 35]
+             $table->timestamps();
         });
     }
 
