@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('lecturers', function (Blueprint $table) {
-            $table->id();
+            $table->foreignId('LecturerID')->primary()->constrained('members', 'UserID')->onDelete('cascade'); // PK & FK [cite: 17]
+            $table->string('Department', 100); [cite: 17]
+            $table->string('DegreeType', 50); [cite: 17]
             $table->timestamps();
         });
     }
