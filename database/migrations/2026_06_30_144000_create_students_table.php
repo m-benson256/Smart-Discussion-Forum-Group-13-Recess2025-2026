@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('students', function (Blueprint $table) {
-            $table->id();
+            $table->foreignId('StudentID')->primary()->constrained('members', 'UserID')->onDelete('cascade'); // PK & FK [cite: 16]
+            $table->string('Category', 100); [cite: 16]
+          // Added nullable placeholder for category_id relationship reference until you build the standalone Categories table
+            $table->foreignId('CategoryID')->nullable(); [cite: 16]
             $table->timestamps();
         });
     }
