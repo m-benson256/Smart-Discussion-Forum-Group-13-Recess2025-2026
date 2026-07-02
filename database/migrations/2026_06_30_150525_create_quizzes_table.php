@@ -15,6 +15,7 @@ return new class extends Migration
             $table->integer('Duration'); // minutes [cite: 31]
             $table->string('Topic', 200); 
             $table->dateTime('StartTime'); 
+            $table->foreignId('CategoryID')->constrained('categories');
             $table->foreignId('LecturerID')->constrained('lecturers', 'LecturerID')->onDelete('cascade'); // Posted by Lecturer [cite: 31, 35]
             $table->timestamps();
         });
