@@ -7,11 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Lecturer extends Model
 {
     //
-    protected $primaryKey = 'LecturerID'; [cite: 17]
+    protected $primaryKey = 'LecturerID'; 
     public $incrementing = false;
-    protected $fillable = ['LecturerID', 'Department', 'DegreeType']; [cite: 17]
+    //protected $fillable = ['LecturerID', 'Department', 'DegreeType']; 
+    protected $fillable = [
+    'name',
+    'email',
+    'password',
+    'created_at',
+    'updated_at',
+];
 
-    public function member() { return $this->belongsTo(Member::class, 'LecturerID'); } [cite: 17]
-    public function quizzes() { return $this->hasMany(Quiz::class, 'LecturerID'); } [cite: 31, 35]
+    public function member() { return $this->belongsTo(Member::class, 'LecturerID'); } 
+    public function quizzes() { return $this->hasMany(Quiz::class, 'LecturerID'); } 
 
 }

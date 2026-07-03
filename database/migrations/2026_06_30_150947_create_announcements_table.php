@@ -15,7 +15,8 @@ return new class extends Migration
              $table->id('ID'); // PK [cite: 28]
              $table->string('Title', 200); 
              $table->timestamp('TimeOfAnnouncement')->useCurrent(); 
-             $table->foreignId('QuizID')->constrained('quizzes', 'QuizID')->onDelete('cascade'); // Announcement about Quiz [cite: 28, 35]
+             //$table->foreignId('QuizID')->constrained('quizzes', 'QuizID')->onDelete('cascade'); // Announcement about Quiz [cite: 28, 35]
+             $table->unsignedBigInteger('quiz_id')->nullable();
              $table->timestamps();
             
         });

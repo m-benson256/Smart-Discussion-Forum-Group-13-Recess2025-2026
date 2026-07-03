@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LecturerController;
 
+use App\Http\Controllers\Lecturer\QuizController as LecturerQuizController;
+use App\Http\Controllers\Student\QuizController as StudentQuizController;
+use App\Http\Controllers\Quiz\AutoSubmitController;
+
 // 1. Welcome Page
 Route::get('/', function () {
     return view('welcome');
@@ -47,3 +51,53 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// ============================================
+// QUIZ MODULE ROUTES (Added by [Your Name])
+// ============================================
+
+// Lecturer Quiz Routes
+Route::prefix('lecturer')->middleware(['auth', 'verified'])->group(function() {
+    
+    Route::resource('quizzes', LecturerQuizController::class);
+    
+    Route::post('quizzes/{id}/add-question', [LecturerQuizController::class, 'addQuestion'])
+        ->name('lecturer.quizzes.add-question');
+    
+    Route::delete('quizzes/{quizId}/questions/{questionId}', [LecturerQuizController::class, 'deleteQuestion'])
+        ->name('lecturer.quizzes.delete-question');
+    
+    Route::get('quizzes/{id}/results', [LecturerQuizController::class, 'results'])
+        ->name('lecturer.quizzes.results');
+});
+
+// Student Quiz Routes
+Route::prefix('student')->middleware(['auth', 'verified'])->group(function() {
+    
+    Route::prefix('quizzes')->group(function() {
+        
+        Route::get('/', [StudentQuizController::class, 'index'])
+            ->name('student.quizzes.index');
+        
+        Route::get('{id}/start', [StudentQuizController::class, 'start'])
+            ->name('student.quizzes.start');
+        
+        Route::post('attempt/{attemptId}/save-answer', [StudentQuizController::class, 'saveAnswer'])
+            ->name('student.quizzes.save-answer');
+        
+        Route::post('attempt/{attemptId}/submit', [StudentQuizController::class, 'submitQuiz'])
+            ->name('student.quizzes.submit');
+        
+        Route::get('attempt/{attemptId}/results', [StudentQuizController::class, 'results'])
+            ->name('student.quizzes.results');
+    });
+});
+
+// Auto-Submit Routes
+Route::get('auto-submit-quizzes', [AutoSubmitController::class, 'autoSubmitExpiredQuizzes'])
+    ->name('auto-submit.quizzes');
+
+
+require __DIR__.'/lecturer.php';
+require __DIR__.'/student.php';
+require __DIR__.'/quiz.php';

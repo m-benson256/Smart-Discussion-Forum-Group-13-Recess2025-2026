@@ -11,15 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-// In the up() method
-Schema::create('quiz_attempts', function (Blueprint $table) {
+        Schema::create('questions', function (Blueprint $table) {
     $table->id();
     $table->foreignId('quiz_id')->constrained('quizzes')->onDelete('cascade');
-    $table->foreignId('student_id')->constrained('students')->onDelete('cascade');
-    $table->timestamp('start_time')->useCurrent();
-    $table->timestamp('end_time')->nullable();
-    $table->decimal('score', 5, 2)->default(0);
-    $table->enum('status', ['in_progress', 'submitted', 'timed_out'])->default('in_progress');
+    $table->text('question_text');
+    $table->enum('question_type', ['multiple_choice', 'true_false', 'short_answer'])->default('multiple_choice');
+    $table->integer('points')->default(1);
     $table->timestamps();
 });
     }
@@ -29,6 +26,6 @@ Schema::create('quiz_attempts', function (Blueprint $table) {
      */
     public function down(): void
     {
-        Schema::dropIfExists('quiz_attempts');
+        Schema::dropIfExists('questions');
     }
 };

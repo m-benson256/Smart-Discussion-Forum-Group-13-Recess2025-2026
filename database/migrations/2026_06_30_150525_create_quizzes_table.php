@@ -11,13 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('quizzes', function (Blueprint $table) {
-            $table->integer('Duration'); // minutes [cite: 31]
-            $table->string('Topic', 200); 
-            $table->dateTime('StartTime'); 
-            $table->foreignId('LecturerID')->constrained('lecturers', 'LecturerID')->onDelete('cascade'); // Posted by Lecturer [cite: 31, 35]
-            $table->timestamps();
-        });
+        // In the up() method
+Schema::create('quizzes', function (Blueprint $table) {
+    $table->id();
+    $table->string('title');
+    $table->text('description')->nullable();
+    $table->unsignedBigInteger('lecturer_id')->nullable();
+    $table->unsignedBigInteger('category_id')->nullable();
+    $table->dateTime('start_date');
+    $table->dateTime('end_date');
+    $table->integer('duration_minutes');
+    $table->boolean('is_active')->default(true);
+    $table->timestamps();
+    
+    // NO FOREIGN KEYS AT ALL
+});
+
     }
 
     /**
