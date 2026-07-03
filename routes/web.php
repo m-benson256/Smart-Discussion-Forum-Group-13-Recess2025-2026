@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\TopicController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -44,6 +45,17 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+      Route::get('/topics', [TopicController::class, 'index']);
+    Route::post('/topics', [TopicController::class, 'store']);
+    Route::get('/topics/{topic}', [TopicController::class, 'show']);
+    Route::put('/topics/{topic}', [TopicController::class, 'update']);
+    Route::delete('/topics/{topic}', [TopicController::class, 'destroy']);
 });
+
+  
+
+
+
 
 require __DIR__.'/auth.php';

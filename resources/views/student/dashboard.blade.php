@@ -226,25 +226,27 @@
 <script data-purpose="state-management">
     // Mock Data State
     const state = {
-        user: "Benson",
+        user: "{{ Auth::user()->name }}",
         activeView: 'groups', 
         selectedGroupId: null,
         selectedTopicId: null,
         
-        groups: [
-            { id: 1, name: "Data Science Group", description: "Exploring Python, R, and Machine Learning algorithms.", memberCount: 124, likes: 5 },
-            { id: 2, name: "Introduction to Web Development", description: "Fundamentals of HTML, CSS, and modern JavaScript frameworks.", memberCount: 89, likes: 2 },
-            { id: 3, name: "UI/UX Design Patterns", description: "Discussing accessibility, typography, and color theory in modern apps.", memberCount: 45, likes: 12 }
-        ],
+        // Formats your real database groups into what your layout JS loops through
+        groups: @json($groups ?? []).map(group => ({
+            id: group.id,
+            name: group.name,
+            description: group.description,
+            memberCount: group.memberCount ?? 0,
+            likes: 0
+        })),
         
-        topics: [
-            { id: 101, groupId: 1, title: "Neural Networks for Beginners", author: "Sarah Miller", date: "2 hours ago", replies: 15, likes: 8 },
-            { id: 102, groupId: 1, title: "Pandas vs Polars Performance", author: "Alex Chen", date: "1 day ago", replies: 28, likes: 4 },
-            { id: 103, groupId: 2, title: "Centering a Div in 2024", author: "Benson", date: "5 hours ago", replies: 42, likes: 15 },
-            { id: 104, groupId: 2, title: "React 19 Server Components", author: "Mike Ross", date: "3 days ago", replies: 12, likes: 0 },
-            { id: 105, groupId: 3, title: "The Role of Contrast in Accessibility", author: "Emma Watson", date: "1 week ago", replies: 8, likes: 20 }
-        ],
-        
+        // Formats your real database topics into what your layout JS loops through
+        topics: [],
+
+
+       
+
+
         messages: {
             101: [
                 { id: 1, author: "Sarah Miller", text: "Hey everyone! I'm starting a series on basic neural networks. Any interest?", time: "10:30 AM", isMe: false, likes: 2, myLike: false, reactions: [] },
@@ -322,18 +324,40 @@
             }
         });
 
-        document.getElementById('save-topic')?.addEventListener('click', () => {
-            const title = document.getElementById('topic-input-name').value;
-            const content = document.getElementById('topic-input-desc').value;
-            if(title.trim() && content.trim()) {
-                const topicId = Date.now();
-                state.topics.unshift({ id: topicId, groupId: state.selectedGroupId || state.groups[0].id, title, author: state.user, date: "Just now", replies: 0, likes: 0 });
-                state.messages[topicId] = [{ id: Date.now() + 1, author: state.user, text: content, time: "Just now", isMe: true, likes: 0, myLike: false, reactions: [] }];
-                toggleTopicModal(false);
-                renderView();
-                setupContextListeners();
-            }
+        
+
+// NEW:
+document.getElementById('save-topic')?.addEventListener('click', async () => {
+    const title = document.getElementById('topic-input-name').value;
+    const content = document.getElementById('topic-input-desc').value;
+    if (!title.trim() || !content.trim()) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch('/topics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content,
+                group_id: state.selectedGroupId || null
+            })
         });
+
+        if (!response.ok) throw new Error('Failed to create topic');
+
+        toggleTopicModal(false);
+        await fetchTopics();
+    } catch (err) {
+        console.error(err);
+        alert('Could not post topic. Please try again.');
+    }
+});
+
 
         // Global click out to hide floating panels
         document.addEventListener('click', (e) => {
@@ -343,6 +367,7 @@
 
         // Initial bootstrap render
         updateView('groups');
+        fetchTopics();
     });
 
     function showNotification() {
@@ -681,6 +706,29 @@
         }
     }
 
+    async function fetchTopics() {
+    try {
+        const response = await fetch('/topics');
+        const data = await response.json();
+
+        state.topics = data.map(topic => ({
+            id: topic.id,
+            groupId: topic.group_id,
+            title: topic.title,
+            content: topic.content,
+            author: topic.user ? topic.user.name : 'Unknown',
+            date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
+            replies: 0,
+            likes: 0
+        }));
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error('Failed to load topics:', err);
+    }
+}
+     
     function toggleReaction(event, badge, emoji) {
         event.stopPropagation();
         const isActive = badge.classList.contains('active');

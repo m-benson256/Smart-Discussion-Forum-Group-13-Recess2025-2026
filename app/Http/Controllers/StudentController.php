@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Models\Group;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 
 class StudentController extends Controller
@@ -12,6 +14,8 @@ class StudentController extends Controller
      */
     public function index()
     {   
+
+    
     return view('student.dashboard');
 }
     
