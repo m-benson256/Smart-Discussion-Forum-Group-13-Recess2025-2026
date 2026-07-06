@@ -3,13 +3,16 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Announcements extends Model
 {
-    //
-    protected $primaryKey = 'ID'; [cite: 28]
-    protected $fillable = ['Title', 'QuizID']; [cite: 28]
+    protected $primaryKey = 'ID';
+    protected $fillable = ['Title', 'QuizID'];
 
-    public function quiz() { return $this->belongsTo(Quiz::class, 'QuizID'); } [cite: 28, 35]
+    public function quiz(): BelongsTo
+    {
+        return $this->belongsTo(Quiz::class, 'QuizID', 'id');
+    }
 
 }

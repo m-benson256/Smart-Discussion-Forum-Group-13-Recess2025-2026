@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('member_user_interests', function (Blueprint $table) {
-            $table->foreignId('UserID')->constrained('members', 'UserID')->onDelete('cascade');
+            $table->foreignId('UserID')->constrained('users')->onDelete('cascade');
             $table->foreignId('InterestID')->constrained('user_interests', 'InterestID')->onDelete('cascade');
             $table->timestamps(); // optional — remove if you don't need to track when interest was added
             $table->primary(['UserID', 'InterestID']); // composite PK, prevents duplicate pairings

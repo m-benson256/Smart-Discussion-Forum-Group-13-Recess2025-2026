@@ -8,12 +8,27 @@ use Illuminate\Http\JsonResponse;
 
 class TopicController extends Controller
 {
-    // GET /api/topics — list all topics for the Discussions screen
-    public function index(): JsonResponse
+    // GET /topics — list all topics for the Discussions screen
+    public function index(Request $request): JsonResponse
     {
-        $topics = Topic::with('user:id,name,role')
+        $topics = Topic::with([
+                'user:id,name',
+                'group' => function ($query) {
+                    $query->withCount('members')
+                        ->with('creator:id,name');
+                },
+            ])
+            ->withCount('messages')
             ->latest()
             ->get();
+
+        $topics->each(function ($topic) use ($request) {
+            if ($topic->group) {
+                $topic->group->is_member = $topic->group->members()
+                    ->where('user_id', $request->user()->id)
+                    ->exists();
+            }
+        });
 
         return response()->json($topics);
     }
@@ -33,7 +48,7 @@ class TopicController extends Controller
             'user_id' => $request->user()->id,
         ]);
 
-        $topic->load('user:id,name,role');
+        $topic->load('user:id,name');
 
         return response()->json($topic, 201);
     }
@@ -41,7 +56,7 @@ class TopicController extends Controller
     // GET /api/topics/{topic} — view a single topic
     public function show(Topic $topic): JsonResponse
     {
-        $topic->load('user:id,name,role');
+        $topic->load('user:id,name');
 
         return response()->json($topic);
     }
