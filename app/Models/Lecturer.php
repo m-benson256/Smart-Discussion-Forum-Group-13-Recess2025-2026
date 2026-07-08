@@ -19,5 +19,4 @@ class Lecturer extends Model
     {
         return $this->hasMany(Quizzes::class, 'LecturerID', 'id');
     }
-
 }

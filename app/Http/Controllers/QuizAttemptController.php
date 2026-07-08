@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Quiz;
 use App\Models\QuizAttempt;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class QuizAttemptController extends Controller
 {
@@ -25,21 +25,21 @@ class QuizAttemptController extends Controller
         $quizzes = $quizzes->map(function ($quiz) {
             $myAttempt = $quiz->attempts->first(); // will be null if not attempted
 
-           return [
-    'id' => $quiz->id,
-    'title' => $quiz->title,
-    'description' => $quiz->description,
-    'duration_minutes' => $quiz->duration_minutes,
-    'start_time' => $quiz->start_time,
-    'total_marks' => $quiz->total_marks,
-    'questions_count' => $quiz->questions_count,
-    'status' => $myAttempt && $myAttempt->submitted_at ? 'submitted' : 'incoming',
-    'score' => $myAttempt->score ?? null,
-    'submitted_at' => $myAttempt->submitted_at ?? null,
-];
+            return [
+                'id' => $quiz->id,
+                'title' => $quiz->title,
+                'description' => $quiz->description,
+                'duration_minutes' => $quiz->duration_minutes,
+                'start_time' => $quiz->start_time,
+                'total_marks' => $quiz->total_marks,
+                'questions_count' => $quiz->questions_count,
+                'status' => $myAttempt && $myAttempt->submitted_at ? 'submitted' : 'incoming',
+                'score' => $myAttempt->score ?? null,
+                'submitted_at' => $myAttempt->submitted_at ?? null,
+            ];
         });
 
-       return response()->json($quizzes);
+        return response()->json($quizzes);
     }
 
     // POST /quizzes/{quiz}/start — begin (or resume) an attempt, return questions without answers
@@ -60,7 +60,7 @@ class QuizAttemptController extends Controller
 
         $quiz->load(['questions' => function ($query) {
             $query->select('id', 'quiz_id', 'type', 'prompt', 'order')
-                  ->orderBy('order');
+                ->orderBy('order');
         }, 'questions.options:id,question_id,option_key,option_text']);
 
         return response()->json([
@@ -92,12 +92,16 @@ class QuizAttemptController extends Controller
 
         foreach ($validated['answers'] as $answer) {
             $question = $questions->get($answer['question_id']);
-            if (!$question) continue;
+            if (! $question) {
+                continue;
+            }
 
             $selected = trim($answer['selected_answer'] ?? '');
             $isCorrect = strcasecmp($selected, $question->correct_answer) === 0;
 
-            if ($isCorrect) $correctCount++;
+            if ($isCorrect) {
+                $correctCount++;
+            }
 
             $attempt->answers()->create([
                 'question_id' => $question->id,

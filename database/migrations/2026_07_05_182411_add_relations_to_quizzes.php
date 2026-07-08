@@ -12,15 +12,15 @@ return new class extends Migration
     {
         Schema::table('quizzes', function (Blueprint $table) {
             $table->foreignId('created_by')
-                  ->after('id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->foreignId('category_id')
-                  ->nullable()
-                  ->after('created_by')
-                  ->constrained('categories', 'CategoryID')
-                  ->nullOnDelete();
+                ->nullable()
+                ->after('created_by')
+                ->constrained('categories', 'CategoryID')
+                ->nullOnDelete();
 
             $table->string('title');
             $table->text('description')->nullable();
@@ -41,7 +41,7 @@ return new class extends Migration
             $table->dropColumn([
                 'created_by', 'category_id', 'title', 'description',
                 'start_time', 'duration_minutes', 'total_marks',
-                'passing_score', 'shuffle_questions', 'status'
+                'passing_score', 'shuffle_questions', 'status',
             ]);
         });
     }

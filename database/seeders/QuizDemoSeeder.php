@@ -10,8 +10,8 @@ use App\Models\QuizOption;
 use App\Models\QuizQuestion;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class QuizDemoSeeder extends Seeder
 {
@@ -158,7 +158,7 @@ class QuizDemoSeeder extends Seeder
     }
 
     /**
-     * @param array<int, array{order:int,type:string,prompt:string,correct_answer:string,options:array<int, array{option_key:string, option_text:string}>}> $questions
+     * @param  array<int, array{order:int,type:string,prompt:string,correct_answer:string,options:array<int, array{option_key:string, option_text:string}>}>  $questions
      */
     private function seedQuestions(Quiz $quiz, array $questions): void
     {

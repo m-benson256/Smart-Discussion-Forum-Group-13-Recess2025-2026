@@ -12,15 +12,15 @@ class LecturerController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-{
-    $announcements = Announcements::with('user', 'quiz')
-        ->latest()
-        ->get();
+    {
+        $announcements = Announcements::with('user', 'quiz')
+            ->latest()
+            ->get();
 
-    return view('lecturer.dashboard', [
-        'announcements' => $announcements,
-    ]); // Loads resources/views/lecturer/dashboard.blade.php
-}
+        return view('lecturer.dashboard', [
+            'announcements' => $announcements,
+        ]); // Loads resources/views/lecturer/dashboard.blade.php
+    }
 
     /**
      * Show the form for creating a new resource.

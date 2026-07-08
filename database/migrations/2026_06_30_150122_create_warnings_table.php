@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('warnings', function (Blueprint $table) {
-            $table->id('WarningID'); 
-            $table->integer('WarningNumber'); 
+            $table->id('WarningID');
+            $table->integer('WarningNumber');
             $table->foreignId('UserID')->constrained('members', 'UserID')->onDelete('cascade'); // Given to Member [cite: 27, 35]
             $table->foreignId('IssuedBy')->constrained('administrators', 'AdminID')->onDelete('cascade'); // Issued by Admin [cite: 27, 35]
-            $table->timestamp('IssuedAt')->useCurrent(); 
-            $table->dateTime('Deadline'); 
-            $table->enum('Status', ['pending', 'resolved', 'expired'])->default('pending'); 
+            $table->timestamp('IssuedAt')->useCurrent();
+            $table->dateTime('Deadline');
+            $table->enum('Status', ['pending', 'resolved', 'expired'])->default('pending');
             $table->timestamps();
-            
+
         });
     }
 

@@ -12,22 +12,22 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('Topics', function (Blueprint $table) {
-             $table->foreignId('user_id')
-                  ->after('id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+            $table->foreignId('user_id')
+                ->after('id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->foreignId('group_id')
-                  ->nullable()
-                  ->after('user_id')
-                  ->constrained('groups')
-                  ->nullOnDelete();
+                ->nullable()
+                ->after('user_id')
+                ->constrained('groups')
+                ->nullOnDelete();
 
             $table->foreignId('category_id')
-                  ->nullable()
-                  ->after('group_id')
-                  ->constrained('categories', 'CategoryID')
-                  ->nullOnDelete();
+                ->nullable()
+                ->after('group_id')
+                ->constrained('categories', 'CategoryID')
+                ->nullOnDelete();
 
             $table->string('title');
             $table->text('content');
@@ -41,11 +41,11 @@ return new class extends Migration
     {
         Schema::table('Topics', function (Blueprint $table) {
             //
-             $table->dropForeign(['user_id']);
+            $table->dropForeign(['user_id']);
             $table->dropForeign(['group_id']);
             $table->dropForeign(['category_id']);
             $table->dropColumn(['user_id', 'group_id', 'category_id', 'title', 'content']);
-        
+
         });
     }
 };

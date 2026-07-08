@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Topic;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TopicController extends Controller
 {
@@ -12,12 +12,12 @@ class TopicController extends Controller
     public function index(Request $request): JsonResponse
     {
         $topics = Topic::with([
-                'user:id,name',
-                'group' => function ($query) {
-                    $query->withCount('members')
-                        ->with('creator:id,name');
-                },
-            ])
+            'user:id,name',
+            'group' => function ($query) {
+                $query->withCount('members')
+                    ->with('creator:id,name');
+            },
+        ])
             ->withCount('messages')
             ->latest()
             ->get();

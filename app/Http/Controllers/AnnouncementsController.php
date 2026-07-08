@@ -29,27 +29,27 @@ class AnnouncementsController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request, Quiz $quiz): JsonResponse
-{
-    if ($quiz->created_by !== $request->user()->id) {
-        return response()->json(['message' => 'Unauthorized'], 403);
+    {
+        if ($quiz->created_by !== $request->user()->id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if ($quiz->status !== 'published') {
+            return response()->json(['message' => 'You can only announce a published quiz.'], 422);
+        }
+
+        $validated = $request->validate([
+            'content' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $announcement = Announcements::create([
+            'user_id' => $request->user()->id,
+            'quiz_id' => $quiz->id,
+            'content' => $validated['content'],
+        ]);
+
+        return response()->json($announcement, 201);
     }
-
-    if ($quiz->status !== 'published') {
-        return response()->json(['message' => 'You can only announce a published quiz.'], 422);
-    }
-
-    $validated = $request->validate([
-        'content' => ['required', 'string', 'max:1000'],
-    ]);
-
-    $announcement = Announcements::create([
-        'user_id' => $request->user()->id,
-        'quiz_id' => $quiz->id,
-        'content' => $validated['content'],
-    ]);
-
-    return response()->json($announcement, 201);
-}
 
     /**
      * Display the specified resource.

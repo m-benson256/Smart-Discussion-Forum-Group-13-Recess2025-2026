@@ -24,5 +24,4 @@ class Student extends Model
     {
         return $this->hasMany(QuizAttempts::class, 'StudentID', 'id');
     }
-
 }

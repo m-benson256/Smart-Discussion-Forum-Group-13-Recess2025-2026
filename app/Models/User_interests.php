@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class User_interests extends Model
 {
     //
-     protected $primaryKey = 'InterestID';
+    protected $primaryKey = 'InterestID';
+
     protected $fillable = ['InterestName'];
 
     public function users(): BelongsToMany

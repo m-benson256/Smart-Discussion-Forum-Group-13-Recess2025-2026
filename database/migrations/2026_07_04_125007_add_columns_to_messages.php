@@ -12,14 +12,14 @@ return new class extends Migration
     {
         Schema::table('messages', function (Blueprint $table) {
             $table->foreignId('topic_id')
-                  ->after('id')
-                  ->constrained('topics')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('topics')
+                ->cascadeOnDelete();
 
             $table->foreignId('user_id')
-                  ->after('topic_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('topic_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->text('body');
             $table->softDeletes();

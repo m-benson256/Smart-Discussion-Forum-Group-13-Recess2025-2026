@@ -12,14 +12,14 @@ return new class extends Migration
     {
         Schema::table('group_members', function (Blueprint $table) {
             $table->foreignId('user_id')
-                  ->after('id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->foreignId('group_id')
-                  ->after('user_id')
-                  ->constrained('groups')
-                  ->cascadeOnDelete();
+                ->after('user_id')
+                ->constrained('groups')
+                ->cascadeOnDelete();
 
             $table->unique(['user_id', 'group_id']);
         });

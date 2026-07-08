@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::table('lecturers', function (Blueprint $table) {
             // 1. Adds the foreign key right after the primary 'id'
             $table->foreignId('user_id')
-                  ->after('id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             // 2. Contact number (using string to preserve leading zeros safely)
-            $table->string('contact', 15)->after('user_id'); 
+            $table->string('contact', 15)->after('user_id');
 
             // 3. Degree Type (Undergraduate, Masters, PhD)
             $table->string('DegreeType', 50)->after('contact');
