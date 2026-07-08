@@ -65,67 +65,85 @@ class QuizAttemptController extends Controller
 
         return response()->json([
             'attempt_id' => $attempt->id,
+            'started_at' => $attempt->started_at,
             'quiz' => $quiz,
+
         ]);
     }
 
     // POST /attempts/{attempt}/submit — grade and finalize
     public function submit(Request $request, QuizAttempt $attempt): JsonResponse
-    {
-        if ($attempt->user_id !== $request->user()->id) {
-            return response()->json(['message' => 'Unauthorized'], 403);
+{
+    if ($attempt->user_id !== $request->user()->id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    if ($attempt->submitted_at) {
+        return response()->json(['message' => 'Already submitted'], 409);
+    }
+
+    // --- NEW: server-side deadline enforcement ---
+    $deadline = $attempt->started_at->copy()->addMinutes($attempt->quiz->duration_minutes);
+    $graceSeconds = 10; // small buffer for network/request latency
+
+    if (now()->greaterThan($deadline->addSeconds($graceSeconds))) {
+        $deadline = $attempt->started_at->copy()->addMinutes($attempt->quiz->duration_minutes);
+$graceSeconds = 10; // small buffer for network/request latency
+
+if (now()->greaterThan($deadline->addSeconds($graceSeconds))) {
+    return response()->json([
+        'message' => 'Time limit exceeded. This attempt can no longer be submitted.',
+    ], 422);
+}
+    }
+    // --- end new block ---
+
+    $validated = $request->validate([
+        'answers' => 'required|array',
+        'answers.*.question_id' => 'required|integer|exists:quiz_questions,id',
+        'answers.*.selected_answer' => 'nullable|string',
+    ]);
+
+    $quiz = $attempt->quiz;
+    $questions = $quiz->questions()->get()->keyBy('id');
+    $correctCount = 0;
+
+    foreach ($validated['answers'] as $answer) {
+        $question = $questions->get($answer['question_id']);
+        if (! $question) {
+            continue;
         }
 
-        if ($attempt->submitted_at) {
-            return response()->json(['message' => 'Already submitted'], 409);
+        $selected = trim($answer['selected_answer'] ?? '');
+        $isCorrect = strcasecmp($selected, $question->correct_answer) === 0;
+
+        if ($isCorrect) {
+            $correctCount++;
         }
 
-        $validated = $request->validate([
-            'answers' => 'required|array',
-            'answers.*.question_id' => 'required|integer|exists:quiz_questions,id',
-            'answers.*.selected_answer' => 'nullable|string',
-        ]);
-
-        $quiz = $attempt->quiz;
-        $questions = $quiz->questions()->get()->keyBy('id');
-        $correctCount = 0;
-
-        foreach ($validated['answers'] as $answer) {
-            $question = $questions->get($answer['question_id']);
-            if (! $question) {
-                continue;
-            }
-
-            $selected = trim($answer['selected_answer'] ?? '');
-            $isCorrect = strcasecmp($selected, $question->correct_answer) === 0;
-
-            if ($isCorrect) {
-                $correctCount++;
-            }
-
-            $attempt->answers()->create([
-                'question_id' => $question->id,
-                'selected_answer' => $selected,
-                'is_correct' => $isCorrect,
-            ]);
-        }
-
-        $totalQuestions = $questions->count();
-        $score = $totalQuestions > 0
-            ? (int) round(($correctCount / $totalQuestions) * $quiz->total_marks)
-            : 0;
-
-        $attempt->update([
-            'score' => $score,
-            'submitted_at' => now(),
-        ]);
-
-        return response()->json([
-            'score' => $score,
-            'total_marks' => $quiz->total_marks,
-            'correct_count' => $correctCount,
-            'total_questions' => $totalQuestions,
-            'submitted_at' => $attempt->submitted_at?->toIso8601String(),
+        $attempt->answers()->create([
+            'question_id' => $question->id,
+            'selected_answer' => $selected,
+            'is_correct' => $isCorrect,
         ]);
     }
+
+    $totalQuestions = $questions->count();
+    $score = $totalQuestions > 0
+        ? (int) round(($correctCount / $totalQuestions) * $quiz->total_marks)
+        : 0;
+
+    $attempt->update([
+        'score' => $score,
+        'submitted_at' => now(),
+    ]);
+
+    return response()->json([
+        'score' => $score,
+        'total_marks' => $quiz->total_marks,
+        'correct_count' => $correctCount,
+        'total_questions' => $totalQuestions,
+        'submitted_at' => $attempt->submitted_at?->toIso8601String(),
+    ]);
+}
 }

@@ -164,6 +164,9 @@
 </div>
 </nav>
 <script>
+    let timerInterval = null;
+let remainingSeconds = 0;
+let quizSubmitted = false; // guards against double-submit
         
         let attemptId = null;
 let quizData = null;
@@ -189,6 +192,19 @@ async function loadQuiz() {
         attemptId = data.attempt_id;
         quizData = data.quiz;
 
+        const durationSeconds = quizData.duration_minutes * 60;
+       const startedAt = new Date(data.started_at);
+       const elapsedSeconds = Math.floor((Date.now() - startedAt.getTime()) / 1000);
+       remainingSeconds = Math.max(durationSeconds - elapsedSeconds, 0);
+
+if (remainingSeconds <= 0) {
+    // Time already expired (e.g. they reloaded after time was up)
+    autoSubmitQuiz();
+    return;
+}
+
+startTimer();
+
         document.querySelector('.font-headline-md.text-headline-md.text-primary').textContent = quizData.title;
         renderQuestions();
     } catch (err) {
@@ -196,6 +212,39 @@ async function loadQuiz() {
         alert('Could not load quiz.');
     }
 }
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        remainingSeconds--;
+
+        if (remainingSeconds <= 0) {
+            remainingSeconds = 0;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            autoSubmitQuiz();
+            return;
+        }
+
+        updateTimerDisplay();
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
+
+    // Optional: flash red when under a minute
+    const timerBox = timerEl?.closest('.bg-error-container');
+    if (remainingSeconds <= 60) {
+        timerBox?.classList.add('animate-pulse');
+    }
+}
+
 
 function renderQuestions() {
     const container = document.getElementById('questions-container');
@@ -264,7 +313,15 @@ function updateProgress() {
     document.querySelector('.font-label-sm.text-label-sm.text-primary').textContent = percent + '% Complete';
 }
 
+
 async function submitQuiz() {
+    if (quizSubmitted) return;
+    quizSubmitted = true;
+    clearInterval(timerInterval);
+
+    const submitBtn = document.querySelector('[onclick="submitQuiz()"]');
+    if (submitBtn) submitBtn.disabled = true;
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     const payload = {
@@ -288,6 +345,8 @@ async function submitQuiz() {
 
         if (!response.ok) {
             alert(result.message || 'Could not submit quiz.');
+            quizSubmitted = false; // allow retry on failure
+            if (submitBtn) submitBtn.disabled = false;
             return;
         }
 
@@ -296,7 +355,15 @@ async function submitQuiz() {
     } catch (err) {
         console.error(err);
         alert('Could not submit quiz. Please try again.');
+        quizSubmitted = false;
+        if (submitBtn) submitBtn.disabled = false;
     }
+}
+
+async function autoSubmitQuiz() {
+    if (quizSubmitted) return;
+    alert("Time's up! Your quiz is being submitted automatically.");
+    await submitQuiz();
 }
 
 document.addEventListener('DOMContentLoaded', loadQuiz);
