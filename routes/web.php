@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionController;
 use App\Http\Controllers\QuizAttemptController;
+use App\Http\Controllers\AnnouncementsController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -75,6 +76,8 @@ Route::post('/quizzes', [QuizController::class, 'store']);
 Route::get('/quizzes/{quiz}', [QuizController::class, 'show']);
 Route::put('/quizzes/{quiz}', [QuizController::class, 'update']);
 Route::post('/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
+Route::post('/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
+Route::post('/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
 
 Route::post('/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
 Route::put('/questions/{question}', [QuizQuestionController::class, 'update']);
