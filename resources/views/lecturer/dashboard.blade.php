@@ -32,7 +32,7 @@
           }
         }
       }
-    }
+}
   </script>
 <style data-purpose="custom-layout">
     body { font-family: 'Manrope', sans-serif; }

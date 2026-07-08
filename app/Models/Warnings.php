@@ -19,5 +19,4 @@ class Warnings extends Model
     public function admin()
     {
         return $this->belongsTo(Administrator::class, 'IssuedBy');
-    }
-}
+    }}
