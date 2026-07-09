@@ -65,6 +65,7 @@ class QuizAttemptController extends Controller
 
         return response()->json([
             'attempt_id' => $attempt->id,
+            'attempt_started_at' => $attempt->started_at?->toIso8601String(),
             'quiz' => $quiz,
         ]);
     }

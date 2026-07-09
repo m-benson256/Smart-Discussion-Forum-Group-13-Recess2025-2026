@@ -12,7 +12,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionController;
 use App\Http\Controllers\QuizAttemptController;
-
+use App\Http\Controllers\UserInterestsController;
+use App\Http\Controllers\RecommendationController;
 // 1. Welcome Page
 Route::get('/', function () {
     return view('welcome');
@@ -144,13 +145,18 @@ Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
 
 
+Route::get('/user-interests', [UserInterestsController::class, 'index']);
+
+Route::post('/topics/{topic}/view', [TopicController::class, 'recordView']);
+
+Route::get('/recommended-topics', [RecommendationController::class, 'index']);
 
 
-
+ Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
 });
 
 
-  
+ 
 
 
 

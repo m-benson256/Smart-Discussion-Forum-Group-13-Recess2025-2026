@@ -13,6 +13,12 @@ class UserInterestsController extends Controller
     public function index()
     {
         //
+        
+
+    return response()->json(
+        \App\Models\User_interests::orderBy('InterestName')->get(['InterestID', 'InterestName'])
+    );
+
     }
 
     /**

@@ -17,6 +17,7 @@ class Topic extends Model
         'category_id',
         'title',
         'content',
+        'interest_id',
     ];
 
     public function user(): BelongsTo

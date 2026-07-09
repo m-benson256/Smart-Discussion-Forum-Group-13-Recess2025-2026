@@ -200,6 +200,13 @@
 <label class="block text-sm font-medium text-slate-700 mb-1">Post content</label>
 <textarea class="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500" id="topic-input-desc" placeholder="Start the discussion..." rows="4"></textarea>
 </div>
+<div class="mb-4">
+    <label class="block text-sm font-medium text-slate-700 mb-2"> Interest</label>
+    <select id="topic-input-interest" class="w-full border-slate-200 rounded-lg p-2">
+        <option value="">Select an interest the topic targets...</option>
+        <!-- Options populated by JS -->
+    </select>
+</div>
 </div>
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
 <button class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium" onclick="toggleTopicModal(false)">Cancel</button>
@@ -241,22 +248,10 @@ const currentUserId = {{ Auth::id() }};
         
         // Formats your real database topics into what your layout JS loops through
         topics: [],
-
+        recommendedTopics: [],
 
        
 
-
-        messages: {
-            101: [
-                { id: 1, author: "Sarah Miller", text: "Hey everyone! I'm starting a series on basic neural networks. Any interest?", time: "10:30 AM", isMe: false, likes: 2, myLike: false, reactions: [] },
-                { id: 2, author: "Alex Chen", text: "That sounds great! Will you cover backpropagation?", time: "10:35 AM", isMe: false, likes: 0, myLike: false, reactions: [] },
-                { id: 3, author: "Benson", text: "Count me in. I've been wanting to learn more about the math behind it.", time: "10:45 AM", isMe: true, likes: 1, myLike: false, reactions: [] }
-            ],
-            103: [
-                { id: 1, author: "Benson", text: "Is flexbox still the king or are we moving fully to Grid for centering everything?", time: "09:00 AM", isMe: true, likes: 4, myLike: false, reactions: [] },
-                { id: 2, author: "Mike Ross", text: "Flexbox for 1D, Grid for 2D. But for simple centering, place-content: center on a grid is cleaner IMO.", time: "09:15 AM", isMe: false, likes: 1, myLike: false, reactions: [] }
-            ]
-        },
 
         quizzes: [],
             
@@ -343,33 +338,27 @@ document.getElementById('save-group')?.addEventListener('click', async () => {
 document.getElementById('save-topic')?.addEventListener('click', async () => {
     const title = document.getElementById('topic-input-name').value;
     const content = document.getElementById('topic-input-desc').value;
+    const interestId = document.getElementById('topic-input-interest').value;
     if (!title.trim() || !content.trim()) return;
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        try {
+    try {
         const response = await fetch('/topics', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({
                 title: title,
                 content: content,
-                group_id: state.selectedGroupId || null
+                group_id: state.selectedGroupId || null,
+                interest_id: interestId || null
             })
         });
 
-        if (!response.ok) {
-            const respText = await response.text();
-            console.error('Topic POST failed', response.status, respText);
-            alert('Server error while creating topic (see console)');
-            throw new Error('Failed to create topic: ' + response.status);
-        }
+        if (!response.ok) throw new Error('Failed to create topic');
 
         toggleTopicModal(false);
         await fetchTopics();
@@ -378,7 +367,6 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         alert('Could not post topic. Please try again.');
     }
 });
-
 
         // Global click out to hide floating panels
         document.addEventListener('click', (e) => {
@@ -391,6 +379,8 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         fetchTopics();
         fetchQuizzes();
         updateView(initialView);
+        fetchInterests();
+        fetchRecommendedTopics();
     });
 
     function showNotification() {
@@ -430,6 +420,21 @@ function openTopic(topicId) {
     state.selectedTopicId = topicId;
     updateView('chat');
     fetchMessages(topicId);
+    recordTopicView(topicId);
+}
+
+async function recordTopicView(topicId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        await fetch(`/topics/${topicId}/view`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+    } catch (err) {
+        console.error('Failed to record topic view:', err);
+        // Deliberately silent to the user — a failed view-log shouldn't block reading the topic
+    }
 }
 
     function renderView() {
@@ -516,17 +521,25 @@ case 'group_details':
                 `;
                 break;
 
-            case 'my-topics':
-                const myTopics = state.topics.filter(t => t.author === state.user);
-                html = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">My Topics</h2>
-                    </div>
-                    <div class="space-y-3">
-                        ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
-                    </div>
-                `;
-                break;
+            // NEW:
+case 'my-topics':
+    const myTopics = state.topics.filter(t => t.author === state.user);
+    html = `
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">My Topics</h2>
+        </div>
+        <div class="space-y-3 mb-10">
+            ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Recommended Topics</h2>
+        </div>
+        <div class="space-y-3">
+            ${state.recommendedTopics.length ? state.recommendedTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">No recommendations yet \u2014 pick some interests to get suggestions.</div>'}
+        </div>
+    `;
+    break;
 
             case 'quizzes':
                 const incoming = state.quizzes.filter(q => q.status === 'incoming');
@@ -811,7 +824,26 @@ case 'group_details':
     }
 }
 
+  async function fetchRecommendedTopics() {
+    try {
+        const response = await fetch('/recommended-topics');
+        const data = await response.json();
 
+        state.recommendedTopics = data.map(topic => ({
+            id: topic.id,
+            groupId: topic.group_id,
+            title: topic.title,
+            author: topic.user ? topic.user.name : 'Unknown',
+            date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
+            replies: topic.messages_count || 0,
+            likes: 0
+        }));
+
+        renderView();
+    } catch (err) {
+        console.error('Failed to load recommended topics:', err);
+    }
+}
      
    async function fetchMessages(topicId) {
     try {
@@ -1069,6 +1101,25 @@ async function sendMessage() {
     } catch (err) {
         console.error(err);
         alert('Could not send message. Please try again.');
+    }
+}
+
+async function fetchInterests() {
+    try {
+        const response = await fetch('/user-interests');
+        const data = await response.json();
+
+        const select = document.getElementById('topic-input-interest');
+        if (!select) return;
+
+        data.forEach(interest => {
+            const opt = document.createElement('option');
+            opt.value = interest.InterestID;
+            opt.textContent = interest.InterestName;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to load interests:', err);
     }
 }
 

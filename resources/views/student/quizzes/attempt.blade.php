@@ -137,7 +137,7 @@
 <div class="flex items-center gap-6">
 <div class="flex items-center gap-2 px-3 py-1 bg-error-container text-on-error-container rounded-lg">
 <span class="material-symbols-outlined text-[20px]" data-icon="timer">timer</span>
-<span class="font-label-md text-label-md" id="timer">Time Remaining: 14:59</span>
+<span class="font-label-md text-label-md" id="timer">Time Remaining: --:--</span>
 </div>
 <div class="hidden lg:flex items-center gap-4 min-w-[200px]">
 <div class="flex-1 h-2 bg-surface-container-high rounded-full overflow-hidden">
@@ -168,6 +168,8 @@
         let attemptId = null;
 let quizData = null;
 let answers = {}; // { questionId: selectedAnswer }
+    let timerInterval = null;
+    let quizSubmitted = false;
 
 async function loadQuiz() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -190,11 +192,55 @@ async function loadQuiz() {
         quizData = data.quiz;
 
         document.querySelector('.font-headline-md.text-headline-md.text-primary').textContent = quizData.title;
+        startCountdown(data.attempt_started_at, quizData.duration_minutes);
         renderQuestions();
     } catch (err) {
         console.error(err);
         alert('Could not load quiz.');
     }
+}
+
+function formatTime(totalSeconds) {
+    const safeSeconds = Math.max(0, totalSeconds);
+    const minutes = Math.floor(safeSeconds / 60);
+    const seconds = safeSeconds % 60;
+
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function updateTimerDisplay(remainingSeconds) {
+    const timerElement = document.getElementById('timer');
+    timerElement.textContent = `Time Remaining: ${formatTime(remainingSeconds)}`;
+}
+
+function startCountdown(attemptStartedAt, durationMinutes) {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+
+    const startedAtMs = attemptStartedAt ? new Date(attemptStartedAt).getTime() : Date.now();
+    const durationSeconds = (parseInt(durationMinutes, 10) || 0) * 60;
+
+    const tick = () => {
+        const elapsedSeconds = Math.floor((Date.now() - startedAtMs) / 1000);
+        const remainingSeconds = durationSeconds - elapsedSeconds;
+
+        updateTimerDisplay(remainingSeconds);
+
+        if (remainingSeconds <= 0) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+
+            if (!quizSubmitted) {
+                alert('Time is up. Your quiz will be submitted now.');
+                submitQuiz(true);
+            }
+        }
+    };
+
+    tick();
+    timerInterval = setInterval(tick, 1000);
 }
 
 function renderQuestions() {
@@ -264,7 +310,18 @@ function updateProgress() {
     document.querySelector('.font-label-sm.text-label-sm.text-primary').textContent = percent + '% Complete';
 }
 
-async function submitQuiz() {
+async function submitQuiz(autoSubmit = false) {
+    if (quizSubmitted) {
+        return;
+    }
+
+    if (!attemptId) {
+        alert('Quiz attempt is not ready yet. Please wait.');
+        return;
+    }
+
+    quizSubmitted = true;
+
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     const payload = {
@@ -287,13 +344,21 @@ async function submitQuiz() {
         const result = await response.json();
 
         if (!response.ok) {
+            quizSubmitted = false;
             alert(result.message || 'Could not submit quiz.');
             return;
         }
 
-        alert(`Quiz submitted! Score: ${result.score}/${result.total_marks} (${result.correct_count}/${result.total_questions} correct)`);
+        if (timerInterval) {
+            clearInterval(timerInterval);
+            timerInterval = null;
+        }
+
+        const prefix = autoSubmit ? 'Time is up. ' : '';
+        alert(`${prefix}Quiz submitted! Score: ${result.score}/${result.total_marks} (${result.correct_count}/${result.total_questions} correct)`);
         window.location.href = '/student/dashboard?view=quizzes';
     } catch (err) {
+        quizSubmitted = false;
         console.error(err);
         alert('Could not submit quiz. Please try again.');
     }
