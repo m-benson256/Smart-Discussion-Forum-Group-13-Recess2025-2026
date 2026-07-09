@@ -192,10 +192,16 @@ async function loadQuiz() {
         attemptId = data.attempt_id;
         quizData = data.quiz;
 
-        const durationSeconds = quizData.duration_minutes * 60;
-       const startedAt = new Date(data.started_at);
-       const elapsedSeconds = Math.floor((Date.now() - startedAt.getTime()) / 1000);
-       remainingSeconds = Math.max(durationSeconds - elapsedSeconds, 0);
+        
+        // NEW — anchor to the server-computed deadline (quiz start_time + duration)
+if (data.deadline) {
+    const deadline = new Date(data.deadline);
+    remainingSeconds = Math.max(Math.floor((deadline.getTime() - Date.now()) / 1000), 0);
+} else {
+    // No scheduled start_time on this quiz — fall back to a fresh full-duration timer
+    remainingSeconds = quizData.duration_minutes * 60;
+}
+
 
 if (remainingSeconds <= 0) {
     // Time already expired (e.g. they reloaded after time was up)
