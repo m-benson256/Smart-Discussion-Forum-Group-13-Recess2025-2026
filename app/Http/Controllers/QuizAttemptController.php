@@ -87,6 +87,38 @@ class QuizAttemptController extends Controller
     ]);
 }
 
+// POST /attempts/{attempt}/answer — autosave a single answer as the student works
+public function saveAnswer(Request $request, QuizAttempt $attempt): JsonResponse
+{
+    if ($attempt->user_id !== $request->user()->id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    if ($attempt->submitted_at) {
+        return response()->json(['message' => 'Already submitted'], 409);
+    }
+
+    $validated = $request->validate([
+        'question_id' => 'required|integer|exists:quiz_questions,id',
+        'selected_answer' => 'nullable|string',
+    ]);
+
+    $question = $attempt->quiz->questions()->find($validated['question_id']);
+    if (! $question) {
+        return response()->json(['message' => 'Invalid question for this quiz'], 422);
+    }
+
+    $selected = trim($validated['selected_answer'] ?? '');
+    $isCorrect = strcasecmp($selected, $question->correct_answer) === 0;
+
+    $attempt->answers()->updateOrCreate(
+        ['question_id' => $question->id],
+        ['selected_answer' => $selected, 'is_correct' => $isCorrect]
+    );
+
+    return response()->json(['saved' => true]);
+}
+
     // POST /attempts/{attempt}/submit — grade and finalize
     public function submit(Request $request, QuizAttempt $attempt): JsonResponse
 {

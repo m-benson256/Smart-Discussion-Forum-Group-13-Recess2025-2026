@@ -92,6 +92,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::post('/quizzes/{quiz}/start', [QuizAttemptController::class, 'start']);
     Route::post('/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
+    Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+
 });
 
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)

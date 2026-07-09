@@ -296,6 +296,23 @@ function renderQuestions() {
 function setAnswer(questionId, value) {
     answers[questionId] = value;
     updateProgress();
+    autosaveAnswer(questionId, value);
+}
+
+async function autosaveAnswer(questionId, value) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    try {
+        await fetch(`/attempts/${attemptId}/answer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ question_id: questionId, selected_answer: value })
+        });
+    } catch (err) {
+        console.error('Autosave failed:', err);
+    }
 }
 
 function toggleActive(element, questionId, value) {
