@@ -44,32 +44,48 @@ class QuizAttemptController extends Controller
 
     // POST /quizzes/{quiz}/start — begin (or resume) an attempt, return questions without answers
     public function start(Request $request, Quiz $quiz): JsonResponse
-    {
-        if ($quiz->status !== 'published') {
-            return response()->json(['message' => 'Quiz is not available'], 403);
-        }
-
-        $attempt = QuizAttempt::firstOrCreate(
-            ['quiz_id' => $quiz->id, 'user_id' => $request->user()->id],
-            ['started_at' => now()]
-        );
-
-        if ($attempt->submitted_at) {
-            return response()->json(['message' => 'You have already submitted this quiz'], 409);
-        }
-
-        $quiz->load(['questions' => function ($query) {
-            $query->select('id', 'quiz_id', 'type', 'prompt', 'order')
-                ->orderBy('order');
-        }, 'questions.options:id,question_id,option_key,option_text']);
-
-        return response()->json([
-            'attempt_id' => $attempt->id,
-            'started_at' => $attempt->started_at,
-            'quiz' => $quiz,
-
-        ]);
+{
+    if ($quiz->status !== 'published') {
+        return response()->json(['message' => 'Quiz is not available'], 403);
     }
+
+    // NEW: block early access if the quiz has a scheduled start time
+    if ($quiz->start_time && now()->lt($quiz->start_time)) {
+        return response()->json([
+            'message' => 'This quiz has not opened yet.',
+            'start_time' => $quiz->start_time->toIso8601String(),
+        ], 403);
+    }
+
+    $attempt = QuizAttempt::firstOrCreate(
+        ['quiz_id' => $quiz->id, 'user_id' => $request->user()->id],
+        ['started_at' => now()]
+    );
+
+    if ($attempt->submitted_at) {
+        return response()->json(['message' => 'You have already submitted this quiz'], 409);
+    }
+
+    // NEW: block late access if the scheduled window already closed
+    $attempt->setRelation('quiz', $quiz); // avoid an extra query in deadline()
+    $deadline = $attempt->deadline();
+
+    if ($deadline && now()->greaterThan($deadline)) {
+        return response()->json(['message' => 'The time window for this quiz has closed.'], 403);
+    }
+
+    $quiz->load(['questions' => function ($query) {
+        $query->select('id', 'quiz_id', 'type', 'prompt', 'order')
+            ->orderBy('order');
+    }, 'questions.options:id,question_id,option_key,option_text']);
+
+    return response()->json([
+        'attempt_id' => $attempt->id,
+        'started_at' => $attempt->started_at,
+        'deadline' => $deadline?->toIso8601String(), // NEW: frontend anchors the timer to this
+        'quiz' => $quiz,
+    ]);
+}
 
     // POST /attempts/{attempt}/submit — grade and finalize
     public function submit(Request $request, QuizAttempt $attempt): JsonResponse
@@ -83,19 +99,16 @@ class QuizAttemptController extends Controller
     }
 
     // --- NEW: server-side deadline enforcement ---
-    $deadline = $attempt->started_at->copy()->addMinutes($attempt->quiz->duration_minutes);
-    $graceSeconds = 10; // small buffer for network/request latency
+    // --- server-side deadline enforcement, anchored to quiz schedule ---
+$deadline = $attempt->deadline();
+$graceSeconds = 10;
 
-    if (now()->greaterThan($deadline->addSeconds($graceSeconds))) {
-        $deadline = $attempt->started_at->copy()->addMinutes($attempt->quiz->duration_minutes);
-$graceSeconds = 10; // small buffer for network/request latency
-
-if (now()->greaterThan($deadline->addSeconds($graceSeconds))) {
+if ($deadline && now()->greaterThan($deadline->copy()->addSeconds($graceSeconds))) {
     return response()->json([
         'message' => 'Time limit exceeded. This attempt can no longer be submitted.',
     ], 422);
 }
-    }
+// --- end deadline enforcement ---
     // --- end new block ---
 
     $validated = $request->validate([

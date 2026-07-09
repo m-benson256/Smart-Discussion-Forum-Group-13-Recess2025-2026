@@ -35,4 +35,15 @@ class QuizAttempt extends Model
     {
         return $this->hasMany(QuizAttemptAnswer::class, 'attempt_id');
     }
+
+    public function deadline(): ?\Carbon\CarbonInterface
+{
+    // Anchor to the quiz's scheduled start_time if one is set.
+    // Fall back to the attempt's own started_at for quizzes with no fixed schedule.
+    $anchor = $this->quiz->start_time ?: $this->started_at;
+
+    return $anchor
+        ? $anchor->copy()->addMinutes($this->quiz->duration_minutes)
+        : null;
+}
 }
