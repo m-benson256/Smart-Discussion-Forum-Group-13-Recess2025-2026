@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcements;
 use App\Models\Lecturer;
 use Illuminate\Http\Request;
 
@@ -12,9 +13,13 @@ class LecturerController extends Controller
      */
     public function index()
     {
-        
-        return view('lecturer.dashboard'); // Loads resources/views/lecturer/dashboard.blade.php
+        $announcements = Announcements::with('user', 'quiz')
+            ->latest()
+            ->get();
 
+        return view('lecturer.dashboard', [
+            'announcements' => $announcements,
+        ]); // Loads resources/views/lecturer/dashboard.blade.php
     }
 
     /**

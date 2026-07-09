@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('messages', function (Blueprint $table) {
-             $table->id('PostID');  
+            $table->id('PostID');
             $table->timestamps();
         });
     }
@@ -25,5 +25,3 @@ return new class extends Migration
         Schema::dropIfExists('messages');
     }
 };
-
-

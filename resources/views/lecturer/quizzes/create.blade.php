@@ -160,9 +160,9 @@
 <p class="font-caption text-caption text-on-surface-variant">Senior Research Fellow</p>
 </div>
 </div>
-<button class="w-full py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2" type="button" onclick="finishAndSave()">
+<button id="publishBtn" class="w-full py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2" type="button" onclick="finishAndSave()">
 <span class="material-symbols-outlined text-sm">check_circle</span>
-<span>Finish &amp; Save</span>
+<span id="publishBtnLabel">Finish &amp; Save</span>
 </button>
 </div>
 </aside>
@@ -714,24 +714,76 @@ async function publishQuiz() {
         return false;
     }
 }
+async function postAnnouncement(content) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-async function finishAndSave() {
-    updateSummary();
+    try {
+        const response = await fetch(`/quizzes/${quizId}/announce`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ content })
+        });
 
-    const created = await ensureQuizCreated();
-    if (!created) return;
-
-    if (quizData.questions.length === 0) {
-        alert('Quiz saved as a draft. Add questions to publish it later.');
-        return;
-    }
-
-    const published = await publishQuiz();
-    if (published) {
-        alert('Quiz saved and published successfully.');
-        window.location.href = '/lecturer/dashboard';
+        if (!response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            alert(payload.message || 'Quiz published, but the announcement could not be posted.');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Quiz published, but the announcement could not be posted.');
     }
 }
 
+// UPDATED: added the button-disable race-condition guard
+async function finishAndSave() {
+    const btn = document.getElementById('publishBtn');
+    const label = document.getElementById('publishBtnLabel');
+
+    if (btn.disabled) return;
+
+    btn.disabled = true;
+    const originalLabel = label.innerText;
+    label.innerText = 'Saving...';
+
+    updateSummary();
+
+    const created = await ensureQuizCreated();
+    if (!created) {
+        btn.disabled = false;
+        label.innerText = originalLabel;
+        return;
+    }
+
+    if (quizData.questions.length === 0) {
+        alert('Quiz saved as a draft. Add questions to publish it later.');
+        btn.disabled = false;
+        label.innerText = originalLabel;
+        return;
+    }
+
+    label.innerText = 'Publishing...';
+    const published = await publishQuiz();
+
+    if (!published) {
+        btn.disabled = false;
+        label.innerText = originalLabel;
+        return;
+    }
+
+    // Quiz is now live — ask the lecturer to write the announcement
+    const message = prompt(
+        `Quiz "${quizData.title}" is published! Write an announcement for your students:`,
+        `A new quiz "${quizData.title}" has been posted. Duration: ${quizData.timeLimit} minutes.`
+    );
+
+    if (message && message.trim()) {
+        await postAnnouncement(message.trim());
+    }
+
+    window.location.href = '/lecturer/dashboard';
+}
     </script>
 </body></html>

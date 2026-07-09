@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::table('groups', function (Blueprint $table) {
             $table->foreignId('created_by')
-                  ->after('id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->string('name');
             $table->text('description')->nullable();

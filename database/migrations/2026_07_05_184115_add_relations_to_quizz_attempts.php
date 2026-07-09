@@ -12,14 +12,14 @@ return new class extends Migration
     {
         Schema::table('quiz_attempts', function (Blueprint $table) {
             $table->foreignId('quiz_id')
-                  ->after('id')
-                  ->constrained('quizzes')
-                  ->cascadeOnDelete();
+                ->after('id')
+                ->constrained('quizzes')
+                ->cascadeOnDelete();
 
             $table->foreignId('user_id')
-                  ->after('quiz_id')
-                  ->constrained('users')
-                  ->cascadeOnDelete();
+                ->after('quiz_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->unsignedInteger('score')->nullable();
             $table->timestamp('started_at')->nullable();

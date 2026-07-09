@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Quiz;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class QuizController extends Controller
 {
@@ -88,12 +88,17 @@ class QuizController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        // Guard: already published — return current state, don't re-process
+        if ($quiz->status === 'published') {
+            return response()->json($quiz);
+        }
+
         if ($quiz->questions()->count() === 0) {
             return response()->json(['message' => 'Cannot publish a quiz with no questions'], 422);
         }
 
         $quiz->update(['status' => 'published']);
 
-        return response()->json($quiz);
+        return response()->json($quiz->fresh());
     }
 }

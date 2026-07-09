@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('administrators', function (Blueprint $table) {
-           $table->foreignId('AdminID')->primary()->constrained('members', 'UserID')->onDelete('cascade'); 
-           $table->enum('AdminType', ['super_admin', 'group_admin']); 
+            $table->foreignId('AdminID')->primary()->constrained('members', 'UserID')->onDelete('cascade');
+            $table->enum('AdminType', ['super_admin', 'group_admin']);
             $table->timestamps();
         });
     }

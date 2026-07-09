@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Topic;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use App\Models\TopicView;
 
 class TopicController extends Controller
@@ -13,12 +13,12 @@ class TopicController extends Controller
     public function index(Request $request): JsonResponse
     {
         $topics = Topic::with([
-                'user:id,name',
-                'group' => function ($query) {
-                    $query->withCount('members')
-                        ->with('creator:id,name');
-                },
-            ])
+            'user:id,name',
+            'group' => function ($query) {
+                $query->withCount('members')
+                    ->with('creator:id,name');
+            },
+        ])
             ->withCount('messages')
             ->latest()
             ->get();
@@ -92,19 +92,4 @@ class TopicController extends Controller
 
         return response()->json(['message' => 'Topic deleted']);
     }
-
-    public function recordView(Request $request, Topic $topic): JsonResponse
-{
-    $view = TopicView::firstOrCreate(
-        ['user_id' => $request->user()->id, 'topic_id' => $topic->id],
-        ['view_count' => 0]
-    );
-
-    $view->increment('view_count');
-    $view->update(['last_viewed_at' => now()]);
-
-    return response()->json(['message' => 'View recorded']);
-}
-
-
 }

@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Quiz;
 use App\Models\QuizQuestion;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class QuizQuestionController extends Controller
 {

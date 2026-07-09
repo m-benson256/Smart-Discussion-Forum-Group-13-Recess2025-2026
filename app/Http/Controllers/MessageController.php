@@ -4,8 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Message;
 use App\Models\Topic;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
@@ -60,7 +60,7 @@ class MessageController extends Controller
         }
 
         return response()->json([
-            'flagged' => !$existingFlag,
+            'flagged' => ! $existingFlag,
             'flag_count' => $flagCount,
             'hidden' => $flagCount > 2,
         ]);

@@ -164,6 +164,9 @@
 </div>
 </nav>
 <script>
+    let timerInterval = null;
+let remainingSeconds = 0;
+let quizSubmitted = false; // guards against double-submit
         
         let attemptId = null;
 let quizData = null;
@@ -191,6 +194,25 @@ async function loadQuiz() {
         attemptId = data.attempt_id;
         quizData = data.quiz;
 
+        
+        // NEW — anchor to the server-computed deadline (quiz start_time + duration)
+if (data.deadline) {
+    const deadline = new Date(data.deadline);
+    remainingSeconds = Math.max(Math.floor((deadline.getTime() - Date.now()) / 1000), 0);
+} else {
+    // No scheduled start_time on this quiz — fall back to a fresh full-duration timer
+    remainingSeconds = quizData.duration_minutes * 60;
+}
+
+
+if (remainingSeconds <= 0) {
+    // Time already expired (e.g. they reloaded after time was up)
+    autoSubmitQuiz();
+    return;
+}
+
+startTimer();
+
         document.querySelector('.font-headline-md.text-headline-md.text-primary').textContent = quizData.title;
         startCountdown(data.attempt_started_at, quizData.duration_minutes);
         renderQuestions();
@@ -200,49 +222,77 @@ async function loadQuiz() {
     }
 }
 
-function formatTime(totalSeconds) {
-    const safeSeconds = Math.max(0, totalSeconds);
-    const minutes = Math.floor(safeSeconds / 60);
-    const seconds = safeSeconds % 60;
-
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-}
-
-function updateTimerDisplay(remainingSeconds) {
-    const timerElement = document.getElementById('timer');
-    timerElement.textContent = `Time Remaining: ${formatTime(remainingSeconds)}`;
-}
-
-function startCountdown(attemptStartedAt, durationMinutes) {
-    if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
-
-    const startedAtMs = attemptStartedAt ? new Date(attemptStartedAt).getTime() : Date.now();
-    const durationSeconds = (parseInt(durationMinutes, 10) || 0) * 60;
-
-    const tick = () => {
-        const elapsedSeconds = Math.floor((Date.now() - startedAtMs) / 1000);
-        const remainingSeconds = durationSeconds - elapsedSeconds;
-
-        updateTimerDisplay(remainingSeconds);
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        remainingSeconds--;
 
         if (remainingSeconds <= 0) {
+            remainingSeconds = 0;
+            updateTimerDisplay();
             clearInterval(timerInterval);
-            timerInterval = null;
-
-            if (!quizSubmitted) {
-                alert('Time is up. Your quiz will be submitted now.');
-                submitQuiz(true);
-            }
+            autoSubmitQuiz();
+            return;
         }
-    };
 
-    tick();
-    timerInterval = setInterval(tick, 1000);
+        updateTimerDisplay();
+    }, 1000);
 }
 
+function updateTimerDisplay() {
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
+
+    // Optional: flash red when under a minute
+    const timerBox = timerEl?.closest('.bg-error-container');
+    if (remainingSeconds <= 60) {
+        timerBox?.classList.add('animate-pulse');
+    }
+}
+
+
+
+
+
+
+function startTimer() {
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+        remainingSeconds--;
+
+        if (remainingSeconds <= 0) {
+            remainingSeconds = 0;
+            updateTimerDisplay();
+            clearInterval(timerInterval);
+            autoSubmitQuiz();
+            return;
+        }
+
+        updateTimerDisplay();
+    }, 1000);
+}
+
+function updateTimerDisplay() {
+    const minutes = Math.floor(remainingSeconds / 60);
+    const seconds = remainingSeconds % 60;
+    const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
+
+    const timerEl = document.getElementById('timer');
+    if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
+
+    // Optional: flash red when under a minute
+    const timerBox = timerEl?.closest('.bg-error-container');
+    if (remainingSeconds <= 60) {
+        timerBox?.classList.add('animate-pulse');
+    }
+}
+
+
+>>>>>>> b9478290b505d887c52738a772d394432c0774c9
 function renderQuestions() {
     const container = document.getElementById('questions-container');
     container.innerHTML = quizData.questions.map((q, idx) => {
@@ -287,6 +337,23 @@ function renderQuestions() {
 function setAnswer(questionId, value) {
     answers[questionId] = value;
     updateProgress();
+    autosaveAnswer(questionId, value);
+}
+
+async function autosaveAnswer(questionId, value) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    try {
+        await fetch(`/attempts/${attemptId}/answer`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ question_id: questionId, selected_answer: value })
+        });
+    } catch (err) {
+        console.error('Autosave failed:', err);
+    }
 }
 
 function toggleActive(element, questionId, value) {
@@ -310,17 +377,14 @@ function updateProgress() {
     document.querySelector('.font-label-sm.text-label-sm.text-primary').textContent = percent + '% Complete';
 }
 
-async function submitQuiz(autoSubmit = false) {
-    if (quizSubmitted) {
-        return;
-    }
 
-    if (!attemptId) {
-        alert('Quiz attempt is not ready yet. Please wait.');
-        return;
-    }
-
+async function submitQuiz() {
+    if (quizSubmitted) return;
     quizSubmitted = true;
+    clearInterval(timerInterval);
+
+    const submitBtn = document.querySelector('[onclick="submitQuiz()"]');
+    if (submitBtn) submitBtn.disabled = true;
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
@@ -346,6 +410,8 @@ async function submitQuiz(autoSubmit = false) {
         if (!response.ok) {
             quizSubmitted = false;
             alert(result.message || 'Could not submit quiz.');
+            quizSubmitted = false; // allow retry on failure
+            if (submitBtn) submitBtn.disabled = false;
             return;
         }
 
@@ -361,7 +427,15 @@ async function submitQuiz(autoSubmit = false) {
         quizSubmitted = false;
         console.error(err);
         alert('Could not submit quiz. Please try again.');
+        quizSubmitted = false;
+        if (submitBtn) submitBtn.disabled = false;
     }
+}
+
+async function autoSubmitQuiz() {
+    if (quizSubmitted) return;
+    alert("Time's up! Your quiz is being submitted automatically.");
+    await submitQuiz();
 }
 
 document.addEventListener('DOMContentLoaded', loadQuiz);
