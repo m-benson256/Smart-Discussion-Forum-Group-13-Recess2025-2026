@@ -14,6 +14,8 @@ use App\Models\Quiz;
 use App\Models\User_interests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserInterestsController;
+use App\Http\Controllers\RecommendationController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -157,6 +159,8 @@ Route::get('/recommended-topics', [RecommendationController::class, 'index']);
 
 
  Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
+
+ Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
 });
 
 
