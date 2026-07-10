@@ -33,4 +33,10 @@ class Message extends Model
         return $this->belongsToMany(User::class, 'message_flags', 'message_id', 'user_id')
             ->withTimestamps();
     }
+
+    public function likedBy(): BelongsToMany
+{
+    return $this->belongsToMany(User::class, 'message_likes', 'message_id', 'user_id')
+                 ->withTimestamps();
+}
 }

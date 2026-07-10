@@ -8,12 +8,13 @@
 <title>Smart Discussion Forum - Unified Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style data-purpose="custom-colors">
         :root {
             --sidebar-navy: #1a2e4c;
             --sidebar-hover: #2d4368;
-            submittedDate: quiz.submitted_at ? new Date(quiz.submitted_at).toLocaleString() : null
             --sidebar-active: #3d5a80;
         }
         .bg-sidebar { background-color: var(--sidebar-navy); }
@@ -200,6 +201,13 @@
 <label class="block text-sm font-medium text-slate-700 mb-1">Post content</label>
 <textarea class="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500" id="topic-input-desc" placeholder="Start the discussion..." rows="4"></textarea>
 </div>
+<div class="mb-4">
+    <label class="block text-sm font-medium text-slate-700 mb-2"> Interest</label>
+    <select id="topic-input-interest" class="w-full border-slate-200 rounded-lg p-2">
+        <option value="">Select an interest the topic targets...</option>
+        <!-- Options populated by JS -->
+    </select>
+</div>
 </div>
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
 <button class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium" onclick="toggleTopicModal(false)">Cancel</button>
@@ -241,22 +249,11 @@ const currentUserId = {{ Auth::id() }};
         
         // Formats your real database topics into what your layout JS loops through
         topics: [],
-
+        recommendedTopics: [],
+        messages: {},
 
        
 
-
-        messages: {
-            101: [
-                { id: 1, author: "Sarah Miller", text: "Hey everyone! I'm starting a series on basic neural networks. Any interest?", time: "10:30 AM", isMe: false, likes: 2, myLike: false, reactions: [] },
-                { id: 2, author: "Alex Chen", text: "That sounds great! Will you cover backpropagation?", time: "10:35 AM", isMe: false, likes: 0, myLike: false, reactions: [] },
-                { id: 3, author: "Benson", text: "Count me in. I've been wanting to learn more about the math behind it.", time: "10:45 AM", isMe: true, likes: 1, myLike: false, reactions: [] }
-            ],
-            103: [
-                { id: 1, author: "Benson", text: "Is flexbox still the king or are we moving fully to Grid for centering everything?", time: "09:00 AM", isMe: true, likes: 4, myLike: false, reactions: [] },
-                { id: 2, author: "Mike Ross", text: "Flexbox for 1D, Grid for 2D. But for simple centering, place-content: center on a grid is cleaner IMO.", time: "09:15 AM", isMe: false, likes: 1, myLike: false, reactions: [] }
-            ]
-        },
 
         quizzes: [],
             
@@ -269,9 +266,14 @@ const currentUserId = {{ Auth::id() }};
         '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🔥', '✨', '💯', '🚀', '⭐'
     ];
 
+
+   
+
     let currentContextElement = null;
     let pickerMode = 'reaction'; 
     let mainContent, navItems, groupModal, topicModal, contextMenu, emojiPicker, emojiGrid;
+
+    let messagePollingInterval = null;
 
     // Wait until DOM is completely parsed before bootstrapping views
     document.addEventListener('DOMContentLoaded', () => {
@@ -343,33 +345,27 @@ document.getElementById('save-group')?.addEventListener('click', async () => {
 document.getElementById('save-topic')?.addEventListener('click', async () => {
     const title = document.getElementById('topic-input-name').value;
     const content = document.getElementById('topic-input-desc').value;
+    const interestId = document.getElementById('topic-input-interest').value;
     if (!title.trim() || !content.trim()) return;
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        try {
+    try {
         const response = await fetch('/topics', {
             method: 'POST',
-            credentials: 'same-origin',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
                 'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({
                 title: title,
                 content: content,
-                group_id: state.selectedGroupId || null
+                group_id: state.selectedGroupId || null,
+                interest_id: interestId || null
             })
         });
 
-        if (!response.ok) {
-            const respText = await response.text();
-            console.error('Topic POST failed', response.status, respText);
-            alert('Server error while creating topic (see console)');
-            throw new Error('Failed to create topic: ' + response.status);
-        }
+        if (!response.ok) throw new Error('Failed to create topic');
 
         toggleTopicModal(false);
         await fetchTopics();
@@ -378,7 +374,6 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         alert('Could not post topic. Please try again.');
     }
 });
-
 
         // Global click out to hide floating panels
         document.addEventListener('click', (e) => {
@@ -391,6 +386,13 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         fetchTopics();
         fetchQuizzes();
         updateView(initialView);
+        fetchInterests();
+        fetchRecommendedTopics();
+
+        window.Echo.channel('forum-notifications')
+        .listen('MessageSent', (data) => {
+            alert(`New message from ${data.sender}: "${data.message}"`);
+        });
     });
 
     function showNotification() {
@@ -402,6 +404,10 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
     function updateView(viewName) {
         state.activeView = viewName;
         
+        if (viewName !== 'chat') {
+        stopMessagePolling();
+    }
+
         navItems?.forEach(item => {
             if(item.getAttribute('data-view') === viewName) {
                 item.classList.add('bg-sidebar-active');
@@ -430,6 +436,37 @@ function openTopic(topicId) {
     state.selectedTopicId = topicId;
     updateView('chat');
     fetchMessages(topicId);
+    recordTopicView(topicId);
+     startMessagePolling(topicId);
+}
+
+function startMessagePolling(topicId) {
+    stopMessagePolling(); // clear any previous polling first, avoid stacking multiple intervals
+
+    messagePollingInterval = setInterval(() => {
+        fetchMessages(topicId);
+    }, 4000); // check for new messages every 4 seconds
+}
+
+function stopMessagePolling() {
+    if (messagePollingInterval) {
+        clearInterval(messagePollingInterval);
+        messagePollingInterval = null;
+    }
+}
+
+async function recordTopicView(topicId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        await fetch(`/topics/${topicId}/view`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+    } catch (err) {
+        console.error('Failed to record topic view:', err);
+        // Deliberately silent to the user — a failed view-log shouldn't block reading the topic
+    }
 }
 
     function renderView() {
@@ -516,17 +553,25 @@ case 'group_details':
                 `;
                 break;
 
-            case 'my-topics':
-                const myTopics = state.topics.filter(t => t.author === state.user);
-                html = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">My Topics</h2>
-                    </div>
-                    <div class="space-y-3">
-                        ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
-                    </div>
-                `;
-                break;
+            // NEW:
+case 'my-topics':
+    const myTopics = state.topics.filter(t => t.author === state.user);
+    html = `
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">My Topics</h2>
+        </div>
+        <div class="space-y-3 mb-10">
+            ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Recommended Topics</h2>
+        </div>
+        <div class="space-y-3">
+            ${state.recommendedTopics.length ? state.recommendedTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">No recommendations yet \u2014 pick some interests to get suggestions.</div>'}
+        </div>
+    `;
+    break;
 
             case 'quizzes':
                 const incoming = state.quizzes.filter(q => q.status === 'incoming');
@@ -623,7 +668,15 @@ case 'group_details':
 
             case 'chat':
                 const topic = state.topics.find(t => t.id === state.selectedTopicId);
-                const topicMessages = state.messages[state.selectedTopicId] || [];
+                const topicMessages = state.messages?.[state.selectedTopicId] || [];
+                if (!topic) {
+                    html = `
+                        <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+                            Loading topic...
+                        </div>
+                    `;
+                    break;
+                }
                 html = `
                     <div class="flex flex-col h-full -m-8">
                         <div class="h-16 bg-white border-b px-8 flex items-center justify-between">
@@ -650,9 +703,9 @@ case 'group_details':
                                                 ${msg.text}
                                             </div>
                                             <div class="flex items-center space-x-2 mt-1 ${msg.isMe ? 'flex-row-reverse space-x-reverse' : ''}">
-                                                <button onclick="handleLike(event, this)" class="like-button ${msg.myLike ? 'active' : ''}">
-                                                    <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likes || 0}</span>
-                                                </button>
+                                               <button onclick="handleLike(event, this)" class="like-button ${msg.myLike ? 'active' : ''}">
+                                             <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likeCount || 0}</span>
+                                               </button>
                                                 <div class="reaction-container flex flex-wrap gap-1 ${msg.isMe ? 'flex-row-reverse' : ''}">
                                                     ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
                                                 </div>
@@ -738,21 +791,40 @@ case 'group_details':
         `;
     }
 
-    function handleLike(event, btn) {
-        event.stopPropagation();
-        const isActive = btn.classList.contains('active');
+    
+// NEW:
+async function handleLike(event, btn) {
+    event.stopPropagation();
+
+    const wrapper = btn.closest('[data-message-id]');
+    const messageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
+    if (!messageId) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}/like`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle like');
+
+        const result = await response.json();
         const countSpan = btn.querySelector('span:last-child');
-        let currentCount = parseInt(countSpan.innerText);
-        
-        if (isActive) {
-            btn.classList.remove('active');
-            countSpan.innerText = Math.max(0, currentCount - 1);
-        } else {
+
+        if (result.liked) {
             btn.classList.add('active');
-            countSpan.innerText = currentCount + 1;
             showNotification();
+        } else {
+            btn.classList.remove('active');
         }
+        countSpan.innerText = result.like_count;
+    } catch (err) {
+        console.error(err);
+        alert('Could not update like. Please try again.');
     }
+}
 
     async function fetchTopics() {
     try {
@@ -811,9 +883,29 @@ case 'group_details':
     }
 }
 
+  async function fetchRecommendedTopics() {
+    try {
+        const response = await fetch('/recommended-topics');
+        const data = await response.json();
 
+        state.recommendedTopics = data.map(topic => ({
+            id: topic.id,
+            groupId: topic.group_id,
+            title: topic.title,
+            author: topic.user ? topic.user.name : 'Unknown',
+            date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
+            replies: topic.messages_count || 0,
+            likes: 0
+        }));
+
+        renderView();
+    } catch (err) {
+        console.error('Failed to load recommended topics:', err);
+    }
+}
      
-   async function fetchMessages(topicId) {
+   // NEW:
+async function fetchMessages(topicId) {
     try {
         const response = await fetch(`/topics/${topicId}/messages`);
         const data = await response.json();
@@ -825,11 +917,26 @@ case 'group_details':
             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isMe: msg.user_id === currentUserId,
             flagCount: msg.flagged_by_count ?? 0,
+            myFlag: msg.flagged_by_me ?? false,
+             likeCount: msg.liked_by_count ?? 0,
+             myLike: msg.liked_by_me ?? false,
             hidden: false
         }));
 
+        // Preserve whatever the student is currently typing before re-rendering
+        const chatInput = document.getElementById('chat-input');
+        const draftText = chatInput ? chatInput.value : '';
+
         renderView();
         setupContextListeners();
+
+        // Restore the draft and put the cursor back at the end, so typing isn't interrupted
+        const newChatInput = document.getElementById('chat-input');
+        if (newChatInput && draftText) {
+            newChatInput.value = draftText;
+            newChatInput.focus();
+            newChatInput.setSelectionRange(draftText.length, draftText.length);
+        }
     } catch (err) {
         console.error('Failed to load messages:', err);
     }
@@ -966,6 +1073,15 @@ async function toggleMessageFlag(messageId) {
         } else {
             flagIcon?.remove();
         }
+         const topicMessages = state.messages[state.selectedTopicId] || [];
+        const msg = topicMessages.find(m => m.id == messageId);
+        if (msg) {
+            msg.myFlag = result.flagged;
+            msg.flagCount = result.flag_count;
+        }
+
+        renderView();
+        setupContextListeners();
     } catch (err) {
         console.error(err);
         alert('Could not update flag. Please try again.');
@@ -1072,6 +1188,25 @@ async function sendMessage() {
     }
 }
 
+async function fetchInterests() {
+    try {
+        const response = await fetch('/user-interests');
+        const data = await response.json();
+
+        const select = document.getElementById('topic-input-interest');
+        if (!select) return;
+
+        data.forEach(interest => {
+            const opt = document.createElement('option');
+            opt.value = interest.InterestID;
+            opt.textContent = interest.InterestName;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to load interests:', err);
+    }
+}
+
 async function fetchQuizzes() {
     try {
         const response = await fetch('/student/quizzes');
@@ -1092,5 +1227,7 @@ async function fetchQuizzes() {
         console.error('Failed to load quizzes:', err);
     }
 }
+
+ 
 </script>
 </body></html>

@@ -15,6 +15,8 @@ use App\Models\Quiz;
 use App\Models\User_interests;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserInterestsController;
+use App\Http\Controllers\RecommendationController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -95,6 +97,8 @@ Route::middleware('auth')->group(function () {
     });
     Route::post('/quizzes/{quiz}/start', [QuizAttemptController::class, 'start']);
     Route::post('/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
+    Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+
 });
 
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)
@@ -146,11 +150,32 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
+Route::post('/groups', [GroupController::class, 'store']);
+Route::get('/groups/{group}', [GroupController::class, 'show']);
+Route::post('/groups/{group}/join', [GroupController::class, 'join']);
+Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
 
-    Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
-    Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
-    Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
+Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
+Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
+Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
 
+
+Route::get('/user-interests', [UserInterestsController::class, 'index']);
+
+Route::post('/topics/{topic}/view', [TopicController::class, 'recordView']);
+
+Route::get('/recommended-topics', [RecommendationController::class, 'index']);
+
+
+ Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
+
+ Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
 });
+
+
+ 
+
+
+
 
 require __DIR__.'/auth.php';

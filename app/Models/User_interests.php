@@ -21,4 +21,8 @@ class User_interests extends Model
             'UserID'
         )->withTimestamps();
     }
+
+    
+
+
 }
