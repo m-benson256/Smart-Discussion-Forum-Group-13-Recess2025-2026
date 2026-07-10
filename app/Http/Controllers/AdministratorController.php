@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Administrator;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdministratorController extends Controller
@@ -11,9 +12,14 @@ class AdministratorController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    $totalUsers = User::count();
+    $activeUsers = User::where('status', 'active')->count();
+    $inactiveUsers = User::where('status', 'inactive')->count();
+    $blockedUsers = User::where('status', 'blocked')->count();
+
+    return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers'));
+}
 
     /**
      * Show the form for creating a new resource.
