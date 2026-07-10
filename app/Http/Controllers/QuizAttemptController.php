@@ -183,6 +183,39 @@ if ($deadline && now()->greaterThan($deadline->copy()->addSeconds($graceSeconds)
         'submitted_at' => now(),
     ]);
 
+        return response()->json([
+            'score' => $score,
+            'total_marks' => $quiz->total_marks,
+            'correct_count' => $correctCount,
+            'total_questions' => $totalQuestions,
+            'submitted_at' => $attempt->submitted_at?->toIso8601String(),
+        ]);
+    }
+    // GET /lecturer/reports — student name, quiz title, and score for this lecturer's quizzes
+public function report(Request $request): JsonResponse
+{
+    $lecturerId = $request->user()->id;
+
+    $attempts = QuizAttempt::whereHas('quiz', function ($query) use ($lecturerId) {
+            $query->where('created_by', $lecturerId);
+        })
+        ->whereNotNull('submitted_at')
+        ->with(['user:id,name', 'quiz:id,title,total_marks'])
+        ->latest('submitted_at')
+        ->get();
+
+    $report = $attempts->map(function ($attempt) {
+        return [
+            'student_name' => $attempt->user->name ?? 'Unknown',
+            'quiz_title' => $attempt->quiz->title ?? 'Unknown',
+            'score' => $attempt->score,
+            'total_marks' => $attempt->quiz->total_marks ?? null,
+            'submitted_at' => $attempt->submitted_at,
+        ];
+    });
+
+    return response()->json($report);
+}
     return response()->json([
         'score' => $score,
         'total_marks' => $quiz->total_marks,

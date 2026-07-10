@@ -124,6 +124,14 @@
     </style>
 </head>
 <body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden">
+    @php
+        $loggedInUser = auth()->user();
+        $loggedInLecturer = $loggedInUser
+            ? \App\Models\Lecturer::where('user_id', $loggedInUser->id)->first()
+            : null;
+        $lecturerName = $loggedInUser?->name ?? 'Lecturer';
+        $lecturerDegree = $loggedInLecturer?->DegreeType ?? 'Lecturer';
+    @endphp
 <div class="flex h-screen w-full">
 <!-- Sidebar Navigation (SideNavBar) -->
 <aside class="w-sidebar-width h-screen sticky top-0 left-0 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline flex flex-col py-lg px-base shrink-0">
@@ -156,8 +164,8 @@
 <div class="mt-auto border-t border-outline-variant pt-md px-2">
 <div class="flex items-center gap-3 mb-md">
 <div class="overflow-hidden">
-<p class="font-label-md text-label-md font-bold truncate">Dr. Julian Sterling</p>
-<p class="font-caption text-caption text-on-surface-variant">Senior Research Fellow</p>
+<p class="font-label-md text-label-md font-bold truncate">{{ $lecturerName }}</p>
+<p class="font-caption text-caption text-on-surface-variant">{{ $lecturerDegree }}</p>
 </div>
 </div>
 <button id="publishBtn" class="w-full py-3 bg-primary text-on-primary font-bold rounded-lg hover:opacity-90 transition-opacity flex items-center justify-center gap-2" type="button" onclick="finishAndSave()">
@@ -187,12 +195,14 @@
 <textarea class="p-3 border border-outline-variant rounded-lg form-focus text-body-md" id="quiz-desc" oninput="updateSummary()" placeholder="Briefly describe the scope and objectives of this quiz..." rows="4">Comprehensive midterm exam covering fundamentals of quantum mechanics and wave functions.</textarea>
 </div>
 <div class="flex flex-col gap-2">
-<label class="font-label-md text-label-md text-primary" for="quiz-category">Category (Student Group)</label>
+<label class="font-label-md text-label-md text-primary" for="quiz-category">Category</label>
 <select class="p-3 border border-outline-variant rounded-lg form-focus text-body-md bg-transparent" id="quiz-category" onchange="updateSummary()">
-<option value="Physics Dept - Year 2">Physics Dept - Year 2</option>
-<option value="Advanced Research Group">Advanced Research Group</option>
-<option value="General Engineering">General Engineering</option>
-<option value="Postgraduate Scholars">Postgraduate Scholars</option>
+<option value="">Select a category</option>
+@foreach($categories ?? [] as $category)
+    <option value="{{ $category->CategoryID }}" {{ isset($quiz) && $quiz->category_id == $category->CategoryID ? 'selected' : '' }}>
+        {{ $category->CategoryName }}
+    </option>
+@endforeach
 </select>
 </div>
 </div>
@@ -384,15 +394,27 @@
 <script>
         // Data Store
       // NEW:
-let quizId = null; // set once the quiz is actually created in the database
+let quizId = {{ $quiz->id ?? 'null' }};
 
 let quizData = {
-    title: "",
-    description: "",
-    category: "Physics Dept - Year 2",
-    startTime: "",
-    timeLimit: "60",
-    questions: []
+    title: @json($quiz->title ?? ""),
+    description: @json($quiz->description ?? ""),
+    categoryId: {{ $quiz->category_id ?? 'null' }},
+    startTime: @json($quiz->start_time ?? ""),
+    timeLimit: @json((string) ($quiz->duration_minutes ?? "60")),
+    questions: [
+        @if(isset($quiz))
+            @foreach($quiz->questions as $question)
+            {
+                id: {{ $question->id }},
+                prompt: @json($question->prompt),
+                type: @json($question->type),
+                correctKey: @json($question->correct_answer),
+                options: @json($question->options->map(fn($o) => ['option_key' => $o->option_key, 'option_text' => $o->option_text])->values())
+            },
+            @endforeach
+        @endif
+    ]
 };
             
         let currentEditingIndex = -1;
@@ -452,13 +474,13 @@ let quizData = {
         function updateSummary() {
             quizData.title = document.getElementById('quiz-title').value;
             quizData.description = document.getElementById('quiz-desc').value;
-            quizData.category = document.getElementById('quiz-category').value;
+            quizData.categoryId = document.getElementById('quiz-category').value;
             quizData.startTime = document.getElementById('start-time').value;
             quizData.timeLimit = document.getElementById('time-limit').value;
 
             document.getElementById('summary-title').innerText = quizData.title || "Untitled Quiz";
             document.getElementById('summary-desc').innerText = quizData.description || "No description provided.";
-            document.getElementById('summary-category').innerText = quizData.category;
+            document.getElementById('summary-category').innerText = document.getElementById('quiz-category').selectedOptions[0]?.text ?? 'Not set';
             document.getElementById('summary-start-time').innerText = quizData.startTime ? new Date(quizData.startTime).toLocaleString() : "Not Set";
             document.getElementById('summary-time').innerText = quizData.timeLimit + " Minutes";
             document.getElementById('summary-count').innerText = quizData.questions.length + " Questions";
@@ -649,8 +671,15 @@ async function saveQuestion() {
         }
 
         window.onload = function() {
-            updateSummary();
-        };
+    document.getElementById('quiz-title').value = quizData.title;
+    document.getElementById('quiz-desc').value = quizData.description;
+    document.getElementById('start-time').value = quizData.startTime;
+    document.getElementById('time-limit').value = quizData.timeLimit;
+    // category selection is already handled server-side via the `selected` attribute in the dropdown
+
+    updateSummary();
+    renderQuestionList();
+};
 
           async function ensureQuizCreated() {
     if (quizId) return true; // already created, nothing to do
@@ -665,14 +694,15 @@ async function saveQuestion() {
                 'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify({
-                title: quizData.title || 'Untitled Quiz',
-                description: quizData.description,
-                start_time: quizData.startTime || null,
-                duration_minutes: parseInt(quizData.timeLimit) || 60,
-                total_marks: parseInt(document.getElementById('total-marks').value) || 100,
-                passing_score: parseInt(document.getElementById('passing-score')?.value) || 70,
-                shuffle_questions: document.querySelector('input[type="checkbox"]')?.checked || false
-            })
+    title: quizData.title || 'Untitled Quiz',
+    description: quizData.description,
+    category_id: quizData.categoryId || null,
+    start_time: quizData.startTime || null,
+    duration_minutes: parseInt(quizData.timeLimit) || 60,
+    total_marks: parseInt(document.getElementById('total-marks').value) || 100,
+    passing_score: parseInt(document.getElementById('passing-score')?.value) || 70,
+    shuffle_questions: document.querySelector('input[type="checkbox"]')?.checked || false
+})
         });
 
         if (!response.ok) throw new Error('Failed to create quiz');
