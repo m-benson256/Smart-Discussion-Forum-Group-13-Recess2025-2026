@@ -80,6 +80,18 @@ class QuizController extends Controller
 
         return response()->json($quiz);
     }
+    // GET /lecturer/quizzes/{quiz}/edit — render the quiz builder pre-filled for editing
+public function edit(Request $request, Quiz $quiz): \Illuminate\View\View
+{
+    abort_if($quiz->created_by !== $request->user()->id, 403);
+
+    $quiz->load('questions.options');
+
+    return view('lecturer.quizzes.create', [
+        'quiz' => $quiz,
+        'categories' => \App\Models\Category::orderBy('CategoryName')->get(),
+    ]);
+}
 
     // POST /quizzes/{quiz}/publish — the "Finish & Save" button
     public function publish(Request $request, Quiz $quiz): JsonResponse

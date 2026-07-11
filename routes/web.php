@@ -10,6 +10,7 @@ use App\Http\Controllers\QuizController;
 use App\Http\Controllers\QuizQuestionController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\TopicController;
+use App\Http\Controllers\SearchController;
 use App\Models\Quiz;
 use App\Models\User_interests;
 use Illuminate\Http\Request;
@@ -77,7 +78,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/quizzes/{quiz}', [QuizController::class, 'show']);
     Route::put('/quizzes/{quiz}', [QuizController::class, 'update']);
     Route::post('/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
-    Route::post('/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
     Route::post('/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
 
     Route::post('/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
@@ -85,8 +85,11 @@ Route::middleware('auth')->group(function () {
     Route::delete('/questions/{question}', [QuizQuestionController::class, 'destroy']);
 
     Route::get('/lecturer/quizzes/create', function () {
-        return view('lecturer.quizzes.create');
-    })->name('quiz.create');
+    return view('lecturer.quizzes.create', [
+        'categories' => \App\Models\Category::orderBy('CategoryName')->get(),
+    ]);
+     })->name('quiz.create');
+    Route::get('/lecturer/quizzes/{quiz}/edit', [QuizController::class, 'edit'])->name('quiz.edit');
 
     Route::get('/student/quizzes', [QuizAttemptController::class, 'index'])->name('student.quizzes');
     Route::get('/student/dashboard/quizzes', function () {
@@ -141,6 +144,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/topics/{topic}', [TopicController::class, 'destroy']);
 
     Route::get('/groups', [GroupController::class, 'index']);
+    Route::post('/groups', [GroupController::class, 'store']);
+    Route::get('/lecturer/reports', [QuizAttemptController::class, 'report']);
+     Route::get('/lecturer/search', [SearchController::class, 'search']);
+    Route::get('/groups/{group}', [GroupController::class, 'show']);
+    Route::post('/groups/{group}/join', [GroupController::class, 'join']);
+    Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
 Route::post('/groups', [GroupController::class, 'store']);
 Route::get('/groups/{group}', [GroupController::class, 'show']);
 Route::post('/groups/{group}/join', [GroupController::class, 'join']);

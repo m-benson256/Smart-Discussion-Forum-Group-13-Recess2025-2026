@@ -107,7 +107,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans min-h-screen bg-cover bg-center bg-no-repeat items-center text-[#ffffff]"
-          style="background-image: url('{{ asset('Gemini_Image_2.png') }}');">
+          style="background-image: url('{{ asset('discussion.jpg') }}');">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0  ">
             <div>
                 <a href="/">
