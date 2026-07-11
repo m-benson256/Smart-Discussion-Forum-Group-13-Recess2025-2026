@@ -709,7 +709,7 @@ case 'my-topics':
                                                 <div class="reaction-container flex flex-wrap gap-1 ${msg.isMe ? 'flex-row-reverse' : ''}">
                                                     ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
                                                 </div>
-                                                ${msg.flagged ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
+                                               ${msg.myFlag ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
                                             </div>
                                         </div>
                                     </div>
