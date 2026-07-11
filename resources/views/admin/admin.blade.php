@@ -9,12 +9,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f1f5f9; display: flex; min-height: 100vh; color: #0f172a; }
+        body { font-family: 'Inter', sans-serif; background: #721206c5; display: flex; min-height: 100vh; color: #0f272a; }
 
         .sidebar {
             width: 270px;
-            background: #0f172a;
-            color: #e2e8f0;
+            background: #041e82;
+            color: #062042;
             padding: 24px 16px;
             display: flex;
             flex-direction: column;
@@ -38,7 +38,7 @@
             gap: 12px;
         }
         .sidebar-brand i { color: #38bdf8; font-size: 26px; }
-        .sidebar-brand span { background: #1e293b; padding: 2px 10px; border-radius: 20px; font-size: 10px; color: #94a3b8; }
+        .sidebar-brand span { background: #1e353b; padding: 2px 10px; border-radius: 20px; font-size: 10px; color: #94a3b8; }
 
         .nav-item {
             display: flex;
@@ -131,52 +131,6 @@
         .chart-box h3 { font-weight: 600; font-size: 14px; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
         .chart-container { position: relative; height: 140px; }
 
-        .module-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 28px;
-        }
-        .module-card {
-            background: white;
-            border-radius: 16px;
-            padding: 18px;
-            border: 1px solid #e9edf2;
-            cursor: pointer;
-            transition: 0.2s;
-            position: relative;
-            overflow: hidden;
-        }
-        .module-card:hover {
-            border-color: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
-        }
-        .module-card .module-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            font-size: 18px;
-            color: white;
-        }
-        .module-card .module-icon.blue { background: linear-gradient(135deg, #2563eb, #38bdf8); }
-        .module-card .module-icon.green { background: linear-gradient(135deg, #16a34a, #4ade80); }
-        .module-card .module-icon.orange { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
-        .module-card .module-icon.purple { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
-        .module-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
-        .module-card p { font-size: 12px; line-height: 1.5; color: #64748b; margin-bottom: 10px; }
-        .module-card .module-meta {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: #475569;
-            font-weight: 600;
-        }
-
         .panel {
             background: white;
             border-radius: 16px;
@@ -210,6 +164,8 @@
         .status-badge.dismissed { background: #f1f5f9; color: #64748b; }
         .status-badge.public { background: #dbeafe; color: #1e40af; }
         .status-badge.private { background: #fef3c7; color: #92400e; }
+        .status-badge.approved { background: #dcfce7; color: #15803d; }
+        .status-badge.rejected { background: #fee2e2; color: #991b1b; }
 
         .role-badge { padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 500; display: inline-block; }
         .role-student { background: #dbeafe; color: #1e40af; }
@@ -393,6 +349,16 @@
 
         .role-filter { padding: 6px 12px; border: 1px solid #d1d9e6; border-radius: 30px; font-size: 13px; background: white; }
 
+        .warning-rule {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 12px 16px;
+            border-left: 4px solid #f59e0b;
+            margin-bottom: 8px;
+        }
+        .warning-rule .rule-title { font-weight: 600; font-size: 14px; }
+        .warning-rule .rule-desc { font-size: 13px; color: #64748b; margin-top: 2px; }
+
         @media (max-width: 1200px) {
             .chart-row { grid-template-columns: 1fr 1fr; }
             .chart-row .chart-box:last-child { grid-column: span 2; }
@@ -426,8 +392,8 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            
-            <span>Smart Discussion Forum </span>
+            <i class="fas fa-users-between-lines"></i>
+            <span>Smart Discussion Forum</span>
         </div>
         <button class="nav-item active" data-page="overview">
             <i class="fas fa-chart-pie"></i>
@@ -436,12 +402,12 @@
         <button class="nav-item" data-page="users">
             <i class="fas fa-users"></i>
             <span>Users</span>
-            <span class="badge-nav" id="userCount">10</span>
+            <span class="badge-nav" id="userCount">9</span>
         </button>
         <button class="nav-item" data-page="groups">
             <i class="fas fa-layer-group"></i>
             <span>Groups</span>
-            <span class="badge-nav" id="groupCount">6</span>
+            <span class="badge-nav" id="groupCount">3</span>
         </button>
         <button class="nav-item" data-page="topics">
             <i class="fas fa-tags"></i>
@@ -451,12 +417,7 @@
         <button class="nav-item" data-page="warnings">
             <i class="fas fa-exclamation-triangle"></i>
             <span>Warnings</span>
-            <span class="badge-nav" id="warningCount">5</span>
-        </button>
-        <button class="nav-item" data-page="reports">
-            <i class="fas fa-flag"></i>
-            <span>Reports</span>
-            <span class="badge-nav" id="reportCount">4</span>
+            <span class="badge-nav" id="warningCount">3</span>
         </button>
         <button class="nav-item" data-page="settings">
             <i class="fas fa-cog"></i>
@@ -473,7 +434,6 @@
     <main class="main" id="mainContent">
         <div class="top-bar">
             <h1 id="pageTitle"><i class="fas fa-gauge-high" style="color: #2563eb; margin-right: 10px;"></i>Dashboard Overview</h1>
-            <span class="badge"><i class="fas fa-circle" style="color: #22c55e; font-size: 10px;"></i> </span>
         </div>
 
         <!-- ===== OVERVIEW ===== -->
@@ -482,17 +442,17 @@
                 <div class="kpi-card" onclick="navigateTo('users')">
                     <div class="kpi-icon"><i class="fas fa-users"></i></div>
                     <div class="kpi-label">Total Users</div>
-                    <div class="kpi-number" id="kpiTotalUsers">10</div>
+                    <div class="kpi-number" id="kpiTotalUsers">9</div>
                     <div class="kpi-sub"><i class="fas fa-arrow-up" style="color:#16a34a;"></i> +2 this month</div>
                 </div>
                 <div class="kpi-card" onclick="navigateTo('users')">
                     <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
                     <div class="kpi-label">Active Users</div>
-                    <div class="kpi-number" id="kpiActiveUsers">6</div>
-                    <div class="kpi-sub">60% of total</div>
+                    <div class="kpi-number" id="kpiActiveUsers">5</div>
+                    <div class="kpi-sub">56% of total</div>
                 </div>
                 <div class="kpi-card" onclick="navigateTo('users')">
-                    <div class="kpi-icon"><i class="fas fa-user-clock"></i></div>
+                     <div class="kpi-icon"><i class="fas fa-user-clock"></i></div>
                     <div class="kpi-label">Inactive Users</div>
                     <div class="kpi-number" id="kpiInactiveUsers">2</div>
                     <div class="kpi-sub">Last 30 days</div>
@@ -523,36 +483,9 @@
                 </div>
             </div>
 
-            <div class="module-grid">
-                <div class="module-card" onclick="navigateTo('users')">
-                    <div class="module-icon blue"><i class="fas fa-users-cog"></i></div>
-                    <h4>User Management</h4>
-                    <p>Review accounts, verify members, and control access permissions.</p>
-                    <div class="module-meta"><span>10 members</span><span>2 pending</span></div>
-                </div>
-                <div class="module-card" onclick="navigateTo('topics')">
-                    <div class="module-icon green"><i class="fas fa-comments"></i></div>
-                    <h4>Content Moderation</h4>
-                    <p>Monitor discussions, filter flagged posts, and keep topics healthy.</p>
-                    <div class="module-meta"><span>8 topics</span><span>2 flagged</span></div>
-                </div>
-                <div class="module-card" onclick="navigateTo('reports')">
-                    <div class="module-icon orange"><i class="fas fa-flag-checkered"></i></div>
-                    <h4>Reports & Appeals</h4>
-                    <p>Track incidents, review appeals, and resolve disputes quickly.</p>
-                    <div class="module-meta"><span>4 reports</span><span>2 appeals</span></div>
-                </div>
-                <div class="module-card" onclick="navigateTo('settings')">
-                    <div class="module-icon purple"><i class="fas fa-sliders-h"></i></div>
-                    <h4>Platform Controls</h4>
-                    <p>Adjust safety rules, backup settings, and site appearance.</p>
-                    <div class="module-meta"><span>4 settings</span><span>Live</span></div>
-                </div>
-            </div>
-
             <div class="panel">
                 <div class="panel-header">
-                    <h3><i class="fas fa-clock" style="color: #f59e0b;"></i> Recent Inactive Users (Approaching Penalty)</h3>
+                    <h3><i class="fas fa-clock" style="color: #f59e0b;"></i> Recent Inactive Users</h3>
                     <span class="badge-action"><i class="fas fa-exclamation-triangle"></i> <span id="atRiskCount">2</span> at risk</span>
                 </div>
                 <div id="inactiveFeed"></div>
@@ -563,10 +496,8 @@
         <div class="page-panel" id="page-users">
             <div class="placeholder-content">
                 <h2><i class="fas fa-users" style="color:#2563eb;"></i> User Management</h2>
-                <p>Manage students, lecturers, staff, and moderators. Click on a user to view details.</p>
+                <p>View all registered students and lecturers. Students are verified by default. Lecturers must be verified by admin.</p>
                 <div class="actions">
-                    <button class="btn btn-success" onclick="openModal('user')"><i class="fas fa-user-plus"></i> Add User</button>
-                    <button class="btn"><i class="fas fa-file-export"></i> Export</button>
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="userSearch" placeholder="Search users..." oninput="filterUsers()">
                         <select class="role-filter" id="roleFilter" onchange="filterUsers()">
@@ -579,12 +510,12 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Verified</th><th>Actions</th></tr>
+                            <tr><th>#</th><th>Full Name</th><th>Email</th><th>Role</th><th>Status</th><th>Verification</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="userTableBody"></tbody>
                     </table>
                 </div>
-                <div style="margin-top:12px; font-size:13px; color:#64748b;">Showing <span id="userShowCount">10</span> users</div>
+                <div style="margin-top:12px; font-size:13px; color:#64748b;">Showing <span id="userShowCount">9</span> users</div>
             </div>
         </div>
 
@@ -592,15 +523,16 @@
         <div class="page-panel" id="page-groups">
             <div class="placeholder-content">
                 <h2><i class="fas fa-layer-group" style="color:#2563eb;"></i> Group Management</h2>
-                <p>Create course groups, departmental forums, and manage memberships & permissions.</p>
+                <p>View all groups created by students. Groups show member counts and activity.</p>
                 <div class="actions">
-                    <button class="btn btn-success" onclick="openModal('group')"><i class="fas fa-plus"></i> Create Group</button>
-                    <button class="btn" onclick="refreshGroups()"><i class="fas fa-sync"></i> Refresh</button>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <input class="search-box" id="groupSearch" placeholder="Search groups..." oninput="filterGroups()">
+                    </div>
                 </div>
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Type</th><th>Posts/Week</th><th>Status</th><th>Actions</th></tr>
+                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Posts/Week</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="groupTableBody"></tbody>
                     </table>
@@ -612,15 +544,16 @@
         <div class="page-panel" id="page-topics">
             <div class="placeholder-content">
                 <h2><i class="fas fa-tags" style="color:#2563eb;"></i> Topic Moderation</h2>
-                <p>Moderate academic subjects, announcements, and general discussions.</p>
+                <p>View all topics created by students. Topics can be flagged for review or bulk deleted.</p>
                 <div class="actions">
-                    <button class="btn btn-success" onclick="openModal('topic')"><i class="fas fa-plus"></i> Add Topic</button>
-                    <button class="btn" onclick="groupTopics()"><i class="fas fa-layer-group"></i> Group by Category</button>
-                    <button class="btn btn-danger"><i class="fas fa-trash"></i> Bulk Delete</button>
+                    <button class="btn btn-danger" onclick="bulkDeleteTopics()"><i class="fas fa-trash"></i> Bulk Delete</button>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                        <input class="search-box" id="topicSearch" placeholder="Search topics..." oninput="filterTopics()">
+                    </div>
                 </div>
 
                 <div id="topicsContainer">
-                    <h4 style="margin:16px 0 10px;">Active Topics</h4>
+                    <h4 style="margin:16px 0 10px;">All Topics</h4>
                     <div class="topics-grid" id="topicsGrid"></div>
 
                     <h4 style="margin:18px 0 10px;">Pending Moderation</h4>
@@ -638,7 +571,7 @@
         <div class="page-panel" id="page-warnings">
             <div class="placeholder-content">
                 <h2><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Warning Management</h2>
-                <p>Track issued warnings, manage escalation rules, and handle appeals.</p>
+                <p>Track issued warnings (maximum 3 per user), manage escalation rules, and handle appeals.</p>
                 <div class="actions">
                     <button class="btn btn-warning" onclick="openModal('warning')"><i class="fas fa-plus"></i> Issue Warning</button>
                     <button class="btn"><i class="fas fa-history"></i> View History</button>
@@ -687,46 +620,6 @@
             </div>
         </div>
 
-        <!-- ===== REPORTS ===== -->
-        <div class="page-panel" id="page-reports">
-            <div class="placeholder-content">
-                <h2><i class="fas fa-flag" style="color:#2563eb;"></i> Reports & Moderation</h2>
-                <p>View user-submitted reports, manage report queue, and track trends.</p>
-                <div class="actions">
-                    <button class="btn btn-primary"><i class="fas fa-sync"></i> Refresh Queue</button>
-                    <button class="btn" onclick="showExportOptions()"><i class="fas fa-file-pdf"></i> Export Report</button>
-                </div>
-
-                <div class="table-wrap">
-                    <table>
-                        <thead>
-                            <tr><th>Report ID</th><th>Reported By</th><th>Target</th><th>Reason</th><th>Submitted</th><th>Status</th><th>Actions</th></tr>
-                        </thead>
-                        <tbody id="reportTableBody"></tbody>
-                    </table>
-                </div>
-
-                <div class="stats-grid" style="margin-top:16px;" id="reportStats">
-                    <div class="stat-card" onclick="filterReports('all')">
-                        <div class="stat-number" style="color:#2563eb;" id="totalReports">4</div>
-                        <div class="stat-label">Total Reports</div>
-                    </div>
-                    <div class="stat-card" onclick="filterReports('pending')">
-                        <div class="stat-number" style="color:#f59e0b;" id="pendingReports">2</div>
-                        <div class="stat-label">Pending Review</div>
-                    </div>
-                    <div class="stat-card" onclick="filterReports('resolved')">
-                        <div class="stat-number" style="color:#22c55e;" id="resolutionRate">75%</div>
-                        <div class="stat-label">Resolution Rate</div>
-                    </div>
-                </div>
-
-                <div style="margin-top:12px; background:#f8fafc; border-radius:12px; padding:14px;">
-                    <strong>Frequent Issues:</strong> Spam (34%), Harassment (22%), Inappropriate content (18%), Academic misconduct (16%), Other (10%)
-                </div>
-            </div>
-        </div>
-
         <!-- ===== SETTINGS ===== -->
         <div class="page-panel" id="page-settings">
             <div class="placeholder-content">
@@ -744,7 +637,7 @@
                             <span id="colorPreview" class="color-preview" style="background:#2563eb;"></span>
                         </div>
                         <label>Default Language</label>
-                        <select id="siteLanguage"><option>English</option><option>French</option><option>Spanish</option></select>
+                        <select><option>English</option><option>French</option><option>Spanish</option></select>
                         <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save</button>
                     </div>
                     <div class="settings-card">
@@ -762,9 +655,9 @@
                         <label>Word Filters</label>
                         <input type="text" value="spam, offensive, inappropriate">
                         <label>Posting Limits (per day)</label>
-                        <select id="postingLimit"><option>10</option><option selected>25</option><option>50</option><option>Unlimited</option></select>
+                        <select><option>10</option><option selected>25</option><option>50</option><option>Unlimited</option></select>
                         <label>Auto-moderation</label>
-                        <select id="autoModeration"><option>Disabled</option><option selected>Basic</option><option>Strict</option></select>
+                        <select><option>Disabled</option><option selected>Basic</option><option>Strict</option></select>
                         <button class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
                     </div>
                     <div class="settings-card">
@@ -824,34 +717,6 @@
         </div>
     </div>
 
-    <!-- ===== EXPORT MODAL ===== -->
-    <div class="modal" id="exportModal">
-        <div class="modal-content" style="max-width:480px;">
-            <h3><i class="fas fa-file-export"></i> Export Reports</h3>
-            <label>Delivery</label>
-            <select id="exportDestination">
-                <option value="online">Online (cloud/email)</option>
-                <option value="offline">Offline (local device)</option>
-            </select>
-            <label>Format</label>
-            <select id="exportFormat">
-                <option value="pdf">PDF</option>
-                <option value="csv">CSV</option>
-                <option value="json">JSON</option>
-            </select>
-            <label>Access Location</label>
-            <select id="exportAccess">
-                <option value="admin-email">Admin email inbox</option>
-                <option value="cloud-dashboard">Cloud dashboard</option>
-                <option value="local-device">Local device</option>
-            </select>
-            <div class="modal-actions">
-                <button class="btn btn-outline" onclick="closeExportModal()">Cancel</button>
-                <button class="btn btn-primary" onclick="confirmExport()">Export Now</button>
-            </div>
-        </div>
-    </div>
-
     <!-- ===== EXPANDED CHART MODAL ===== -->
     <div class="modal" id="chartModal">
         <div class="modal-content" style="max-width:800px;">
@@ -865,25 +730,28 @@
 
     <script>
         // ===== DATA STORE =====
+        // Users: Students are verified by default, Lecturers need verification
         let users = [
-            { id: 1, name: 'John Doe', email: 'john@forum.edu', role: 'student', status: 'active', verified: true, lastSeen: '2026-06-29 14:32' },
-            { id: 2, name: 'Jane Smith', email: 'jane@forum.edu', role: 'lecturer', status: 'active', verified: true, lastSeen: '2026-06-30 09:15' },
-            { id: 3, name: 'Mike Roberts', email: 'mike@forum.edu', role: 'student', status: 'blocked', verified: false, lastSeen: '2026-06-05 08:30' },
-            { id: 4, name: 'Emily Davis', email: 'emily@forum.edu', role: 'student', status: 'warned', verified: true, lastSeen: '2026-06-27 13:10' },
-            { id: 5, name: 'Chris Brown', email: 'chris@forum.edu', role: 'lecturer', status: 'active', verified: true, lastSeen: '2026-06-30 10:00' },
-            { id: 6, name: 'Amanda Lee', email: 'amanda@forum.edu', role: 'student', status: 'active', verified: false, lastSeen: '2026-06-29 18:22' }
+            { id: 1, name: 'John Doe', email: 'john@students.ed', role: 'student', status: 'active', verified: true, lastSeen: '2026-06-29 14:32', verification_status: 'approved' },
+            { id: 2, name: 'Jane Smith', email: 'jane@lecturers.ed', role: 'lecturer', status: 'active', verified: true, lastSeen: '2026-06-30 09:15', verification_status: 'approved' },
+            { id: 3, name: 'Mike Roberts', email: 'mike@students.ed', role: 'student', status: 'blocked', verified: true, lastSeen: '2026-06-05 08:30', verification_status: 'approved' },
+            { id: 4, name: 'Chris Brown', email: 'chris@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: '2026-06-26 11:10', verification_status: 'pending' },
+            { id: 5, name: 'Emily Davis', email: 'emily@students.ed', role: 'student', status: 'warned', verified: true, lastSeen: '2026-06-27 13:10', verification_status: 'approved' },
+            { id: 6, name: 'Amanda Lee', email: 'amanda@students.ed', role: 'student', status: 'active', verified: true, lastSeen: '2026-06-29 18:22', verification_status: 'approved' },
+            { id: 7, name: 'Sarah Wilson', email: 'sarah@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: '2026-06-28 16:45', verification_status: 'pending' },
+            { id: 8, name: 'Linda Chen', email: 'linda@students.ed', role: 'student', status: 'blocked', verified: true, lastSeen: '2026-06-04 22:00', verification_status: 'approved' },
+            // New pending lecturer
+            { id: 9, name: 'Dr. Robert Johnson', email: 'robert@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: null, verification_status: 'pending' }
         ];
 
-        let settings = {
-            siteName: 'Smart Discussion Forum',
-            themeColor: '#2563eb',
-            language: 'English',
-            postingLimit: 25,
-            autoModeration: 'Basic'
-        };
+        // Groups - created by students
+        let groups = [
+            { id: 1, name: 'CS 2024 Study Group', description: 'Computer Science study group', members: 45, posts: 128, status: 'active' },
+            { id: 2, name: 'Math Tutorial Forum', description: 'Advanced mathematics help', members: 28, posts: 67, status: 'active' },
+            { id: 3, name: 'Physics Discussion', description: 'Physics problem solving', members: 15, posts: 45, status: 'warned' }
+        ];
 
-        let groups = [];
-
+        // Topics - created by students
         let topics = [
             { id: 1, name: 'Data Analysis', category: 'Academic', replies: 89, views: 1200, engagement: 68, status: 'active', author: 'John Doe' },
             { id: 2, name: 'Technical Analysis', category: 'Academic', replies: 67, views: 890, engagement: 54, status: 'active', author: 'Jane Smith' },
@@ -895,91 +763,21 @@
             { id: 8, name: 'Duplicate Thread', category: 'General', replies: 2, views: 30, engagement: 10, status: 'flagged', author: 'Student102' }
         ];
 
-        let warnings = [];
-
-        let reports = [];
-
-        let appeals = [
-            { id: 1, user: 'Emily Davis', warning: 'Academic misconduct', submitted: '2026-06-26' },
-            { id: 2, user: 'Amanda Lee', warning: 'Policy violation', submitted: '2026-06-27' }
+        // Warnings - max 3 per user
+        let warnings = [
+            { id: 1, user: 'Mike Wilson', number: 1, reason: 'Spam', issued: '2026-06-20', expires: '2026-07-20', status: 'active' },
+            { id: 2, user: 'Sarah Lee', number: 2, reason: 'Harassment', issued: '2026-06-15', expires: '2026-07-15', status: 'active' },
+            { id: 3, user: 'Emily Davis', number: 1, reason: 'Academic misconduct', issued: '2026-06-25', expires: '2026-07-25', status: 'pending' }
         ];
 
-        let nextIds = { user: 7, group: 3, topic: 9, warning: 6, report: 5, appeal: 3 };
-        let currentReportFilter = 'all';
+        let appeals = [
+            { id: 1, user: 'Emily Davis', warning: 'Academic misconduct', submitted: '2026-06-26' }
+        ];
 
-        function getVisibleUsers() {
-            return users.filter(u => ['student', 'lecturer'].includes(u.role));
-        }
-
-        function syncDerivedContent() {
-            const visibleUsers = getVisibleUsers();
-            const studentCount = visibleUsers.filter(u => u.role === 'student').length;
-            const lecturerCount = visibleUsers.filter(u => u.role === 'lecturer').length;
-
-            groups = [
-                { id: 1, name: 'Student Community', description: `${studentCount} student members`, members: studentCount, type: 'public', posts: 80 + studentCount * 4, status: 'active' },
-                { id: 2, name: 'Lecturer Circle', description: `${lecturerCount} lecturer members`, members: lecturerCount, type: 'private', posts: 40 + lecturerCount * 3, status: 'active' }
-            ];
-
-            warnings = [];
-            visibleUsers.slice(0, 4).forEach((user, index) => {
-                const reasonOptions = ['Spam', 'Harassment', 'Inactivity', 'Academic misconduct'];
-                warnings.push({
-                    id: index + 1,
-                    user: user.name,
-                    number: index === 0 ? 1 : index === 1 ? 2 : 1,
-                    reason: reasonOptions[index % reasonOptions.length],
-                    issued: `2026-06-${String(20 + index).padStart(2, '0')}`,
-                    expires: `2026-07-${String(20 + index).padStart(2, '0')}`,
-                    status: index === 2 ? 'resolved' : index === 3 ? 'pending' : 'active'
-                });
-            });
-
-            reports = [];
-            visibleUsers.forEach((user, index) => {
-                const target = visibleUsers[(index + 1) % visibleUsers.length] || user;
-                reports.push({
-                    id: `R-${String(index + 1).padStart(3, '0')}`,
-                    reportedBy: user.name,
-                    target: target.name,
-                    reason: index % 2 === 0 ? 'Spam' : 'Harassment',
-                    submitted: `2026-06-${String(20 + index).padStart(2, '0')}`,
-                    status: index === 0 ? 'pending' : index === 1 ? 'pending' : 'resolved'
-                });
-            });
-
-            if (reports.length === 0) {
-                reports = [{ id: 'R-001', reportedBy: 'System', target: 'No active users', reason: 'No issues', submitted: '2026-06-20', status: 'resolved' }];
-            }
-        }
-
-        function applySystemSettings() {
-            const siteName = document.getElementById('siteName')?.value || settings.siteName;
-            const themeColor = document.getElementById('themeColor')?.value || settings.themeColor;
-            const language = document.getElementById('siteLanguage')?.value || settings.language;
-            const postingLimit = document.getElementById('postingLimit')?.value || settings.postingLimit;
-            const autoModeration = document.getElementById('autoModeration')?.value || settings.autoModeration;
-
-            settings = { siteName, themeColor, language, postingLimit, autoModeration };
-            document.title = `${settings.siteName} · Admin Dashboard`;
-            const brand = document.querySelector('.sidebar-brand span');
-            if (brand) brand.textContent = settings.siteName;
-            const badge = document.querySelector('.top-bar .badge');
-            if (badge) badge.innerHTML = `<i class="fas fa-circle" style="color:#22c55e; font-size:10px;"></i> ${settings.siteName} • ${settings.language} • Limit ${settings.postingLimit}`;
-
-            document.querySelectorAll('.btn-primary').forEach(button => {
-                button.style.background = settings.themeColor;
-                button.style.borderColor = settings.themeColor;
-            });
-            document.querySelectorAll('.nav-item.active i').forEach(icon => {
-                icon.style.color = settings.themeColor;
-            });
-            document.getElementById('colorPreview').style.background = settings.themeColor;
-        }
+        let nextIds = { user: 10, group: 4, topic: 9, warning: 4, appeal: 2 };
 
         // ===== RENDER FUNCTIONS =====
         function renderUsers() {
-            syncDerivedContent();
             const search = document.getElementById('userSearch')?.value?.toLowerCase() || '';
             const roleFilter = document.getElementById('roleFilter')?.value || 'all';
             
@@ -990,25 +788,54 @@
             });
 
             const tbody = document.getElementById('userTableBody');
-            tbody.innerHTML = filtered.map((u, index) => `
-                <tr onclick="showUserDetail(${u.id})" style="cursor:pointer;">
+            tbody.innerHTML = filtered.map((u, index) => {
+                // Show verification badge for lecturers
+                let verificationBadge = '';
+                if (u.role === 'lecturer') {
+                    if (u.verification_status === 'pending') {
+                        verificationBadge = `<span class="status-badge pending">Pending</span>`;
+                    } else if (u.verification_status === 'approved') {
+                        verificationBadge = `<span class="status-badge approved">Verified</span>`;
+                    } else {
+                        verificationBadge = `<span class="status-badge unverified">Unverified</span>`;
+                    }
+                } else {
+                    verificationBadge = `<span class="status-badge verified">Verified</span>`;
+                }
+
+                // Show verify button for pending lecturers
+                let actionButtons = `
+                    <button class="action-btn" onclick="viewUser(${u.id})"><i class="fas fa-eye"></i><span class="tooltip">View User</span></button>
+                `;
+                
+                if (u.role === 'lecturer' && u.verification_status === 'pending') {
+                    actionButtons += `
+                        <button class="action-btn success" onclick="verifyLecturer(${u.id})"><i class="fas fa-check"></i><span class="tooltip">Verify Lecturer</span></button>
+                        <button class="action-btn danger" onclick="rejectLecturer(${u.id})"><i class="fas fa-times"></i><span class="tooltip">Reject</span></button>
+                    `;
+                }
+                
+                if (u.status === 'blocked') {
+                    actionButtons += `
+                        <button class="action-btn warning" onclick="unblockUser(${u.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
+                    `;
+                } else {
+                    actionButtons += `
+                        <button class="action-btn danger" onclick="blockUser(${u.id})"><i class="fas fa-ban"></i><span class="tooltip">Block</span></button>
+                    `;
+                }
+
+                return `
+                <tr onclick="viewUser(${u.id})" style="cursor:pointer;">
                     <td>${index + 1}</td>
                     <td><div class="user-cell"><span class="user-avatar" style="background:${getColor(u.name)};">${u.name.split(' ').map(n => n[0]).join('')}</span> ${u.name}</div></td>
                     <td>${u.email}</td>
                     <td><span class="role-badge role-${u.role}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></td>
                     <td><span class="status-badge ${u.status}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></td>
-                    <td><span class="status-badge ${u.verified ? 'verified' : 'unverified'}"><i class="fas ${u.verified ? 'fa-check' : 'fa-times'}"></i> ${u.verified ? 'Verified' : 'Unverified'}</span></td>
-                    <td onclick="event.stopPropagation();">
-                        <button class="action-btn" onclick="editUser(${u.id})"><i class="fas fa-edit"></i><span class="tooltip">Edit User</span></button>
-                        <button class="action-btn ${u.status === 'blocked' ? 'success' : 'danger'}" onclick="toggleUserStatus(${u.id})">
-                            <i class="fas ${u.status === 'blocked' ? 'fa-unlock' : 'fa-ban'}"></i>
-                            <span class="tooltip">${u.status === 'blocked' ? 'Unblock' : 'Block'}</span>
-                        </button>
-                        ${!u.verified ? `<button class="action-btn success" onclick="verifyUser(${u.id})"><i class="fas fa-check"></i><span class="tooltip">Verify</span></button>` : ''}
-                        <button class="action-btn danger" onclick="deleteUser(${u.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
-                    </td>
+                    <td>${verificationBadge}</td>
+                    <td onclick="event.stopPropagation();">${actionButtons}</td>
                 </tr>
-            `).join('');
+            `}).join('');
             document.getElementById('userShowCount').textContent = filtered.length;
             document.getElementById('userCount').textContent = users.length;
             updateKPIs();
@@ -1017,105 +844,106 @@
         function filterUsers() { renderUsers(); }
 
         function renderGroups() {
-            syncDerivedContent();
+            const search = document.getElementById('groupSearch')?.value?.toLowerCase() || '';
+            
+            let filtered = groups.filter(g => {
+                return g.name.toLowerCase().includes(search) || g.description.toLowerCase().includes(search);
+            });
+
             const tbody = document.getElementById('groupTableBody');
-            tbody.innerHTML = groups.map(g => `
+            tbody.innerHTML = filtered.map(g => {
+                let groupAction = '';
+                if (g.status === 'active') {
+                    groupAction = `
+                        <button class="action-btn warning" onclick="warnGroup(${g.id})"><i class="fas fa-exclamation-triangle"></i><span class="tooltip">Warn Group</span></button>
+                        <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
+                    `;
+                } else if (g.status === 'warned') {
+                    groupAction = `
+                        <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
+                    `;
+                } else {
+                    groupAction = `
+                        <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
+                    `;
+                }
+                return `
                 <tr>
                     <td><strong>${g.name}</strong></td>
                     <td>${g.description}</td>
                     <td>${g.members}</td>
-                    <td><span class="status-badge ${g.type}">${g.type.charAt(0).toUpperCase() + g.type.slice(1)}</span></td>
                     <td>${g.posts}</td>
                     <td><span class="status-badge ${g.status}">${g.status.charAt(0).toUpperCase() + g.status.slice(1)}</span></td>
                     <td>
-                        <button class="action-btn" onclick="editGroup(${g.id})"><i class="fas fa-edit"></i><span class="tooltip">Edit Group</span></button>
-                        <button class="action-btn ${g.status === 'blocked' ? 'success' : 'danger'}" onclick="toggleGroupStatus(${g.id})">
-                            <i class="fas ${g.status === 'blocked' ? 'fa-unlock' : 'fa-ban'}"></i>
-                            <span class="tooltip">${g.status === 'blocked' ? 'Unblock' : 'Block'}</span>
-                        </button>
-                        <button class="action-btn danger" onclick="deleteGroup(${g.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
+                        <button class="action-btn" onclick="viewGroup(${g.id})"><i class="fas fa-eye"></i><span class="tooltip">View Group</span></button>
+                        ${groupAction}
                     </td>
                 </tr>
-            `).join('');
+            `;
+            }).join('');
             document.getElementById('groupCount').textContent = groups.length;
         }
+
+        function filterGroups() { renderGroups(); }
 
         let groupedView = false;
 
         function renderTopics() {
-            const grid = document.getElementById('topicsGrid');
-            let activeTopics = topics.filter(t => t.status === 'active');
+            const search = document.getElementById('topicSearch')?.value?.toLowerCase() || '';
             
-            if (groupedView) {
-                const categories = {};
-                activeTopics.forEach(t => {
-                    if (!categories[t.category]) categories[t.category] = [];
-                    categories[t.category].push(t);
-                });
-                let html = '';
-                Object.keys(categories).forEach(cat => {
-                    html += `<div style="grid-column:1/-1; margin-top:8px;"><strong style="color:#475569;">${cat}</strong></div>`;
-                    categories[cat].forEach(t => {
-                        html += `
-                            <div class="topic-card">
-                                <div class="topic-info">
-                                    <h4>${t.name} <span class="status-badge" style="background:#dbeafe;color:#1e40af;font-size:10px;">${t.category}</span></h4>
-                                    <p>${t.replies} replies · ${t.views} views · ${t.engagement}% engagement</p>
-                                </div>
-                                <div>
-                                    <button class="action-btn" onclick="togglePinTopic(${t.id})"><i class="fas fa-thumbtack"></i><span class="tooltip">Pin/Unpin</span></button>
-                                    <button class="action-btn warning" onclick="flagTopic(${t.id})"><i class="fas fa-flag"></i><span class="tooltip">Flag</span></button>
-                                    <button class="action-btn" onclick="editTopic(${t.id})"><i class="fas fa-edit"></i><span class="tooltip">Edit</span></button>
-                                    <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
-                                </div>
-                            </div>
-                        `;
-                    });
-                });
-                grid.innerHTML = html;
+            let allTopics = topics.filter(t => {
+                return t.name.toLowerCase().includes(search) || t.author.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
+            });
+
+            let activeTopics = allTopics.filter(t => t.status === 'active');
+            let flaggedTopics = allTopics.filter(t => t.status === 'flagged' || t.status === 'pending');
+
+            // Render active topics
+            const grid = document.getElementById('topicsGrid');
+            if (activeTopics.length === 0) {
+                grid.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#64748b;">No active topics found.</div>';
             } else {
                 grid.innerHTML = activeTopics.map(t => `
                     <div class="topic-card">
                         <div class="topic-info">
                             <h4>${t.name} <span class="status-badge" style="background:#dbeafe;color:#1e40af;font-size:10px;">${t.category}</span></h4>
                             <p>${t.replies} replies · ${t.views} views · ${t.engagement}% engagement</p>
+                            <p style="font-size:11px; color:#94a3b8;">By: ${t.author}</p>
                         </div>
                         <div>
-                            <button class="action-btn" onclick="togglePinTopic(${t.id})"><i class="fas fa-thumbtack"></i><span class="tooltip">Pin/Unpin</span></button>
-                            <button class="action-btn warning" onclick="flagTopic(${t.id})"><i class="fas fa-flag"></i><span class="tooltip">Flag</span></button>
-                            <button class="action-btn" onclick="editTopic(${t.id})"><i class="fas fa-edit"></i><span class="tooltip">Edit</span></button>
-                            <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
+                            <button class="action-btn warning" onclick="flagTopic(${t.id})"><i class="fas fa-flag"></i><span class="tooltip">Flag Topic</span></button>
+                            <button class="action-btn" onclick="viewTopic(${t.id})"><i class="fas fa-eye"></i><span class="tooltip">View Topic</span></button>
+                            <input type="checkbox" class="topic-select" data-id="${t.id}" style="margin-left:8px;">
                         </div>
                     </div>
                 `).join('');
             }
 
-            const pending = topics.filter(t => t.status === 'flagged' || t.status === 'pending');
+            // Render flagged/pending topics
             const pendingBody = document.getElementById('pendingTopicsBody');
-            pendingBody.innerHTML = pending.map(t => `
-                <tr>
-                    <td>${t.name}</td>
-                    <td><span class="status-badge" style="background:${t.category === 'Spam' ? '#fecaca' : '#fef3c7'};color:${t.category === 'Spam' ? '#991b1b' : '#92400e'};">${t.category}</span></td>
-                    <td>${t.author}</td>
-                    <td>2026-06-${Math.floor(Math.random() * 20) + 10}</td>
-                    <td><span class="status-badge ${t.status === 'flagged' ? 'blocked' : 'pending'}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span></td>
-                    <td>
-                        <button class="action-btn success" onclick="approveTopic(${t.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button>
-                        <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
-                    </td>
-                </tr>
-            `).join('');
+            if (flaggedTopics.length === 0) {
+                pendingBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No pending moderation topics.</td></tr>';
+            } else {
+                pendingBody.innerHTML = flaggedTopics.map(t => `
+                    <tr>
+                        <td>${t.name}</td>
+                        <td><span class="status-badge" style="background:${t.category === 'Spam' ? '#fecaca' : '#fef3c7'};color:${t.category === 'Spam' ? '#991b1b' : '#92400e'};">${t.category}</span></td>
+                        <td>${t.author}</td>
+                        <td>2026-06-${Math.floor(Math.random() * 20) + 10}</td>
+                        <td><span class="status-badge ${t.status === 'flagged' ? 'blocked' : 'pending'}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span></td>
+                        <td>
+                            <button class="action-btn success" onclick="approveTopic(${t.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button>
+                            <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
             document.getElementById('topicCount').textContent = topics.length;
         }
 
-        function groupTopics() {
-            groupedView = !groupedView;
-            renderTopics();
-            document.querySelector('#page-topics .btn[onclick="groupTopics()"]').textContent = groupedView ? 'Ungroup' : 'Group by Category';
-        }
+        function filterTopics() { renderTopics(); }
 
         function renderWarnings() {
-            syncDerivedContent();
             const tbody = document.getElementById('warningTableBody');
             tbody.innerHTML = warnings.map(w => `
                 <tr>
@@ -1143,55 +971,19 @@
             document.getElementById('warningCount').textContent = warnings.length;
 
             const appealsContainer = document.getElementById('appealsContainer');
-            appealsContainer.innerHTML = appeals.map(a => `
-                <div class="appeal-box">
-                    <div><strong>${a.user}</strong> - Appeal submitted for "${a.warning}" warning</div>
-                    <div class="appeal-meta">Submitted: ${a.submitted} · 
-                        <button class="action-btn success" onclick="approveAppeal(${a.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button> 
-                        <button class="action-btn danger" onclick="dismissAppeal(${a.id})"><i class="fas fa-times"></i><span class="tooltip">Dismiss</span></button>
+            if (appeals.length === 0) {
+                appealsContainer.innerHTML = '<div style="padding:10px; color:#64748b;">No pending appeals.</div>';
+            } else {
+                appealsContainer.innerHTML = appeals.map(a => `
+                    <div class="appeal-box">
+                        <div><strong>${a.user}</strong> - Appeal submitted for "${a.warning}" warning</div>
+                        <div class="appeal-meta">Submitted: ${a.submitted} · 
+                            <button class="action-btn success" onclick="approveAppeal(${a.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button> 
+                            <button class="action-btn danger" onclick="dismissAppeal(${a.id})"><i class="fas fa-times"></i><span class="tooltip">Dismiss</span></button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
-        }
-
-        function renderReports() {
-            syncDerivedContent();
-            let filtered = reports;
-            if (currentReportFilter === 'pending') filtered = reports.filter(r => r.status === 'pending');
-            else if (currentReportFilter === 'resolved') filtered = reports.filter(r => r.status === 'resolved');
-            else if (currentReportFilter === 'dismissed') filtered = reports.filter(r => r.status === 'dismissed');
-
-            const tbody = document.getElementById('reportTableBody');
-            tbody.innerHTML = filtered.map(r => `
-                <tr>
-                    <td>${r.id}</td>
-                    <td>${r.reportedBy}</td>
-                    <td>${r.target}</td>
-                    <td>${r.reason}</td>
-                    <td>${r.submitted}</td>
-                    <td><span class="status-badge ${r.status}">${r.status.charAt(0).toUpperCase() + r.status.slice(1)}</span></td>
-                    <td>
-                        ${r.status === 'pending' ? `
-                            <button class="action-btn success" onclick="resolveReport('${r.id}')"><i class="fas fa-check"></i><span class="tooltip">Resolve</span></button>
-                            <button class="action-btn" onclick="dismissReport('${r.id}')"><i class="fas fa-times"></i><span class="tooltip">Dismiss</span></button>
-                        ` : `<span style="color:#64748b;">${r.status === 'resolved' ? '✅ Resolved' : '🚫 Dismissed'}</span>`}
-                    </td>
-                </tr>
-            `).join('');
-            document.getElementById('reportCount').textContent = reports.length;
-            document.getElementById('totalReports').textContent = reports.length;
-            document.getElementById('pendingReports').textContent = reports.filter(r => r.status === 'pending').length;
-            const resolved = reports.filter(r => r.status === 'resolved').length;
-            document.getElementById('resolutionRate').textContent = reports.length > 0 ? Math.round((resolved / reports.length) * 100) + '%' : '0%';
-        }
-
-        function filterReports(status) {
-            currentReportFilter = status;
-            renderReports();
-            document.querySelectorAll('.stat-card').forEach(c => c.style.border = 'none');
-            if (status === 'all') document.querySelector('.stat-card:first-child').style.border = '2px solid #2563eb';
-            else if (status === 'pending') document.querySelector('.stat-card:nth-child(2)').style.border = '2px solid #f59e0b';
-            else if (status === 'resolved') document.querySelector('.stat-card:last-child').style.border = '2px solid #22c55e';
+                `).join('');
+            }
         }
 
         function updateKPIs() {
@@ -1216,7 +1008,7 @@
                 return;
             }
             feed.innerHTML = inactiveUsers.map(u => `
-                <div class="feed-item" onclick="showUserDetail(${u.id})">
+                <div class="feed-item" onclick="viewUser(${u.id})">
                     <div><strong>${u.name}</strong> <span class="status-badge ${u.status}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></div>
                     <div>
                         <span style="color:#64748b; font-size:12px;">Last seen: ${u.lastSeen || 'N/A'}</span>
@@ -1237,76 +1029,247 @@
             document.getElementById('groupCount').textContent = groups.length;
             document.getElementById('topicCount').textContent = topics.length;
             document.getElementById('warningCount').textContent = warnings.length;
-            document.getElementById('reportCount').textContent = reports.length;
         }
 
-        // ===== CRUD OPERATIONS =====
+        // ===== USER ACTIONS =====
+        function viewUser(id) {
+            const u = users.find(u => u.id === id);
+            if (!u) return;
+            const modal = document.getElementById('userDetailModal');
+            const body = document.getElementById('userDetailBody');
+            const verificationStatus = u.role === 'lecturer' ? u.verification_status : 'Approved (Student)';
+            body.innerHTML = `
+                <div class="detail-row"><span class="label">Full Name</span><span class="value">${u.name}</span></div>
+                <div class="detail-row"><span class="label">Email</span><span class="value">${u.email}</span></div>
+                <div class="detail-row"><span class="label">Role</span><span class="value"><span class="role-badge role-${u.role}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></span></div>
+                <div class="detail-row"><span class="label">Status</span><span class="value"><span class="status-badge ${u.status}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></span></div>
+                <div class="detail-row"><span class="label">Verification</span><span class="value"><span class="status-badge ${u.verification_status === 'approved' ? 'verified' : 'pending'}">${verificationStatus}</span></span></div>
+                <div class="detail-row"><span class="label">Last Seen</span><span class="value">${u.lastSeen || 'N/A'}</span></div>
+                <div class="detail-row"><span class="label">User ID</span><span class="value">#${String(u.id).padStart(4, '0')}</span></div>
+            `;
+            modal.classList.add('show');
+        }
+
+        function verifyLecturer(id) {
+            const u = users.find(u => u.id === id);
+            if (u) {
+                u.verification_status = 'approved';
+                u.status = 'active';
+                u.verified = true;
+                renderUsers();
+                updateKPIs();
+                alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
+            }
+        }
+
+        function rejectLecturer(id) {
+            if (confirm('Reject this lecturer registration?')) {
+                const u = users.find(u => u.id === id);
+                if (u) {
+                    u.verification_status = 'rejected';
+                    u.status = 'blocked';
+                    renderUsers();
+                    updateKPIs();
+                    alert(`❌ Lecturer ${u.name} registration has been rejected.`);
+                }
+            }
+        }
+
+        function blockUser(id) {
+            const u = users.find(u => u.id === id);
+            if (u) {
+                if (!confirm(`Are you sure you want to block ${u.name}?`)) return;
+                u.status = 'blocked';
+                renderUsers();
+                updateKPIs();
+                alert(`🛑 ${u.name} has been blocked.`);
+            }
+        }
+
+        function unblockUser(id) {
+            const u = users.find(u => u.id === id);
+            if (u) {
+                u.status = 'active';
+                renderUsers();
+                updateKPIs();
+                alert(`✅ ${u.name} has been unblocked.`);
+            }
+        }
+
+        function notifyUser(id) {
+            const u = users.find(u => u.id === id);
+            if (u) alert(`📧 Notification sent to ${u.name} (${u.email})`);
+        }
+
+        // ===== GROUP ACTIONS =====
+        function viewGroup(id) {
+            const g = groups.find(g => g.id === id);
+            if (g) {
+                const members = users.filter(u => u.status === 'active');
+                alert(`📊 Group: ${g.name}\nDescription: ${g.description}\nMembers: ${g.members}\nPosts/Week: ${g.posts}\nStatus: ${g.status}\n\nActive Users: ${members.length}`);
+            }
+        }
+
+        function warnGroup(id) {
+            const g = groups.find(g => g.id === id);
+            if (g) {
+                g.status = 'warned';
+                renderGroups();
+                alert(`⚠️ Group "${g.name}" has been warned. Block only if the issue persists.`);
+            }
+        }
+
+        function blockGroup(id) {
+            const g = groups.find(g => g.id === id);
+            if (g) {
+                if (!confirm(`Are you sure you want to block ${g.name}?`)) return;
+                g.status = 'blocked';
+                renderGroups();
+                alert(`🛑 Group "${g.name}" has been blocked.`);
+            }
+        }
+
+        function toggleGroupStatus(id) {
+            const g = groups.find(g => g.id === id);
+            if (g) {
+                g.status = g.status === 'blocked' ? 'active' : 'blocked';
+                renderGroups();
+            }
+        }
+
+        // ===== TOPIC ACTIONS =====
+        function viewTopic(id) {
+            const t = topics.find(t => t.id === id);
+            if (t) {
+                alert(`📝 Topic: ${t.name}\nCategory: ${t.category}\nAuthor: ${t.author}\nReplies: ${t.replies}\nViews: ${t.views}\nEngagement: ${t.engagement}%\nStatus: ${t.status}`);
+            }
+        }
+
+        function flagTopic(id) {
+            const t = topics.find(t => t.id === id);
+            if (t) { 
+                t.status = 'flagged'; 
+                renderTopics(); 
+                alert(`🚩 Topic "${t.name}" has been flagged for review.`);
+            }
+        }
+
+        function approveTopic(id) {
+            const t = topics.find(t => t.id === id);
+            if (t) { 
+                t.status = 'active'; 
+                renderTopics(); 
+                alert(`✅ Topic "${t.name}" has been approved.`);
+            }
+        }
+
+        function deleteTopic(id) {
+            if (confirm('Delete this topic?')) {
+                topics = topics.filter(t => t.id !== id);
+                renderTopics();
+                updateBadges();
+                alert('🗑️ Topic deleted successfully.');
+            }
+        }
+
+        function bulkDeleteTopics() {
+            const selected = document.querySelectorAll('.topic-select:checked');
+            
+            if (selected.length === 0) {
+                alert('Please select at least one topic to delete.');
+                return;
+            }
+            
+            if (confirm(`Are you sure you want to delete ${selected.length} topic(s)? This cannot be undone!`)) {
+                const idsToDelete = Array.from(selected).map(cb => parseInt(cb.dataset.id));
+                topics = topics.filter(t => !idsToDelete.includes(t.id));
+                renderTopics();
+                updateBadges();
+                alert(`✅ ${idsToDelete.length} topic(s) deleted successfully!`);
+            }
+        }
+
+        // ===== WARNING ACTIONS =====
+        function resolveWarning(id) {
+            const w = warnings.find(w => w.id === id);
+            if (w) { 
+                w.status = 'resolved'; 
+                renderWarnings(); 
+                alert('✅ Warning resolved.');
+            }
+        }
+
+        function extendWarning(id) {
+            const w = warnings.find(w => w.id === id);
+            if (w) {
+                const exp = new Date(w.expires);
+                exp.setDate(exp.getDate() + 14);
+                w.expires = exp.toISOString().split('T')[0];
+                renderWarnings();
+                alert('⏰ Warning extended by 14 days.');
+            }
+        }
+
+        function editWarning(id) {
+            const w = warnings.find(w => w.id === id);
+            if (w) openModal('warning', w);
+        }
+
+        function removeWarning(id) {
+            if (confirm('Remove this warning?')) {
+                warnings = warnings.filter(w => w.id !== id);
+                renderWarnings();
+                updateBadges();
+                alert('🗑️ Warning removed.');
+            }
+        }
+
+        // ===== APPEAL ACTIONS =====
+        function approveAppeal(id) {
+            appeals = appeals.filter(a => a.id !== id);
+            renderWarnings();
+            alert('✅ Appeal approved. Warning removed.');
+        }
+
+        function dismissAppeal(id) {
+            appeals = appeals.filter(a => a.id !== id);
+            renderWarnings();
+            alert('❌ Appeal dismissed. Warning remains.');
+        }
+
+        // ===== SETTINGS =====
+        function applyThemeColor() {
+            const color = document.getElementById('themeColor').value;
+            document.getElementById('colorPreview').style.background = color;
+            document.querySelectorAll('.btn-primary').forEach(b => {
+                b.style.background = color;
+                b.style.borderColor = color;
+            });
+            document.querySelectorAll('.nav-item.active i').forEach(i => {
+                i.style.color = color;
+            });
+        }
+
+        function saveSettings() {
+            alert('⚙️ Settings saved successfully!');
+        }
+
+        // ===== MODAL FUNCTIONS =====
         function openModal(type, data) {
             const modal = document.getElementById('modal');
             const title = document.getElementById('modalTitle');
             const body = document.getElementById('modalBody');
 
             const types = {
-                user: {
-                    title: data ? 'Edit User' : 'Add New User',
-                    fields: `
-                        <label>Full Name</label><input id="mName" value="${data?.name || ''}">
-                        <label>Email</label><input id="mEmail" value="${data?.email || ''}">
-                        <label>Role</label>
-                        <select id="mRole">
-                            <option value="student" ${data?.role === 'student' ? 'selected' : ''}>Student</option>
-                            <option value="lecturer" ${data?.role === 'lecturer' ? 'selected' : ''}>Lecturer</option>
-                        </select>
-                        <label>Status</label>
-                        <select id="mStatus">
-                            <option value="active" ${data?.status === 'active' ? 'selected' : ''}>Active</option>
-                            <option value="inactive" ${data?.status === 'inactive' ? 'selected' : ''}>Inactive</option>
-                            <option value="warned" ${data?.status === 'warned' ? 'selected' : ''}>Warned</option>
-                            <option value="blocked" ${data?.status === 'blocked' ? 'selected' : ''}>Blocked</option>
-                        </select>
-                    `
-                },
-                group: {
-                    title: data ? 'Edit Group' : 'Create New Group',
-                    fields: `
-                        <label>Group Name</label><input id="mName" value="${data?.name || ''}">
-                        <label>Description</label><input id="mDesc" value="${data?.description || ''}">
-                        <label>Type</label>
-                        <select id="mType">
-                            <option value="public" ${data?.type === 'public' ? 'selected' : ''}>Public</option>
-                            <option value="private" ${data?.type === 'private' ? 'selected' : ''}>Private</option>
-                        </select>
-                        <label>Status</label>
-                        <select id="mStatus">
-                            <option value="active" ${data?.status === 'active' ? 'selected' : ''}>Active</option>
-                            <option value="warned" ${data?.status === 'warned' ? 'selected' : ''}>Flagged</option>
-                            <option value="blocked" ${data?.status === 'blocked' ? 'selected' : ''}>Blocked</option>
-                        </select>
-                    `
-                },
-                topic: {
-                    title: data ? 'Edit Topic' : 'Add New Topic',
-                    fields: `
-                        <label>Topic Name</label><input id="mName" value="${data?.name || ''}">
-                        <label>Category</label>
-                        <select id="mCategory">
-                            <option value="Academic" ${data?.category === 'Academic' ? 'selected' : ''}>Academic</option>
-                            <option value="General" ${data?.category === 'General' ? 'selected' : ''}>General</option>
-                            <option value="Announcement" ${data?.category === 'Announcement' ? 'selected' : ''}>Announcement</option>
-                        </select>
-                        <label>Author</label><input id="mAuthor" value="${data?.author || ''}">
-                        <label>Status</label>
-                        <select id="mStatus">
-                            <option value="active" ${data?.status === 'active' ? 'selected' : ''}>Active</option>
-                            <option value="flagged" ${data?.status === 'flagged' ? 'selected' : ''}>Flagged</option>
-                            <option value="pending" ${data?.status === 'pending' ? 'selected' : ''}>Pending</option>
-                        </select>
-                    `
-                },
                 warning: {
                     title: data ? 'Modify Warning' : 'Issue Warning',
                     fields: `
-                        <label>User</label><input id="mUser" value="${data?.user || ''}">
+                        <label>User</label>
+                        <select id="mUser">
+                            ${users.filter(u => u.status === 'active' || u.status === 'warned').map(u => 
+                                `<option value="${u.name}" ${data?.user === u.name ? 'selected' : ''}>${u.name}</option>`
+                            ).join('')}
+                        </select>
                         <label>Reason</label>
                         <select id="mReason">
                             <option value="Spam" ${data?.reason === 'Spam' ? 'selected' : ''}>Spam</option>
@@ -1315,7 +1278,9 @@
                             <option value="Academic misconduct" ${data?.reason === 'Academic misconduct' ? 'selected' : ''}>Academic misconduct</option>
                             <option value="Policy violation" ${data?.reason === 'Policy violation' ? 'selected' : ''}>Policy violation</option>
                         </select>
-                        <label>Warning #</label><input id="mNumber" type="number" value="${data?.number || 1}">
+                        <label>Warning #</label>
+                        <input id="mNumber" type="number" value="${data?.number || 1}" min="1" max="3">
+                        <small style="color:#64748b;">Maximum 3 warnings per user.</small>
                     `
                 }
             };
@@ -1336,44 +1301,19 @@
         function saveModal() {
             const type = document.getElementById('modal').dataset.type;
             const id = document.getElementById('modal').dataset.id;
-            const name = document.getElementById('mName')?.value;
-            const email = document.getElementById('mEmail')?.value;
-            const role = document.getElementById('mRole')?.value;
-            const status = document.getElementById('mStatus')?.value;
-            const desc = document.getElementById('mDesc')?.value;
-            const typeVal = document.getElementById('mType')?.value;
-            const category = document.getElementById('mCategory')?.value;
-            const author = document.getElementById('mAuthor')?.value;
             const user = document.getElementById('mUser')?.value;
             const reason = document.getElementById('mReason')?.value;
             const number = parseInt(document.getElementById('mNumber')?.value) || 1;
 
-            if (type === 'user') {
-                if (id) {
-                    const u = users.find(u => u.id == id);
-                    if (u) { u.name = name; u.email = email; u.role = role; u.status = status; }
-                } else {
-                    users.push({ id: nextIds.user++, name, email, role, status, verified: false, lastSeen: new Date().toISOString().replace('T', ' ').slice(0, 16) });
+            if (type === 'warning') {
+                // Check if user already has 3 warnings
+                const userWarnings = warnings.filter(w => w.user === user);
+                if (userWarnings.length >= 3) {
+                    alert('⚠️ This user already has 3 warnings. Maximum limit reached!');
+                    closeModal();
+                    return;
                 }
-                renderUsers();
-            } else if (type === 'group') {
-                if (id) {
-                    const g = groups.find(g => g.id == id);
-                    if (g) { g.name = name; g.description = desc; g.type = typeVal; g.status = status; }
-                } else {
-                    groups.push({ id: nextIds.group++, name, description: desc, members: 0, type: typeVal, posts: 0, status });
-                }
-                renderGroups();
-                updateBadges();
-            } else if (type === 'topic') {
-                if (id) {
-                    const t = topics.find(t => t.id == id);
-                    if (t) { t.name = name; t.category = category; t.author = author; t.status = status; }
-                } else {
-                    topics.push({ id: nextIds.topic++, name, category, replies: 0, views: 0, engagement: 0, status, author });
-                }
-                renderTopics();
-            } else if (type === 'warning') {
+
                 if (id) {
                     const w = warnings.find(w => w.id == id);
                     if (w) { w.user = user; w.reason = reason; w.number = number; }
@@ -1392,222 +1332,13 @@
                     });
                 }
                 renderWarnings();
+                updateBadges();
+                alert('✅ Warning issued successfully!');
             }
             closeModal();
-            updateKPIs();
-            updateBadges();
         }
 
-        // User actions
-        function deleteUser(id) {
-            if (confirm(`Are you sure you want to delete this user? This action cannot be undone.`)) {
-                users = users.filter(u => u.id !== id);
-                // Renumber IDs
-                users.forEach((u, idx) => u.id = idx + 1);
-                nextIds.user = users.length + 1;
-                renderUsers();
-                updateKPIs();
-                updateBadges();
-            }
-        }
-
-        function editUser(id) {
-            const u = users.find(u => u.id === id);
-            if (u) openModal('user', u);
-        }
-
-        function toggleUserStatus(id) {
-            const u = users.find(u => u.id === id);
-            if (u) {
-                u.status = u.status === 'blocked' ? 'active' : 'blocked';
-                renderUsers();
-                updateKPIs();
-            }
-        }
-
-        function verifyUser(id) {
-            const u = users.find(u => u.id === id);
-            if (u) { u.verified = true; renderUsers(); }
-        }
-
-        function showUserDetail(id) {
-            const u = users.find(u => u.id === id);
-            if (!u) return;
-            const modal = document.getElementById('userDetailModal');
-            const body = document.getElementById('userDetailBody');
-            body.innerHTML = `
-                <div class="detail-row"><span class="label">Full Name</span><span class="value">${u.name}</span></div>
-                <div class="detail-row"><span class="label">Email</span><span class="value">${u.email}</span></div>
-                <div class="detail-row"><span class="label">Role</span><span class="value"><span class="role-badge role-${u.role}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></span></div>
-                <div class="detail-row"><span class="label">Status</span><span class="value"><span class="status-badge ${u.status}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></span></div>
-                <div class="detail-row"><span class="label">Verified</span><span class="value">${u.verified ? '✅ Yes' : '❌ No'}</span></div>
-                <div class="detail-row"><span class="label">Last Seen</span><span class="value">${u.lastSeen || 'N/A'}</span></div>
-                <div class="detail-row"><span class="label">User ID</span><span class="value">#${String(u.id).padStart(4, '0')}</span></div>
-                <div class="detail-row"><span class="label">Account Created</span><span class="value">2026-0${Math.floor(Math.random()*6)+1}-${String(Math.floor(Math.random()*28)+1).padStart(2,'0')}</span></div>
-            `;
-            modal.classList.add('show');
-        }
-
-        function notifyUser(id) {
-            const u = users.find(u => u.id === id);
-            if (u) alert(`📧 Notification sent to ${u.name} (${u.email})`);
-        }
-
-        // Group actions
-        function refreshGroups() {
-            syncDerivedContent();
-            renderGroups();
-            updateBadges();
-            alert('🔄 Group list refreshed.');
-        }
-
-        function deleteGroup(id) {
-            if (confirm('Delete this group?')) {
-                groups = groups.filter(g => g.id !== id);
-                renderGroups();
-                updateBadges();
-            }
-        }
-
-        function editGroup(id) {
-            const g = groups.find(g => g.id === id);
-            if (g) openModal('group', g);
-        }
-
-        function toggleGroupStatus(id) {
-            const g = groups.find(g => g.id === id);
-            if (g) {
-                g.status = g.status === 'blocked' ? 'active' : 'blocked';
-                renderGroups();
-            }
-        }
-
-        // Topic actions
-        function deleteTopic(id) {
-            if (confirm('Delete this topic?')) {
-                topics = topics.filter(t => t.id !== id);
-                renderTopics();
-                updateBadges();
-            }
-        }
-
-        function editTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) openModal('topic', t);
-        }
-
-        function flagTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { t.status = 'flagged'; renderTopics(); }
-        }
-
-        function approveTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { t.status = 'active'; renderTopics(); }
-        }
-
-        function togglePinTopic(id) {
-            alert(`📌 Topic ${id} has been ${Math.random() > 0.5 ? 'pinned' : 'unpinned'}`);
-        }
-
-        // Warning actions
-        function resolveWarning(id) {
-            const w = warnings.find(w => w.id === id);
-            if (w) { w.status = 'resolved'; renderWarnings(); }
-        }
-
-        function extendWarning(id) {
-            const w = warnings.find(w => w.id === id);
-            if (w) {
-                const exp = new Date(w.expires);
-                exp.setDate(exp.getDate() + 14);
-                w.expires = exp.toISOString().split('T')[0];
-                renderWarnings();
-            }
-        }
-
-        function editWarning(id) {
-            const w = warnings.find(w => w.id === id);
-            if (w) openModal('warning', w);
-        }
-
-        function removeWarning(id) {
-            if (confirm('Remove this warning?')) {
-                warnings = warnings.filter(w => w.id !== id);
-                renderWarnings();
-                updateBadges();
-            }
-        }
-
-        // Appeal actions
-        function approveAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-        }
-
-        function dismissAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-        }
-
-        // Report actions
-        function resolveReport(id) {
-            const r = reports.find(r => r.id === id);
-            if (r) { r.status = 'resolved'; renderReports(); }
-        }
-
-        function dismissReport(id) {
-            const r = reports.find(r => r.id === id);
-            if (r) { r.status = 'dismissed'; renderReports(); }
-        }
-
-        // Settings
-        function applyThemeColor() {
-            applySystemSettings();
-        }
-
-        function saveSettings() {
-            applySystemSettings();
-            alert('⚙️ Settings saved successfully and applied to the dashboard.');
-        }
-
-        function showExportOptions() {
-            document.getElementById('exportModal').classList.add('show');
-        }
-
-        function closeExportModal() {
-            document.getElementById('exportModal').classList.remove('show');
-        }
-
-        function confirmExport() {
-            const destination = document.getElementById('exportDestination')?.value || 'online';
-            const format = document.getElementById('exportFormat')?.value || 'pdf';
-            const access = document.getElementById('exportAccess')?.value || 'admin-email';
-            const payload = {
-                exportedAt: new Date().toISOString(),
-                destination,
-                format,
-                access,
-                reportCount: reports.length,
-                reports: reports.slice(0, 10)
-            };
-
-            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `reports-export-${new Date().toISOString().slice(0, 10)}.${format === 'json' ? 'json' : 'txt'}`;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-
-            const destinationLabel = destination === 'online' ? 'online' : 'offline';
-            alert(`✅ Export ready for ${destinationLabel} use as ${format.toUpperCase()} via ${access}.`);
-            closeExportModal();
-        }
-
-        // Chart expansion
+        // ===== CHART EXPANSION =====
         function expandChart(type) {
             const modal = document.getElementById('chartModal');
             document.getElementById('chartModalTitle').textContent = 
@@ -1678,12 +1409,16 @@
                     }
                 };
             } else {
+                const active = users.filter(u => u.status === 'active').length;
+                const inactive = users.filter(u => u.status === 'inactive').length;
+                const warned = users.filter(u => u.status === 'warned').length;
+                const blocked = users.filter(u => u.status === 'blocked').length;
                 config = {
                     type: 'doughnut',
                     data: {
                         labels: ['Active', 'Inactive', 'Warned', 'Blocked'],
                         datasets: [{
-                            data: [6, 2, 2, 2],
+                            data: [active, inactive, warned, blocked],
                             backgroundColor: ['#22c55e', '#94a3b8', '#facc15', '#ef4444'],
                             borderColor: 'white',
                             borderWidth: 3,
@@ -1724,7 +1459,6 @@
                 groups: 'Group Management',
                 topics: 'Topic Moderation',
                 warnings: 'Warning Management',
-                reports: 'Reports & Moderation',
                 settings: 'Platform Settings',
                 logout: 'Log Out'
             };
@@ -1799,12 +1533,16 @@
 
             const ctx3 = document.getElementById('distChart')?.getContext('2d');
             if (ctx3) {
+                const active = users.filter(u => u.status === 'active').length;
+                const inactive = users.filter(u => u.status === 'inactive').length;
+                const warned = users.filter(u => u.status === 'warned').length;
+                const blocked = users.filter(u => u.status === 'blocked').length;
                 new Chart(ctx3, {
                     type: 'doughnut',
                     data: {
                         labels: ['Active', 'Inactive', 'Warned', 'Blocked'],
                         datasets: [{
-                            data: [6, 2, 2, 2],
+                            data: [active, inactive, warned, blocked],
                             backgroundColor: ['#22c55e', '#94a3b8', '#facc15', '#ef4444'],
                             borderColor: 'white',
                             borderWidth: 2,
@@ -1823,13 +1561,10 @@
         })();
 
         // ===== INITIAL RENDER =====
-        syncDerivedContent();
-        applySystemSettings();
         renderUsers();
         renderGroups();
         renderTopics();
         renderWarnings();
-        renderReports();
         updateKPIs();
         updateBadges();
 
@@ -1843,12 +1578,8 @@
         document.getElementById('chartModal').addEventListener('click', function(e) {
             if (e.target === this) this.classList.remove('show');
         });
-        document.getElementById('exportModal').addEventListener('click', function(e) {
-            if (e.target === this) this.classList.remove('show');
-        });
 
-        console.log('✅ Smart Discussion Forum Management System initialized');
-        console.log('📊 All features: CRUD operations, search, filters, charts, tooltips, and more!');
+        console.log('✅ Smart Discussion Forum Admin System initialized');
     </script>
 </body>
 </html>
