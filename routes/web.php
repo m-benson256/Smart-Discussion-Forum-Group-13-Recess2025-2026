@@ -158,7 +158,7 @@ Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
-
+Route::post('/messages/{message}/react', [MessageController::class, 'toggleReaction']);
 
 Route::get('/user-interests', [UserInterestsController::class, 'index']);
 
