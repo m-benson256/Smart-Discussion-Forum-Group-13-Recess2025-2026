@@ -532,7 +532,7 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Posts/Week</th><th>Status</th><th>Actions</th></tr>
+                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="groupTableBody"></tbody>
                     </table>
@@ -733,11 +733,7 @@
         let users = {!! $usersJson !!};
 
         // Groups - created by students
-        let groups = [
-            { id: 1, name: 'CS 2024 Study Group', description: 'Computer Science study group', members: 45, posts: 128, status: 'active' },
-            { id: 2, name: 'Math Tutorial Forum', description: 'Advanced mathematics help', members: 28, posts: 67, status: 'active' },
-            { id: 3, name: 'Physics Discussion', description: 'Physics problem solving', members: 15, posts: 45, status: 'warned' }
-        ];
+        let groups = {!! $groupsJson !!};
 
         // Topics - created by students
         let topics = [
@@ -838,28 +834,36 @@
 
             const tbody = document.getElementById('groupTableBody');
             tbody.innerHTML = filtered.map(g => {
+                const normalizedStatus = (g.status || '').toLowerCase();
+                const statusLabel = normalizedStatus === 'blocked'
+                    ? 'Blocked'
+                    : normalizedStatus === 'active'
+                        ? 'Active'
+                        : 'Undefined';
+                const statusClass = normalizedStatus === 'blocked' ? 'blocked' : normalizedStatus === 'active' ? 'active' : 'inactive';
+
                 let groupAction = '';
-                if (g.status === 'active') {
+                if (normalizedStatus === 'active') {
                     groupAction = `
                         <button class="action-btn warning" onclick="warnGroup(${g.id})"><i class="fas fa-exclamation-triangle"></i><span class="tooltip">Warn Group</span></button>
                         <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
                     `;
-                } else if (g.status === 'warned') {
+                } else if (normalizedStatus === 'blocked') {
                     groupAction = `
-                        <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
+                        <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
                     `;
                 } else {
                     groupAction = `
                         <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
                     `;
                 }
+
                 return `
                 <tr>
                     <td><strong>${g.name}</strong></td>
                     <td>${g.description}</td>
                     <td>${g.members}</td>
-                    <td>${g.posts}</td>
-                    <td><span class="status-badge ${g.status}">${g.status.charAt(0).toUpperCase() + g.status.slice(1)}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <button class="action-btn" onclick="viewGroup(${g.id})"><i class="fas fa-eye"></i><span class="tooltip">View Group</span></button>
                         ${groupAction}

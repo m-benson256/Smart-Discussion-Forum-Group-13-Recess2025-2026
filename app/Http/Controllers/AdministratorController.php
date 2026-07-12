@@ -32,7 +32,19 @@ $users = User::select('id', 'name', 'email', 'role', 'status')->get()->map(funct
 });
 
 $usersJson = $users->toJson();
-return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson'));
+$groups = \App\Models\Group::withCount('members')->with('creator:id,name')->latest()->get()->map(function ($g) {
+    return [
+        'id' => $g->id,
+        'name' => $g->name,
+        'description' => $g->description,
+        'members' => $g->members_count,
+        'status' => $g->status,
+        'creator' => $g->creator->name ?? 'Unknown',
+    ];
+});
+
+$groupsJson = $groups->toJson();
+return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson', 'groups', 'groupsJson'));
 }
   
 
