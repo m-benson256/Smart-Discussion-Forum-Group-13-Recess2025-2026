@@ -18,8 +18,23 @@ class AdministratorController extends Controller
     $inactiveUsers = User::where('status', 'inactive')->count();
     $blockedUsers = User::where('status', 'blocked')->count();
 
-    return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers'));
+$users = User::select('id', 'name', 'email', 'role', 'status')->get()->map(function ($u) {
+    return [
+        'id' => $u->id,
+        'name' => $u->name,
+        'email' => $u->email,
+        'role' => $u->role,
+        'status' => $u->status,
+        'verified' => true,
+        'lastSeen' => null,
+        'verification_status' =>'approved',
+    ];
+});
+
+$usersJson = $users->toJson();
+return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson'));
 }
+  
 
     /**
      * Show the form for creating a new resource.
