@@ -6,11 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Warnings extends Model
 {
-    //
-    protected $primaryKey = 'WarningID'; [cite: 27]
-    protected $fillable = ['WarningNumber', 'UserID', 'IssuedBy', 'Deadline', 'Status']; [cite: 27]
+    protected $fillable = ['user_id', 'warning_number', 'reason', 'issued_at', 'expires_at', 'status'];
 
-    public function member() { return $this->belongsTo(Member::class, 'UserID'); } [cite: 27, 35]
-    public function admin() { return $this->belongsTo(Administrator::class, 'IssuedBy'); } [cite: 27, 35]
-
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

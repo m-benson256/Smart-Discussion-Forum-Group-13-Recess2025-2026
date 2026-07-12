@@ -47,6 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/lecturer/dashboard', [LecturerController::class, 'index'])->name('lecturer.dashboard');
 
     Route::get('/admin/dashboard', [AdministratorController::class, 'index'])->name('admin.dashboard');
+    Route::patch('/administrator/users/{user}/verify', [AdministratorController::class, 'verifyLecturer'])->name('admin.users.verify');
 
     // Profile management paths
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Discussion Forum · Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
@@ -409,11 +410,7 @@
             <span>Groups</span>
             <span class="badge-nav" id="groupCount">3</span>
         </button>
-        <button class="nav-item" data-page="topics">
-            <i class="fas fa-tags"></i>
-            <span>Topics</span>
-            <span class="badge-nav" id="topicCount">8</span>
-        </button>
+        
         <button class="nav-item" data-page="warnings">
             <i class="fas fa-exclamation-triangle"></i>
             <span>Warnings</span>
@@ -471,11 +468,7 @@
                     <h3><i class="fas fa-chart-line"></i> User Activity (Last 7 Days)</h3>
                     <div class="chart-container"><canvas id="activityChart"></canvas></div>
                 </div>
-                <div class="chart-box" onclick="expandChart('topics')">
-                    <button class="expand-btn" onclick="event.stopPropagation(); expandChart('topics')"><i class="fas fa-expand"></i> View</button>
-                    <h3><i class="fas fa-chart-bar"></i> Top Discussion Analytics</h3>
-                    <div class="chart-container"><canvas id="topicsChart"></canvas></div>
-                </div>
+               
                 <div class="chart-box" onclick="expandChart('distribution')">
                     <button class="expand-btn" onclick="event.stopPropagation(); expandChart('distribution')"><i class="fas fa-expand"></i> View</button>
                     <h3><i class="fas fa-chart-pie"></i> User Status Distribution</h3>
@@ -540,33 +533,6 @@
             </div>
         </div>
 
-        <!-- ===== TOPICS ===== -->
-        <div class="page-panel" id="page-topics">
-            <div class="placeholder-content">
-                <h2><i class="fas fa-tags" style="color:#2563eb;"></i> Topic Moderation</h2>
-                <p>View all topics created by students. Topics can be flagged for review or bulk deleted.</p>
-                <div class="actions">
-                    <button class="btn btn-danger" onclick="bulkDeleteTopics()"><i class="fas fa-trash"></i> Bulk Delete</button>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <input class="search-box" id="topicSearch" placeholder="Search topics..." oninput="filterTopics()">
-                    </div>
-                </div>
-
-                <div id="topicsContainer">
-                    <h4 style="margin:16px 0 10px;">All Topics</h4>
-                    <div class="topics-grid" id="topicsGrid"></div>
-
-                    <h4 style="margin:18px 0 10px;">Pending Moderation</h4>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>Topic</th><th>Category</th><th>Author</th><th>Reported</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody id="pendingTopicsBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- ===== WARNINGS ===== -->
         <div class="page-panel" id="page-warnings">
             <div class="placeholder-content">
@@ -585,9 +551,6 @@
                         <tbody id="warningTableBody"></tbody>
                     </table>
                 </div>
-
-                <h4 style="margin:18px 0 10px;">Pending Appeals</h4>
-                <div id="appealsContainer"></div>
 
                 <div style="margin-top:16px; background:#f8fafc; border-radius:12px; padding:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
                     <div>
@@ -736,23 +699,10 @@
         let groups = {!! $groupsJson !!};
 
         // Topics - created by students
-        let topics = [
-            { id: 1, name: 'Data Analysis', category: 'Academic', replies: 89, views: 1200, engagement: 68, status: 'active', author: 'John Doe' },
-            { id: 2, name: 'Technical Analysis', category: 'Academic', replies: 67, views: 890, engagement: 54, status: 'active', author: 'Jane Smith' },
-            { id: 3, name: 'Data Management', category: 'Academic', replies: 112, views: 1800, engagement: 82, status: 'active', author: 'Chris Brown' },
-            { id: 4, name: 'Communication Skills', category: 'General', replies: 54, views: 670, engagement: 43, status: 'active', author: 'Amanda Lee' },
-            { id: 5, name: 'SPAM: Free Resources', category: 'Spam', replies: 0, views: 45, engagement: 0, status: 'flagged', author: 'Anonymous' },
-            { id: 6, name: 'Offensive Content', category: 'Inappropriate', replies: 3, views: 120, engagement: 15, status: 'pending', author: 'UserX' },
-            { id: 7, name: 'AI Ethics Discussion', category: 'Academic', replies: 34, views: 560, engagement: 72, status: 'active', author: 'Sarah Wilson' },
-            { id: 8, name: 'Duplicate Thread', category: 'General', replies: 2, views: 30, engagement: 10, status: 'flagged', author: 'Student102' }
-        ];
+        
 
         // Warnings - max 3 per user
-        let warnings = [
-            { id: 1, user: 'Mike Wilson', number: 1, reason: 'Spam', issued: '2026-06-20', expires: '2026-07-20', status: 'active' },
-            { id: 2, user: 'Sarah Lee', number: 2, reason: 'Harassment', issued: '2026-06-15', expires: '2026-07-15', status: 'active' },
-            { id: 3, user: 'Emily Davis', number: 1, reason: 'Academic misconduct', issued: '2026-06-25', expires: '2026-07-25', status: 'pending' }
-        ];
+        let warnings = {!! $warningsJson !!};
 
         let appeals = [
             { id: 1, user: 'Emily Davis', warning: 'Academic misconduct', submitted: '2026-06-26' }
@@ -960,20 +910,6 @@
             `).join('');
             document.getElementById('warningCount').textContent = warnings.length;
 
-            const appealsContainer = document.getElementById('appealsContainer');
-            if (appeals.length === 0) {
-                appealsContainer.innerHTML = '<div style="padding:10px; color:#64748b;">No pending appeals.</div>';
-            } else {
-                appealsContainer.innerHTML = appeals.map(a => `
-                    <div class="appeal-box">
-                        <div><strong>${a.user}</strong> - Appeal submitted for "${a.warning}" warning</div>
-                        <div class="appeal-meta">Submitted: ${a.submitted} · 
-                            <button class="action-btn success" onclick="approveAppeal(${a.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button> 
-                            <button class="action-btn danger" onclick="dismissAppeal(${a.id})"><i class="fas fa-times"></i><span class="tooltip">Dismiss</span></button>
-                        </div>
-                    </div>
-                `).join('');
-            }
         }
 
         function updateKPIs() {
@@ -1043,6 +979,16 @@
         }
 
         function verifyLecturer(id) {
+    fetch(`/administrator/users/${id}/verify`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
             const u = users.find(u => u.id === id);
             if (u) {
                 u.verification_status = 'approved';
@@ -1050,10 +996,12 @@
                 u.verified = true;
                 renderUsers();
                 updateKPIs();
-                alert(`✅ Lecturer ${u.name} has been verified.`);
+                alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
             }
         }
-
+    })
+    .catch(() => alert('❌ Something went wrong while verifying. Please try again.'));
+}
         function rejectLecturer(id) {
             if (confirm('Reject this lecturer registration?')) {
                 const u = users.find(u => u.id === id);
@@ -1214,19 +1162,6 @@
                 updateBadges();
                 alert('🗑️ Warning removed.');
             }
-        }
-
-        // ===== APPEAL ACTIONS =====
-        function approveAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-            alert('✅ Appeal approved. Warning removed.');
-        }
-
-        function dismissAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-            alert('❌ Appeal dismissed. Warning remains.');
         }
 
         // ===== SETTINGS =====

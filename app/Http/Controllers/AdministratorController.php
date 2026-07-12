@@ -27,7 +27,7 @@ $users = User::select('id', 'name', 'email', 'role', 'status')->get()->map(funct
         'status' => $u->status,
         'verified' => true,
         'lastSeen' => null,
-        'verification_status' =>'approved',
+        'verification_status' => $u->verification_status,
     ];
 });
 
@@ -44,7 +44,28 @@ $groups = \App\Models\Group::withCount('members')->with('creator:id,name')->late
 });
 
 $groupsJson = $groups->toJson();
-return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson', 'groups', 'groupsJson'));
+$warnings = \App\Models\Warnings::with('user:id,name')->latest()->get()->map(function ($w) {
+    return [
+        'id' => $w->id,
+        'user' => $w->user->name ?? 'Unknown',
+        'number' => $w->warning_number,
+        'reason' => $w->reason,
+        'issued' => $w->issued_at,
+        'expires' => $w->expires_at,
+        'status' => $w->status,
+    ];
+});
+
+$warningsJson = $warnings->toJson();
+return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson', 'groups', 'groupsJson', 'warnings', 'warningsJson'));
+}
+
+public function verifyLecturer(\App\Models\User $user)
+{
+    $user->verification_status = 'approved';
+    $user->save();
+
+    return response()->json(['success' => true]);
 }
   
 
