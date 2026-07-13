@@ -53,6 +53,43 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+<<<<<<< HEAD
+=======
+
+    Route::get('/topics', [TopicController::class, 'index']);
+    Route::post('/topics', [TopicController::class, 'store']);
+    Route::get('/topics/{topic}', [TopicController::class, 'show']);
+    Route::put('/topics/{topic}', [TopicController::class, 'update']);
+    Route::delete('/topics/{topic}', [TopicController::class, 'destroy']);
+
+    Route::get('/groups', [GroupController::class, 'index']);
+    Route::post('/groups', [GroupController::class, 'store']);
+    Route::get('/lecturer/reports', [QuizAttemptController::class, 'report']);
+     Route::get('/lecturer/search', [SearchController::class, 'search']);
+    Route::get('/groups/{group}', [GroupController::class, 'show']);
+    Route::post('/groups/{group}/join', [GroupController::class, 'join']);
+    Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
+Route::post('/groups', [GroupController::class, 'store']);
+Route::get('/groups/{group}', [GroupController::class, 'show']);
+Route::post('/groups/{group}/join', [GroupController::class, 'join']);
+Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
+
+Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
+Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
+Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
+Route::post('/messages/{message}/react', [MessageController::class, 'toggleReaction']);
+
+Route::get('/user-interests', [UserInterestsController::class, 'index']);
+
+Route::post('/topics/{topic}/view', [TopicController::class, 'recordView']);
+
+Route::get('/recommended-topics', [RecommendationController::class, 'index']);
+
+
+ Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
+
+ Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
+>>>>>>> origin
 });
 
 require __DIR__.'/auth.php';

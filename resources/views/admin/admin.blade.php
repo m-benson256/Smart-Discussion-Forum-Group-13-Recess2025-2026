@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smart Discussion Forum · Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
@@ -307,16 +308,6 @@
         }
         .settings-card .btn { margin-top: 10px; }
 
-        .topics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .topic-card {
-            background: #f8fafc; border-radius: 12px; padding: 14px 16px;
-            border: 1px solid #e9edf2; display: flex; justify-content: space-between; align-items: center;
-            transition: 0.2s;
-        }
-        .topic-card:hover { border-color: #94a3b8; }
-        .topic-card .topic-info h4 { font-size: 14px; margin-bottom: 2px; }
-        .topic-card .topic-info p { font-size: 12px; color: #64748b; }
-
         .appeal-box {
             background: #f8fafc; border-radius: 10px; padding: 12px 16px;
             border-left: 4px solid #f59e0b; margin-bottom: 8px;
@@ -366,7 +357,6 @@
         @media (max-width: 992px) {
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .settings-grid { grid-template-columns: 1fr; }
-            .topics-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
@@ -409,11 +399,7 @@
             <span>Groups</span>
             <span class="badge-nav" id="groupCount">3</span>
         </button>
-        <button class="nav-item" data-page="topics">
-            <i class="fas fa-tags"></i>
-            <span>Topics</span>
-            <span class="badge-nav" id="topicCount">8</span>
-        </button>
+        
         <button class="nav-item" data-page="warnings">
             <i class="fas fa-exclamation-triangle"></i>
             <span>Warnings</span>
@@ -466,16 +452,6 @@
             </div>
 
             <div class="chart-row">
-                <div class="chart-box" onclick="expandChart('activity')">
-                    <button class="expand-btn" onclick="event.stopPropagation(); expandChart('activity')"><i class="fas fa-expand"></i> View</button>
-                    <h3><i class="fas fa-chart-line"></i> User Activity (Last 7 Days)</h3>
-                    <div class="chart-container"><canvas id="activityChart"></canvas></div>
-                </div>
-                <div class="chart-box" onclick="expandChart('topics')">
-                    <button class="expand-btn" onclick="event.stopPropagation(); expandChart('topics')"><i class="fas fa-expand"></i> View</button>
-                    <h3><i class="fas fa-chart-bar"></i> Top Discussion Analytics</h3>
-                    <div class="chart-container"><canvas id="topicsChart"></canvas></div>
-                </div>
                 <div class="chart-box" onclick="expandChart('distribution')">
                     <button class="expand-btn" onclick="event.stopPropagation(); expandChart('distribution')"><i class="fas fa-expand"></i> View</button>
                     <h3><i class="fas fa-chart-pie"></i> User Status Distribution</h3>
@@ -496,7 +472,7 @@
         <div class="page-panel" id="page-users">
             <div class="placeholder-content">
                 <h2><i class="fas fa-users" style="color:#2563eb;"></i> User Management</h2>
-                <p>View all registered students and lecturers. Students are verified by default. Lecturers must be verified by admin.</p>
+                <p>View all registered students and lecturers. Admins can verify lecturer accounts, while student accounts remain managed without verification.</p>
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="userSearch" placeholder="Search users..." oninput="filterUsers()">
@@ -532,37 +508,10 @@
                 <div class="table-wrap">
                     <table>
                         <thead>
-                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Posts/Week</th><th>Status</th><th>Actions</th></tr>
+                            <tr><th>Group Name</th><th>Description</th><th>Members</th><th>Status</th><th>Actions</th></tr>
                         </thead>
                         <tbody id="groupTableBody"></tbody>
                     </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== TOPICS ===== -->
-        <div class="page-panel" id="page-topics">
-            <div class="placeholder-content">
-                <h2><i class="fas fa-tags" style="color:#2563eb;"></i> Topic Moderation</h2>
-                <p>View all topics created by students. Topics can be flagged for review or bulk deleted.</p>
-                <div class="actions">
-                    <button class="btn btn-danger" onclick="bulkDeleteTopics()"><i class="fas fa-trash"></i> Bulk Delete</button>
-                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
-                        <input class="search-box" id="topicSearch" placeholder="Search topics..." oninput="filterTopics()">
-                    </div>
-                </div>
-
-                <div id="topicsContainer">
-                    <h4 style="margin:16px 0 10px;">All Topics</h4>
-                    <div class="topics-grid" id="topicsGrid"></div>
-
-                    <h4 style="margin:18px 0 10px;">Pending Moderation</h4>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>Topic</th><th>Category</th><th>Author</th><th>Reported</th><th>Status</th><th>Actions</th></tr></thead>
-                            <tbody id="pendingTopicsBody"></tbody>
-                        </table>
-                    </div>
                 </div>
             </div>
         </div>
@@ -585,9 +534,6 @@
                         <tbody id="warningTableBody"></tbody>
                     </table>
                 </div>
-
-                <h4 style="margin:18px 0 10px;">Pending Appeals</h4>
-                <div id="appealsContainer"></div>
 
                 <div style="margin-top:16px; background:#f8fafc; border-radius:12px; padding:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
                     <div>
@@ -730,51 +676,19 @@
 
     <script>
         // ===== DATA STORE =====
-        // Users: Students are verified by default, Lecturers need verification
-        let users = [
-            { id: 1, name: 'John Doe', email: 'john@students.ed', role: 'student', status: 'active', verified: true, lastSeen: '2026-06-29 14:32', verification_status: 'approved' },
-            { id: 2, name: 'Jane Smith', email: 'jane@lecturers.ed', role: 'lecturer', status: 'active', verified: true, lastSeen: '2026-06-30 09:15', verification_status: 'approved' },
-            { id: 3, name: 'Mike Roberts', email: 'mike@students.ed', role: 'student', status: 'blocked', verified: true, lastSeen: '2026-06-05 08:30', verification_status: 'approved' },
-            { id: 4, name: 'Chris Brown', email: 'chris@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: '2026-06-26 11:10', verification_status: 'pending' },
-            { id: 5, name: 'Emily Davis', email: 'emily@students.ed', role: 'student', status: 'warned', verified: true, lastSeen: '2026-06-27 13:10', verification_status: 'approved' },
-            { id: 6, name: 'Amanda Lee', email: 'amanda@students.ed', role: 'student', status: 'active', verified: true, lastSeen: '2026-06-29 18:22', verification_status: 'approved' },
-            { id: 7, name: 'Sarah Wilson', email: 'sarah@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: '2026-06-28 16:45', verification_status: 'pending' },
-            { id: 8, name: 'Linda Chen', email: 'linda@students.ed', role: 'student', status: 'blocked', verified: true, lastSeen: '2026-06-04 22:00', verification_status: 'approved' },
-            // New pending lecturer
-            { id: 9, name: 'Dr. Robert Johnson', email: 'robert@lecturers.ed', role: 'lecturer', status: 'inactive', verified: false, lastSeen: null, verification_status: 'pending' }
-        ];
+        let users = {!! $usersJson !!};
 
         // Groups - created by students
-        let groups = [
-            { id: 1, name: 'CS 2024 Study Group', description: 'Computer Science study group', members: 45, posts: 128, status: 'active' },
-            { id: 2, name: 'Math Tutorial Forum', description: 'Advanced mathematics help', members: 28, posts: 67, status: 'active' },
-            { id: 3, name: 'Physics Discussion', description: 'Physics problem solving', members: 15, posts: 45, status: 'warned' }
-        ];
-
-        // Topics - created by students
-        let topics = [
-            { id: 1, name: 'Data Analysis', category: 'Academic', replies: 89, views: 1200, engagement: 68, status: 'active', author: 'John Doe' },
-            { id: 2, name: 'Technical Analysis', category: 'Academic', replies: 67, views: 890, engagement: 54, status: 'active', author: 'Jane Smith' },
-            { id: 3, name: 'Data Management', category: 'Academic', replies: 112, views: 1800, engagement: 82, status: 'active', author: 'Chris Brown' },
-            { id: 4, name: 'Communication Skills', category: 'General', replies: 54, views: 670, engagement: 43, status: 'active', author: 'Amanda Lee' },
-            { id: 5, name: 'SPAM: Free Resources', category: 'Spam', replies: 0, views: 45, engagement: 0, status: 'flagged', author: 'Anonymous' },
-            { id: 6, name: 'Offensive Content', category: 'Inappropriate', replies: 3, views: 120, engagement: 15, status: 'pending', author: 'UserX' },
-            { id: 7, name: 'AI Ethics Discussion', category: 'Academic', replies: 34, views: 560, engagement: 72, status: 'active', author: 'Sarah Wilson' },
-            { id: 8, name: 'Duplicate Thread', category: 'General', replies: 2, views: 30, engagement: 10, status: 'flagged', author: 'Student102' }
-        ];
+        let groups = {!! $groupsJson !!};
 
         // Warnings - max 3 per user
-        let warnings = [
-            { id: 1, user: 'Mike Wilson', number: 1, reason: 'Spam', issued: '2026-06-20', expires: '2026-07-20', status: 'active' },
-            { id: 2, user: 'Sarah Lee', number: 2, reason: 'Harassment', issued: '2026-06-15', expires: '2026-07-15', status: 'active' },
-            { id: 3, user: 'Emily Davis', number: 1, reason: 'Academic misconduct', issued: '2026-06-25', expires: '2026-07-25', status: 'pending' }
-        ];
+        let warnings = {!! $warningsJson !!};
 
         let appeals = [
             { id: 1, user: 'Emily Davis', warning: 'Academic misconduct', submitted: '2026-06-26' }
         ];
 
-        let nextIds = { user: 10, group: 4, topic: 9, warning: 4, appeal: 2 };
+        let nextIds = { user: 10, group: 4, warning: 4, appeal: 2 };
 
         // ===== RENDER FUNCTIONS =====
         function renderUsers() {
@@ -789,7 +703,6 @@
 
             const tbody = document.getElementById('userTableBody');
             tbody.innerHTML = filtered.map((u, index) => {
-                // Show verification badge for lecturers
                 let verificationBadge = '';
                 if (u.role === 'lecturer') {
                     if (u.verification_status === 'pending') {
@@ -800,14 +713,13 @@
                         verificationBadge = `<span class="status-badge unverified">Unverified</span>`;
                     }
                 } else {
-                    verificationBadge = `<span class="status-badge verified">Verified</span>`;
+                    verificationBadge = `<span class="status-badge verified">Not Required</span>`;
                 }
 
-                // Show verify button for pending lecturers
                 let actionButtons = `
                     <button class="action-btn" onclick="viewUser(${u.id})"><i class="fas fa-eye"></i><span class="tooltip">View User</span></button>
                 `;
-                
+
                 if (u.role === 'lecturer' && u.verification_status === 'pending') {
                     actionButtons += `
                         <button class="action-btn success" onclick="verifyLecturer(${u.id})"><i class="fas fa-check"></i><span class="tooltip">Verify Lecturer</span></button>
@@ -852,28 +764,36 @@
 
             const tbody = document.getElementById('groupTableBody');
             tbody.innerHTML = filtered.map(g => {
+                const normalizedStatus = (g.status || '').toLowerCase();
+                const statusLabel = normalizedStatus === 'blocked'
+                    ? 'Blocked'
+                    : normalizedStatus === 'active'
+                        ? 'Active'
+                        : 'Undefined';
+                const statusClass = normalizedStatus === 'blocked' ? 'blocked' : normalizedStatus === 'active' ? 'active' : 'inactive';
+
                 let groupAction = '';
-                if (g.status === 'active') {
+                if (normalizedStatus === 'active') {
                     groupAction = `
                         <button class="action-btn warning" onclick="warnGroup(${g.id})"><i class="fas fa-exclamation-triangle"></i><span class="tooltip">Warn Group</span></button>
                         <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
                     `;
-                } else if (g.status === 'warned') {
+                } else if (normalizedStatus === 'blocked') {
                     groupAction = `
-                        <button class="action-btn danger" onclick="blockGroup(${g.id})"><i class="fas fa-ban"></i><span class="tooltip">Block Group</span></button>
+                        <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
                     `;
                 } else {
                     groupAction = `
                         <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
                     `;
                 }
+
                 return `
                 <tr>
                     <td><strong>${g.name}</strong></td>
                     <td>${g.description}</td>
                     <td>${g.members}</td>
-                    <td>${g.posts}</td>
-                    <td><span class="status-badge ${g.status}">${g.status.charAt(0).toUpperCase() + g.status.slice(1)}</span></td>
+                    <td><span class="status-badge ${statusClass}">${statusLabel}</span></td>
                     <td>
                         <button class="action-btn" onclick="viewGroup(${g.id})"><i class="fas fa-eye"></i><span class="tooltip">View Group</span></button>
                         ${groupAction}
@@ -887,61 +807,6 @@
         function filterGroups() { renderGroups(); }
 
         let groupedView = false;
-
-        function renderTopics() {
-            const search = document.getElementById('topicSearch')?.value?.toLowerCase() || '';
-            
-            let allTopics = topics.filter(t => {
-                return t.name.toLowerCase().includes(search) || t.author.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
-            });
-
-            let activeTopics = allTopics.filter(t => t.status === 'active');
-            let flaggedTopics = allTopics.filter(t => t.status === 'flagged' || t.status === 'pending');
-
-            // Render active topics
-            const grid = document.getElementById('topicsGrid');
-            if (activeTopics.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#64748b;">No active topics found.</div>';
-            } else {
-                grid.innerHTML = activeTopics.map(t => `
-                    <div class="topic-card">
-                        <div class="topic-info">
-                            <h4>${t.name} <span class="status-badge" style="background:#dbeafe;color:#1e40af;font-size:10px;">${t.category}</span></h4>
-                            <p>${t.replies} replies · ${t.views} views · ${t.engagement}% engagement</p>
-                            <p style="font-size:11px; color:#94a3b8;">By: ${t.author}</p>
-                        </div>
-                        <div>
-                            <button class="action-btn warning" onclick="flagTopic(${t.id})"><i class="fas fa-flag"></i><span class="tooltip">Flag Topic</span></button>
-                            <button class="action-btn" onclick="viewTopic(${t.id})"><i class="fas fa-eye"></i><span class="tooltip">View Topic</span></button>
-                            <input type="checkbox" class="topic-select" data-id="${t.id}" style="margin-left:8px;">
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // Render flagged/pending topics
-            const pendingBody = document.getElementById('pendingTopicsBody');
-            if (flaggedTopics.length === 0) {
-                pendingBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No pending moderation topics.</td></tr>';
-            } else {
-                pendingBody.innerHTML = flaggedTopics.map(t => `
-                    <tr>
-                        <td>${t.name}</td>
-                        <td><span class="status-badge" style="background:${t.category === 'Spam' ? '#fecaca' : '#fef3c7'};color:${t.category === 'Spam' ? '#991b1b' : '#92400e'};">${t.category}</span></td>
-                        <td>${t.author}</td>
-                        <td>2026-06-${Math.floor(Math.random() * 20) + 10}</td>
-                        <td><span class="status-badge ${t.status === 'flagged' ? 'blocked' : 'pending'}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span></td>
-                        <td>
-                            <button class="action-btn success" onclick="approveTopic(${t.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button>
-                            <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-            document.getElementById('topicCount').textContent = topics.length;
-        }
-
-        function filterTopics() { renderTopics(); }
 
         function renderWarnings() {
             const tbody = document.getElementById('warningTableBody');
@@ -970,20 +835,6 @@
             `).join('');
             document.getElementById('warningCount').textContent = warnings.length;
 
-            const appealsContainer = document.getElementById('appealsContainer');
-            if (appeals.length === 0) {
-                appealsContainer.innerHTML = '<div style="padding:10px; color:#64748b;">No pending appeals.</div>';
-            } else {
-                appealsContainer.innerHTML = appeals.map(a => `
-                    <div class="appeal-box">
-                        <div><strong>${a.user}</strong> - Appeal submitted for "${a.warning}" warning</div>
-                        <div class="appeal-meta">Submitted: ${a.submitted} · 
-                            <button class="action-btn success" onclick="approveAppeal(${a.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button> 
-                            <button class="action-btn danger" onclick="dismissAppeal(${a.id})"><i class="fas fa-times"></i><span class="tooltip">Dismiss</span></button>
-                        </div>
-                    </div>
-                `).join('');
-            }
         }
 
         function updateKPIs() {
@@ -1027,7 +878,6 @@
         function updateBadges() {
             document.getElementById('userCount').textContent = users.length;
             document.getElementById('groupCount').textContent = groups.length;
-            document.getElementById('topicCount').textContent = topics.length;
             document.getElementById('warningCount').textContent = warnings.length;
         }
 
@@ -1037,13 +887,15 @@
             if (!u) return;
             const modal = document.getElementById('userDetailModal');
             const body = document.getElementById('userDetailBody');
-            const verificationStatus = u.role === 'lecturer' ? u.verification_status : 'Approved (Student)';
+            const verificationText = u.role === 'lecturer'
+                ? (u.verification_status === 'approved' ? 'Verified' : (u.verification_status === 'rejected' ? 'Rejected' : 'Pending'))
+                : 'Not required';
             body.innerHTML = `
                 <div class="detail-row"><span class="label">Full Name</span><span class="value">${u.name}</span></div>
                 <div class="detail-row"><span class="label">Email</span><span class="value">${u.email}</span></div>
                 <div class="detail-row"><span class="label">Role</span><span class="value"><span class="role-badge role-${u.role}">${u.role.charAt(0).toUpperCase() + u.role.slice(1)}</span></span></div>
                 <div class="detail-row"><span class="label">Status</span><span class="value"><span class="status-badge ${u.status}">${u.status.charAt(0).toUpperCase() + u.status.slice(1)}</span></span></div>
-                <div class="detail-row"><span class="label">Verification</span><span class="value"><span class="status-badge ${u.verification_status === 'approved' ? 'verified' : 'pending'}">${verificationStatus}</span></span></div>
+                <div class="detail-row"><span class="label">Verification</span><span class="value">${verificationText}</span></div>
                 <div class="detail-row"><span class="label">Last Seen</span><span class="value">${u.lastSeen || 'N/A'}</span></div>
                 <div class="detail-row"><span class="label">User ID</span><span class="value">#${String(u.id).padStart(4, '0')}</span></div>
             `;
@@ -1051,17 +903,34 @@
         }
 
         function verifyLecturer(id) {
-            const u = users.find(u => u.id === id);
-            if (u) {
-                u.verification_status = 'approved';
-                u.status = 'active';
-                u.verified = true;
-                renderUsers();
-                updateKPIs();
-                alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
-            }
+            fetch(`/administrator/users/${id}/verify`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server error');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const u = users.find(u => u.id === id);
+                    if (u) {
+                        u.verification_status = 'approved';
+                        u.status = 'active';
+                        u.verified = true;
+                        renderUsers();
+                        updateKPIs();
+                        alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
+                    }
+                } else {
+                    alert('❌ Lecturer verification failed. Please refresh and try again.');
+                }
+            })
+            .catch(() => alert('❌ Something went wrong while verifying. Please try again.'));
         }
-
         function rejectLecturer(id) {
             if (confirm('Reject this lecturer registration?')) {
                 const u = users.find(u => u.id === id);
@@ -1106,7 +975,7 @@
             const g = groups.find(g => g.id === id);
             if (g) {
                 const members = users.filter(u => u.status === 'active');
-                alert(`📊 Group: ${g.name}\nDescription: ${g.description}\nMembers: ${g.members}\nPosts/Week: ${g.posts}\nStatus: ${g.status}\n\nActive Users: ${members.length}`);
+                alert(`📊 Group: ${g.name}\nDescription: ${g.description}\nMembers: ${g.members}\nStatus: ${g.status}\n\nActive Users: ${members.length}`);
             }
         }
 
@@ -1134,58 +1003,6 @@
             if (g) {
                 g.status = g.status === 'blocked' ? 'active' : 'blocked';
                 renderGroups();
-            }
-        }
-
-        // ===== TOPIC ACTIONS =====
-        function viewTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) {
-                alert(`📝 Topic: ${t.name}\nCategory: ${t.category}\nAuthor: ${t.author}\nReplies: ${t.replies}\nViews: ${t.views}\nEngagement: ${t.engagement}%\nStatus: ${t.status}`);
-            }
-        }
-
-        function flagTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { 
-                t.status = 'flagged'; 
-                renderTopics(); 
-                alert(`🚩 Topic "${t.name}" has been flagged for review.`);
-            }
-        }
-
-        function approveTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { 
-                t.status = 'active'; 
-                renderTopics(); 
-                alert(`✅ Topic "${t.name}" has been approved.`);
-            }
-        }
-
-        function deleteTopic(id) {
-            if (confirm('Delete this topic?')) {
-                topics = topics.filter(t => t.id !== id);
-                renderTopics();
-                updateBadges();
-                alert('🗑️ Topic deleted successfully.');
-            }
-        }
-
-        function bulkDeleteTopics() {
-            const selected = document.querySelectorAll('.topic-select:checked');
-            
-            if (selected.length === 0) {
-                alert('Please select at least one topic to delete.');
-                return;
-            }
-            
-            if (confirm(`Are you sure you want to delete ${selected.length} topic(s)? This cannot be undone!`)) {
-                const idsToDelete = Array.from(selected).map(cb => parseInt(cb.dataset.id));
-                topics = topics.filter(t => !idsToDelete.includes(t.id));
-                renderTopics();
-                updateBadges();
-                alert(`✅ ${idsToDelete.length} topic(s) deleted successfully!`);
             }
         }
 
@@ -1222,19 +1039,6 @@
                 updateBadges();
                 alert('🗑️ Warning removed.');
             }
-        }
-
-        // ===== APPEAL ACTIONS =====
-        function approveAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-            alert('✅ Appeal approved. Warning removed.');
-        }
-
-        function dismissAppeal(id) {
-            appeals = appeals.filter(a => a.id !== id);
-            renderWarnings();
-            alert('❌ Appeal dismissed. Warning remains.');
         }
 
         // ===== SETTINGS =====
@@ -1342,8 +1146,7 @@
         function expandChart(type) {
             const modal = document.getElementById('chartModal');
             document.getElementById('chartModalTitle').textContent = 
-                type === 'activity' ? 'User Activity (Last 7 Days)' :
-                type === 'topics' ? 'Top Discussion Analytics' : 'User Status Distribution';
+                type === 'activity' ? 'User Activity (Last 7 Days)' : 'User Status Distribution';
             
             const canvas = document.getElementById('expandedChart');
             const ctx = canvas.getContext('2d');
@@ -1376,31 +1179,6 @@
                         plugins: {
                             legend: { display: true, position: 'top' },
                             tooltip: { callbacks: { label: function(context) { return `${context.parsed.y} activities`; } } }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#eef2f6' } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                };
-            } else if (type === 'topics') {
-                config = {
-                    type: 'bar',
-                    data: {
-                        labels: ['Data Analysis', 'Tech Analysis', 'Data Mgmt', 'Comm Skills', 'AI Ethics'],
-                        datasets: [{
-                            label: 'Engagement Score',
-                            data: [89, 67, 112, 54, 72],
-                            backgroundColor: ['#3b82f6', '#60a5fa', '#93bbfc', '#b9d3ff', '#2563eb'],
-                            borderRadius: 8,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { callbacks: { label: function(context) { return `${context.parsed.x}% engagement`; } } }
                         },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#eef2f6' } },
@@ -1457,7 +1235,6 @@
                 overview: 'Dashboard Overview',
                 users: 'User Management',
                 groups: 'Group Management',
-                topics: 'Topic Moderation',
                 warnings: 'Warning Management',
                 settings: 'Platform Settings',
                 logout: 'Log Out'
@@ -1505,32 +1282,6 @@
                 });
             }
 
-            const ctx2 = document.getElementById('topicsChart')?.getContext('2d');
-            if (ctx2) {
-                new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Data Analysis', 'Tech Analysis', 'Data Mgmt', 'Comm Skills', 'AI Ethics'],
-                        datasets: [{
-                            label: 'Engagement',
-                            data: [89, 67, 112, 54, 72],
-                            backgroundColor: ['#3b82f6', '#60a5fa', '#93bbfc', '#b9d3ff', '#2563eb'],
-                            borderRadius: 6,
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { beginAtZero: true, grid: { color: '#eef2f6' } },
-                            y: { grid: { display: false } }
-                        }
-                    }
-                });
-            }
-
             const ctx3 = document.getElementById('distChart')?.getContext('2d');
             if (ctx3) {
                 const active = users.filter(u => u.status === 'active').length;
@@ -1563,7 +1314,6 @@
         // ===== INITIAL RENDER =====
         renderUsers();
         renderGroups();
-        renderTopics();
         renderWarnings();
         updateKPIs();
         updateBadges();
