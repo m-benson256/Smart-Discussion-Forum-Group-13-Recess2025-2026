@@ -308,16 +308,6 @@
         }
         .settings-card .btn { margin-top: 10px; }
 
-        .topics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-        .topic-card {
-            background: #f8fafc; border-radius: 12px; padding: 14px 16px;
-            border: 1px solid #e9edf2; display: flex; justify-content: space-between; align-items: center;
-            transition: 0.2s;
-        }
-        .topic-card:hover { border-color: #94a3b8; }
-        .topic-card .topic-info h4 { font-size: 14px; margin-bottom: 2px; }
-        .topic-card .topic-info p { font-size: 12px; color: #64748b; }
-
         .appeal-box {
             background: #f8fafc; border-radius: 10px; padding: 12px 16px;
             border-left: 4px solid #f59e0b; margin-bottom: 8px;
@@ -367,7 +357,6 @@
         @media (max-width: 992px) {
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
             .settings-grid { grid-template-columns: 1fr; }
-            .topics-grid { grid-template-columns: 1fr; }
             .stats-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 768px) {
@@ -463,12 +452,6 @@
             </div>
 
             <div class="chart-row">
-                <div class="chart-box" onclick="expandChart('activity')">
-                    <button class="expand-btn" onclick="event.stopPropagation(); expandChart('activity')"><i class="fas fa-expand"></i> View</button>
-                    <h3><i class="fas fa-chart-line"></i> User Activity (Last 7 Days)</h3>
-                    <div class="chart-container"><canvas id="activityChart"></canvas></div>
-                </div>
-               
                 <div class="chart-box" onclick="expandChart('distribution')">
                     <button class="expand-btn" onclick="event.stopPropagation(); expandChart('distribution')"><i class="fas fa-expand"></i> View</button>
                     <h3><i class="fas fa-chart-pie"></i> User Status Distribution</h3>
@@ -698,9 +681,6 @@
         // Groups - created by students
         let groups = {!! $groupsJson !!};
 
-        // Topics - created by students
-        
-
         // Warnings - max 3 per user
         let warnings = {!! $warningsJson !!};
 
@@ -708,7 +688,7 @@
             { id: 1, user: 'Emily Davis', warning: 'Academic misconduct', submitted: '2026-06-26' }
         ];
 
-        let nextIds = { user: 10, group: 4, topic: 9, warning: 4, appeal: 2 };
+        let nextIds = { user: 10, group: 4, warning: 4, appeal: 2 };
 
         // ===== RENDER FUNCTIONS =====
         function renderUsers() {
@@ -828,61 +808,6 @@
 
         let groupedView = false;
 
-        function renderTopics() {
-            const search = document.getElementById('topicSearch')?.value?.toLowerCase() || '';
-            
-            let allTopics = topics.filter(t => {
-                return t.name.toLowerCase().includes(search) || t.author.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
-            });
-
-            let activeTopics = allTopics.filter(t => t.status === 'active');
-            let flaggedTopics = allTopics.filter(t => t.status === 'flagged' || t.status === 'pending');
-
-            // Render active topics
-            const grid = document.getElementById('topicsGrid');
-            if (activeTopics.length === 0) {
-                grid.innerHTML = '<div style="grid-column:1/-1; padding:20px; text-align:center; color:#64748b;">No active topics found.</div>';
-            } else {
-                grid.innerHTML = activeTopics.map(t => `
-                    <div class="topic-card">
-                        <div class="topic-info">
-                            <h4>${t.name} <span class="status-badge" style="background:#dbeafe;color:#1e40af;font-size:10px;">${t.category}</span></h4>
-                            <p>${t.replies} replies · ${t.views} views · ${t.engagement}% engagement</p>
-                            <p style="font-size:11px; color:#94a3b8;">By: ${t.author}</p>
-                        </div>
-                        <div>
-                            <button class="action-btn warning" onclick="flagTopic(${t.id})"><i class="fas fa-flag"></i><span class="tooltip">Flag Topic</span></button>
-                            <button class="action-btn" onclick="viewTopic(${t.id})"><i class="fas fa-eye"></i><span class="tooltip">View Topic</span></button>
-                            <input type="checkbox" class="topic-select" data-id="${t.id}" style="margin-left:8px;">
-                        </div>
-                    </div>
-                `).join('');
-            }
-
-            // Render flagged/pending topics
-            const pendingBody = document.getElementById('pendingTopicsBody');
-            if (flaggedTopics.length === 0) {
-                pendingBody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No pending moderation topics.</td></tr>';
-            } else {
-                pendingBody.innerHTML = flaggedTopics.map(t => `
-                    <tr>
-                        <td>${t.name}</td>
-                        <td><span class="status-badge" style="background:${t.category === 'Spam' ? '#fecaca' : '#fef3c7'};color:${t.category === 'Spam' ? '#991b1b' : '#92400e'};">${t.category}</span></td>
-                        <td>${t.author}</td>
-                        <td>2026-06-${Math.floor(Math.random() * 20) + 10}</td>
-                        <td><span class="status-badge ${t.status === 'flagged' ? 'blocked' : 'pending'}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span></td>
-                        <td>
-                            <button class="action-btn success" onclick="approveTopic(${t.id})"><i class="fas fa-check"></i><span class="tooltip">Approve</span></button>
-                            <button class="action-btn danger" onclick="deleteTopic(${t.id})"><i class="fas fa-trash"></i><span class="tooltip">Delete</span></button>
-                        </td>
-                    </tr>
-                `).join('');
-            }
-            document.getElementById('topicCount').textContent = topics.length;
-        }
-
-        function filterTopics() { renderTopics(); }
-
         function renderWarnings() {
             const tbody = document.getElementById('warningTableBody');
             tbody.innerHTML = warnings.map(w => `
@@ -953,7 +878,6 @@
         function updateBadges() {
             document.getElementById('userCount').textContent = users.length;
             document.getElementById('groupCount').textContent = groups.length;
-            document.getElementById('topicCount').textContent = topics.length;
             document.getElementById('warningCount').textContent = warnings.length;
         }
 
@@ -979,29 +903,34 @@
         }
 
         function verifyLecturer(id) {
-    fetch(`/administrator/users/${id}/verify`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const u = users.find(u => u.id === id);
-            if (u) {
-                u.verification_status = 'approved';
-                u.status = 'active';
-                u.verified = true;
-                renderUsers();
-                updateKPIs();
-                alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
-            }
+            fetch(`/administrator/users/${id}/verify`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                },
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('Server error');
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    const u = users.find(u => u.id === id);
+                    if (u) {
+                        u.verification_status = 'approved';
+                        u.status = 'active';
+                        u.verified = true;
+                        renderUsers();
+                        updateKPIs();
+                        alert(`✅ Lecturer ${u.name} has been verified and can now access their dashboard.`);
+                    }
+                } else {
+                    alert('❌ Lecturer verification failed. Please refresh and try again.');
+                }
+            })
+            .catch(() => alert('❌ Something went wrong while verifying. Please try again.'));
         }
-    })
-    .catch(() => alert('❌ Something went wrong while verifying. Please try again.'));
-}
         function rejectLecturer(id) {
             if (confirm('Reject this lecturer registration?')) {
                 const u = users.find(u => u.id === id);
@@ -1046,7 +975,7 @@
             const g = groups.find(g => g.id === id);
             if (g) {
                 const members = users.filter(u => u.status === 'active');
-                alert(`📊 Group: ${g.name}\nDescription: ${g.description}\nMembers: ${g.members}\nPosts/Week: ${g.posts}\nStatus: ${g.status}\n\nActive Users: ${members.length}`);
+                alert(`📊 Group: ${g.name}\nDescription: ${g.description}\nMembers: ${g.members}\nStatus: ${g.status}\n\nActive Users: ${members.length}`);
             }
         }
 
@@ -1074,58 +1003,6 @@
             if (g) {
                 g.status = g.status === 'blocked' ? 'active' : 'blocked';
                 renderGroups();
-            }
-        }
-
-        // ===== TOPIC ACTIONS =====
-        function viewTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) {
-                alert(`📝 Topic: ${t.name}\nCategory: ${t.category}\nAuthor: ${t.author}\nReplies: ${t.replies}\nViews: ${t.views}\nEngagement: ${t.engagement}%\nStatus: ${t.status}`);
-            }
-        }
-
-        function flagTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { 
-                t.status = 'flagged'; 
-                renderTopics(); 
-                alert(`🚩 Topic "${t.name}" has been flagged for review.`);
-            }
-        }
-
-        function approveTopic(id) {
-            const t = topics.find(t => t.id === id);
-            if (t) { 
-                t.status = 'active'; 
-                renderTopics(); 
-                alert(`✅ Topic "${t.name}" has been approved.`);
-            }
-        }
-
-        function deleteTopic(id) {
-            if (confirm('Delete this topic?')) {
-                topics = topics.filter(t => t.id !== id);
-                renderTopics();
-                updateBadges();
-                alert('🗑️ Topic deleted successfully.');
-            }
-        }
-
-        function bulkDeleteTopics() {
-            const selected = document.querySelectorAll('.topic-select:checked');
-            
-            if (selected.length === 0) {
-                alert('Please select at least one topic to delete.');
-                return;
-            }
-            
-            if (confirm(`Are you sure you want to delete ${selected.length} topic(s)? This cannot be undone!`)) {
-                const idsToDelete = Array.from(selected).map(cb => parseInt(cb.dataset.id));
-                topics = topics.filter(t => !idsToDelete.includes(t.id));
-                renderTopics();
-                updateBadges();
-                alert(`✅ ${idsToDelete.length} topic(s) deleted successfully!`);
             }
         }
 
@@ -1269,8 +1146,7 @@
         function expandChart(type) {
             const modal = document.getElementById('chartModal');
             document.getElementById('chartModalTitle').textContent = 
-                type === 'activity' ? 'User Activity (Last 7 Days)' :
-                type === 'topics' ? 'Top Discussion Analytics' : 'User Status Distribution';
+                type === 'activity' ? 'User Activity (Last 7 Days)' : 'User Status Distribution';
             
             const canvas = document.getElementById('expandedChart');
             const ctx = canvas.getContext('2d');
@@ -1303,31 +1179,6 @@
                         plugins: {
                             legend: { display: true, position: 'top' },
                             tooltip: { callbacks: { label: function(context) { return `${context.parsed.y} activities`; } } }
-                        },
-                        scales: {
-                            y: { beginAtZero: true, grid: { color: '#eef2f6' } },
-                            x: { grid: { display: false } }
-                        }
-                    }
-                };
-            } else if (type === 'topics') {
-                config = {
-                    type: 'bar',
-                    data: {
-                        labels: ['Data Analysis', 'Tech Analysis', 'Data Mgmt', 'Comm Skills', 'AI Ethics'],
-                        datasets: [{
-                            label: 'Engagement Score',
-                            data: [89, 67, 112, 54, 72],
-                            backgroundColor: ['#3b82f6', '#60a5fa', '#93bbfc', '#b9d3ff', '#2563eb'],
-                            borderRadius: 8,
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: { callbacks: { label: function(context) { return `${context.parsed.x}% engagement`; } } }
                         },
                         scales: {
                             y: { beginAtZero: true, grid: { color: '#eef2f6' } },
@@ -1384,7 +1235,6 @@
                 overview: 'Dashboard Overview',
                 users: 'User Management',
                 groups: 'Group Management',
-                topics: 'Topic Moderation',
                 warnings: 'Warning Management',
                 settings: 'Platform Settings',
                 logout: 'Log Out'
@@ -1432,32 +1282,6 @@
                 });
             }
 
-            const ctx2 = document.getElementById('topicsChart')?.getContext('2d');
-            if (ctx2) {
-                new Chart(ctx2, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Data Analysis', 'Tech Analysis', 'Data Mgmt', 'Comm Skills', 'AI Ethics'],
-                        datasets: [{
-                            label: 'Engagement',
-                            data: [89, 67, 112, 54, 72],
-                            backgroundColor: ['#3b82f6', '#60a5fa', '#93bbfc', '#b9d3ff', '#2563eb'],
-                            borderRadius: 6,
-                        }]
-                    },
-                    options: {
-                        indexAxis: 'y',
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { beginAtZero: true, grid: { color: '#eef2f6' } },
-                            y: { grid: { display: false } }
-                        }
-                    }
-                });
-            }
-
             const ctx3 = document.getElementById('distChart')?.getContext('2d');
             if (ctx3) {
                 const active = users.filter(u => u.status === 'active').length;
@@ -1490,7 +1314,6 @@
         // ===== INITIAL RENDER =====
         renderUsers();
         renderGroups();
-        renderTopics();
         renderWarnings();
         updateKPIs();
         updateBadges();
