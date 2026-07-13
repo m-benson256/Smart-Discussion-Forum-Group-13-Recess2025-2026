@@ -20,7 +20,7 @@ class QuizQuestionController extends Controller
             'type' => 'required|in:mcq,tf,sa',
             'prompt' => 'required|string',
             'correct_answer' => 'required|string',
-            'options' => 'required_if:type,mcq|array',
+            'options' => 'nullable|required_if:type,mcq|array',
             'options.*.option_key' => 'required_with:options|string|max:1',
             'options.*.option_text' => 'required_with:options|string',
         ]);
@@ -54,7 +54,7 @@ class QuizQuestionController extends Controller
             'type' => 'required|in:mcq,tf,sa',
             'prompt' => 'required|string',
             'correct_answer' => 'required|string',
-            'options' => 'required_if:type,mcq|array',
+            'options' => 'nullable|required_if:type,mcq|array',
             'options.*.option_key' => 'required_with:options|string|max:1',
             'options.*.option_text' => 'required_with:options|string',
         ]);
