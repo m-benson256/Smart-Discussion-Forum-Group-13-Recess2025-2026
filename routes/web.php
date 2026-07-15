@@ -150,15 +150,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
-Route::post('/groups', [GroupController::class, 'store']);
-Route::get('/groups/{group}', [GroupController::class, 'show']);
-Route::post('/groups/{group}/join', [GroupController::class, 'join']);
-Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
 
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
 Route::post('/messages/{message}/react', [MessageController::class, 'toggleReaction']);
+Route::get('/announcements', [AnnouncementsController::class, 'index']);
+
 
 Route::get('/user-interests', [UserInterestsController::class, 'index']);
 

@@ -161,283 +161,230 @@
 <span class="material-symbols-outlined" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
 <span class="font-label-md text-label-md font-bold">Submit Quiz</span>
 </button>
-</div>
 </nav>
 <script>
     let timerInterval = null;
-let remainingSeconds = 0;
-let quizSubmitted = false; // guards against double-submit
-        
-        let attemptId = null;
-let quizData = null;
-let answers = {}; // { questionId: selectedAnswer }
-    let timerInterval = null;
-    let quizSubmitted = false;
+    let remainingSeconds = 0;
+    let quizSubmitted = false; // guards against double-submit
+    let autoSubmit = false; // tracks whether submission was time-triggered
 
-async function loadQuiz() {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    let attemptId = null;
+    let quizData = null;
+    let answers = {}; // { questionId: selectedAnswer }
 
-    try {
-        const response = await fetch(`/quizzes/${quizId}/start`, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': csrfToken }
-        });
+    async function loadQuiz() {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-        if (!response.ok) {
-            const err = await response.json();
-            alert(err.message || 'Could not load quiz.');
-            window.location.href = '/student/dashboard';
-            return;
+        try {
+            const response = await fetch(`/quizzes/${quizId}/start`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken }
+            });
+
+            if (!response.ok) {
+                const err = await response.json();
+                alert(err.message || 'Could not load quiz.');
+                window.location.href = '/student/dashboard';
+                return;
+            }
+
+            const data = await response.json();
+            attemptId = data.attempt_id;
+            quizData = data.quiz;
+
+            // Anchor to the server-computed deadline (quiz start_time + duration)
+            if (data.deadline) {
+                const deadline = new Date(data.deadline);
+                remainingSeconds = Math.max(Math.floor((deadline.getTime() - Date.now()) / 1000), 0);
+            } else {
+                // No scheduled start_time on this quiz — fall back to a fresh full-duration timer
+                remainingSeconds = quizData.duration_minutes * 60;
+            }
+
+            if (remainingSeconds <= 0) {
+                // Time already expired (e.g. they reloaded after time was up)
+                autoSubmitQuiz();
+                return;
+            }
+
+            document.querySelector('.font-headline-md.text-headline-md.text-primary').textContent = quizData.title;
+            startTimer();
+            renderQuestions();
+        } catch (err) {
+            console.error(err);
+            alert('Could not load quiz.');
         }
-
-        const data = await response.json();
-        attemptId = data.attempt_id;
-        quizData = data.quiz;
-
-        
-        // NEW — anchor to the server-computed deadline (quiz start_time + duration)
-if (data.deadline) {
-    const deadline = new Date(data.deadline);
-    remainingSeconds = Math.max(Math.floor((deadline.getTime() - Date.now()) / 1000), 0);
-} else {
-    // No scheduled start_time on this quiz — fall back to a fresh full-duration timer
-    remainingSeconds = quizData.duration_minutes * 60;
-}
-
-
-if (remainingSeconds <= 0) {
-    // Time already expired (e.g. they reloaded after time was up)
-    autoSubmitQuiz();
-    return;
-}
-
-startTimer();
-
-        document.querySelector('.font-headline-md.text-headline-md.text-primary').textContent = quizData.title;
-        startCountdown(data.attempt_started_at, quizData.duration_minutes);
-        renderQuestions();
-    } catch (err) {
-        console.error(err);
-        alert('Could not load quiz.');
     }
-}
 
-function startTimer() {
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-        remainingSeconds--;
-
-        if (remainingSeconds <= 0) {
-            remainingSeconds = 0;
-            updateTimerDisplay();
-            clearInterval(timerInterval);
-            autoSubmitQuiz();
-            return;
-        }
-
+    function startTimer() {
         updateTimerDisplay();
-    }, 1000);
-}
+        timerInterval = setInterval(() => {
+            remainingSeconds--;
 
-function updateTimerDisplay() {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-    const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
+            if (remainingSeconds <= 0) {
+                remainingSeconds = 0;
+                updateTimerDisplay();
+                clearInterval(timerInterval);
+                autoSubmit = true;
+                autoSubmitQuiz();
+                return;
+            }
 
-    const timerEl = document.getElementById('timer');
-    if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
-
-    // Optional: flash red when under a minute
-    const timerBox = timerEl?.closest('.bg-error-container');
-    if (remainingSeconds <= 60) {
-        timerBox?.classList.add('animate-pulse');
-    }
-}
-
-
-
-
-
-
-function startTimer() {
-    updateTimerDisplay();
-    timerInterval = setInterval(() => {
-        remainingSeconds--;
-
-        if (remainingSeconds <= 0) {
-            remainingSeconds = 0;
             updateTimerDisplay();
-            clearInterval(timerInterval);
-            autoSubmitQuiz();
-            return;
-        }
-
-        updateTimerDisplay();
-    }, 1000);
-}
-
-function updateTimerDisplay() {
-    const minutes = Math.floor(remainingSeconds / 60);
-    const seconds = remainingSeconds % 60;
-    const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
-
-    const timerEl = document.getElementById('timer');
-    if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
-
-    // Optional: flash red when under a minute
-    const timerBox = timerEl?.closest('.bg-error-container');
-    if (remainingSeconds <= 60) {
-        timerBox?.classList.add('animate-pulse');
+        }, 1000);
     }
-}
 
+    function updateTimerDisplay() {
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = remainingSeconds % 60;
+        const formatted = `${minutes}:${String(seconds).padStart(2, '0')}`;
 
->>>>>>> b9478290b505d887c52738a772d394432c0774c9
-function renderQuestions() {
-    const container = document.getElementById('questions-container');
-    container.innerHTML = quizData.questions.map((q, idx) => {
-        let answerArea = '';
+        const timerEl = document.getElementById('timer');
+        if (timerEl) timerEl.textContent = `Time Remaining: ${formatted}`;
 
-        if (q.type === 'mcq') {
-            answerArea = `
-                <div class="space-y-4">
-                    ${q.options.map(opt => `
-                        <label class="flex items-center p-4 rounded-lg border border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors group">
-                            <input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary" name="q${q.id}" type="radio" onclick="setAnswer(${q.id}, '${opt.option_key}')"/>
-                            <span class="ml-4 font-body-md text-body-md text-on-surface">${opt.option_text}</span>
-                        </label>
-                    `).join('')}
-                </div>
-            `;
-        } else if (q.type === 'tf') {
-            answerArea = `
-                <div class="flex gap-4" id="tf-group-${q.id}">
-                    <button type="button" class="flex-1 py-4 px-6 border-2 border-outline-variant rounded-xl font-body-lg text-body-lg hover:bg-surface-container-low transition-all active:scale-95" onclick="toggleActive(this, ${q.id}, 'True')">True</button>
-                    <button type="button" class="flex-1 py-4 px-6 border-2 border-outline-variant rounded-xl font-body-lg text-body-lg hover:bg-surface-container-low transition-all active:scale-95" onclick="toggleActive(this, ${q.id}, 'False')">False</button>
-                </div>
-            `;
-        } else {
-            answerArea = `
-                <textarea class="w-full p-4 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md resize-none transition-all" placeholder="Type your answer here..." rows="6" oninput="setAnswer(${q.id}, this.value)"></textarea>
-            `;
+        const timerBox = timerEl?.closest('.bg-error-container');
+        if (remainingSeconds <= 60) {
+            timerBox?.classList.add('animate-pulse');
         }
-
-        return `
-            <section class="question-card rounded-xl p-stack-md">
-                <div class="flex justify-between items-start mb-6">
-                    <span class="font-label-sm text-label-sm px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-full uppercase tracking-wider">Question ${String(idx + 1).padStart(2, '0')}</span>
-                </div>
-                <h2 class="font-headline-md text-headline-md text-on-surface mb-8">${q.prompt}</h2>
-                ${answerArea}
-            </section>
-        `;
-    }).join('');
-}
-
-function setAnswer(questionId, value) {
-    answers[questionId] = value;
-    updateProgress();
-    autosaveAnswer(questionId, value);
-}
-
-async function autosaveAnswer(questionId, value) {
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    try {
-        await fetch(`/attempts/${attemptId}/answer`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify({ question_id: questionId, selected_answer: value })
-        });
-    } catch (err) {
-        console.error('Autosave failed:', err);
     }
-}
 
-function toggleActive(element, questionId, value) {
-    const buttons = element.parentElement.querySelectorAll('button');
-    buttons.forEach(btn => {
-        btn.classList.remove('bg-primary', 'text-white', 'border-primary');
-        btn.classList.add('border-outline-variant', 'text-on-surface');
-    });
-    element.classList.remove('border-outline-variant', 'text-on-surface');
-    element.classList.add('bg-primary', 'text-white', 'border-primary');
+    function renderQuestions() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = quizData.questions.map((q, idx) => {
+            let answerArea = '';
 
-    setAnswer(questionId, value);
-}
+            if (q.type === 'mcq') {
+                answerArea = `
+                    <div class="space-y-4">
+                        ${q.options.map(opt => `
+                            <label class="flex items-center p-4 rounded-lg border border-outline-variant hover:bg-surface-container-low cursor-pointer transition-colors group">
+                                <input class="w-5 h-5 text-primary border-outline-variant focus:ring-primary" name="q${q.id}" type="radio" onclick="setAnswer(${q.id}, '${opt.option_key}')"/>
+                                <span class="ml-4 font-body-md text-body-md text-on-surface">${opt.option_text}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+            } else if (q.type === 'tf') {
+                answerArea = `
+                    <div class="flex gap-4" id="tf-group-${q.id}">
+                        <button type="button" class="flex-1 py-4 px-6 border-2 border-outline-variant rounded-xl font-body-lg text-body-lg hover:bg-surface-container-low transition-all active:scale-95" onclick="toggleActive(this, ${q.id}, 'True')">True</button>
+                        <button type="button" class="flex-1 py-4 px-6 border-2 border-outline-variant rounded-xl font-body-lg text-body-lg hover:bg-surface-container-low transition-all active:scale-95" onclick="toggleActive(this, ${q.id}, 'False')">False</button>
+                    </div>
+                `;
+            } else {
+                answerArea = `
+                    <textarea class="w-full p-4 bg-surface-container-low border border-outline-variant rounded-xl focus:ring-2 focus:ring-primary focus:border-primary font-body-md text-body-md resize-none transition-all" placeholder="Type your answer here..." rows="6" oninput="setAnswer(${q.id}, this.value)"></textarea>
+                `;
+            }
 
-function updateProgress() {
-    const total = quizData.questions.length;
-    const answered = Object.keys(answers).length;
-    const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+            return `
+                <section class="question-card rounded-xl p-stack-md">
+                    <div class="flex justify-between items-start mb-6">
+                        <span class="font-label-sm text-label-sm px-3 py-1 bg-surface-container-low text-on-surface-variant rounded-full uppercase tracking-wider">Question ${String(idx + 1).padStart(2, '0')}</span>
+                    </div>
+                    <h2 class="font-headline-md text-headline-md text-on-surface mb-8">${q.prompt}</h2>
+                    ${answerArea}
+                </section>
+            `;
+        }).join('');
+    }
 
-    document.querySelector('.progress-bar-fill').style.width = percent + '%';
-    document.querySelector('.font-label-sm.text-label-sm.text-primary').textContent = percent + '% Complete';
-}
+    function setAnswer(questionId, value) {
+        answers[questionId] = value;
+        updateProgress();
+        autosaveAnswer(questionId, value);
+    }
 
+    async function autosaveAnswer(questionId, value) {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+        try {
+            await fetch(`/attempts/${attemptId}/answer`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify({ question_id: questionId, selected_answer: value })
+            });
+        } catch (err) {
+            console.error('Autosave failed:', err);
+        }
+    }
 
-async function submitQuiz() {
-    if (quizSubmitted) return;
-    quizSubmitted = true;
-    clearInterval(timerInterval);
-
-    const submitBtn = document.querySelector('[onclick="submitQuiz()"]');
-    if (submitBtn) submitBtn.disabled = true;
-
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-    const payload = {
-        answers: Object.entries(answers).map(([questionId, selectedAnswer]) => ({
-            question_id: parseInt(questionId),
-            selected_answer: selectedAnswer
-        }))
-    };
-
-    try {
-        const response = await fetch(`/attempts/${attemptId}/submit`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': csrfToken
-            },
-            body: JSON.stringify(payload)
+    function toggleActive(element, questionId, value) {
+        const buttons = element.parentElement.querySelectorAll('button');
+        buttons.forEach(btn => {
+            btn.classList.remove('bg-primary', 'text-white', 'border-primary');
+            btn.classList.add('border-outline-variant', 'text-on-surface');
         });
+        element.classList.remove('border-outline-variant', 'text-on-surface');
+        element.classList.add('bg-primary', 'text-white', 'border-primary');
 
-        const result = await response.json();
+        setAnswer(questionId, value);
+    }
 
-        if (!response.ok) {
+    function updateProgress() {
+        const total = quizData.questions.length;
+        const answered = Object.keys(answers).length;
+        const percent = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+        document.querySelector('.progress-bar-fill').style.width = percent + '%';
+        document.querySelector('.font-label-sm.text-label-sm.text-primary').textContent = percent + '% Complete';
+    }
+
+    async function submitQuiz() {
+        if (quizSubmitted) return;
+        quizSubmitted = true;
+        clearInterval(timerInterval);
+
+        const submitBtn = document.querySelector('[onclick="submitQuiz()"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        const payload = {
+            answers: Object.entries(answers).map(([questionId, selectedAnswer]) => ({
+                question_id: parseInt(questionId),
+                selected_answer: selectedAnswer
+            }))
+        };
+
+        try {
+            const response = await fetch(`/attempts/${attemptId}/submit`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                quizSubmitted = false;
+                alert(result.message || 'Could not submit quiz.');
+                if (submitBtn) submitBtn.disabled = false;
+                return;
+            }
+
+            const prefix = autoSubmit ? 'Time is up. ' : '';
+            alert(`${prefix}Quiz submitted! Score: ${result.score}/${result.total_marks} (${result.correct_count}/${result.total_questions} correct)`);
+            window.location.href = '/student/dashboard?view=quizzes';
+        } catch (err) {
             quizSubmitted = false;
-            alert(result.message || 'Could not submit quiz.');
-            quizSubmitted = false; // allow retry on failure
+            console.error(err);
+            alert('Could not submit quiz. Please try again.');
             if (submitBtn) submitBtn.disabled = false;
-            return;
         }
-
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-
-        const prefix = autoSubmit ? 'Time is up. ' : '';
-        alert(`${prefix}Quiz submitted! Score: ${result.score}/${result.total_marks} (${result.correct_count}/${result.total_questions} correct)`);
-        window.location.href = '/student/dashboard?view=quizzes';
-    } catch (err) {
-        quizSubmitted = false;
-        console.error(err);
-        alert('Could not submit quiz. Please try again.');
-        quizSubmitted = false;
-        if (submitBtn) submitBtn.disabled = false;
     }
-}
 
-async function autoSubmitQuiz() {
-    if (quizSubmitted) return;
-    alert("Time's up! Your quiz is being submitted automatically.");
-    await submitQuiz();
-}
+    async function autoSubmitQuiz() {
+        if (quizSubmitted) return;
+        alert("Time's up! Your quiz is being submitted automatically.");
+        await submitQuiz();
+    }
 
-document.addEventListener('DOMContentLoaded', loadQuiz);
-    </script>
+    document.addEventListener('DOMContentLoaded', loadQuiz);
+</script>
 </body></html>
