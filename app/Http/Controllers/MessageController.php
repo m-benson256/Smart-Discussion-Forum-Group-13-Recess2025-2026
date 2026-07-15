@@ -7,6 +7,8 @@ use App\Models\Topic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Events\MessageSent;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class MessageController extends Controller
 {
@@ -14,6 +16,17 @@ class MessageController extends Controller
 public function index(Request $request, Topic $topic): JsonResponse
 {
     $userId = $request->user()->id;
+   $topic->load('group:id,visibility,created_by');
+
+    if ($topic->group && $topic->group->visibility === 'private') {
+        $userId = $request->user()->id;
+        $isMember = $topic->group->created_by === $userId
+            || $topic->group->members()->where('user_id', $userId)->exists();
+
+        if (!$isMember) {
+            return response()->json(['message' => 'You do not have access to this discussion'], 403);
+        }
+    }
 
     $messages = $topic->messages()
         ->with(['user:id,name', 'reactions'])
@@ -35,6 +48,8 @@ public function index(Request $request, Topic $topic): JsonResponse
                 ];
             })
             ->values();
+
+
     });
 
     return response()->json($messages->makeHidden(['likedBy', 'flaggedBy', 'reactions']));
@@ -149,5 +164,36 @@ public function toggleReaction(Request $request, Message $message): JsonResponse
         });
 
     return response()->json(['reactions' => $grouped]);
+}
+
+// GET /topics/{topic}/export-pdf — download the thread as a PDF
+public function exportPdf(Request $request, Topic $topic)
+{
+    $userId = $request->user()->id;
+    $topic->load('group:id,visibility,created_by', 'user:id,name');
+
+    if ($topic->group && $topic->group->visibility === 'private') {
+        $isMember = $topic->group->created_by === $userId
+            || $topic->group->members()->where('user_id', $userId)->exists();
+
+        if (!$isMember) {
+            abort(403, 'You do not have access to this discussion');
+        }
+    }
+
+    $messages = $topic->messages()
+        ->with('user:id,name')
+        ->oldest()
+        ->get();
+
+    $pdf = Pdf::loadView('exports.topic-thread', [
+        'topic' => $topic,
+        'messages' => $messages,
+        'exportedBy' => $request->user()->name,
+    ])->setPaper('a4');
+
+    $safeTitle = Str::slug($topic->title) ?: 'topic';
+
+    return $pdf->download("discussion-{$safeTitle}-{$topic->id}.pdf");
 }
 }

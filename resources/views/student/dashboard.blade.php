@@ -180,6 +180,13 @@
 <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
 <textarea class="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500" id="group-input-desc" placeholder="What is this group about?" rows="3"></textarea>
 </div>
+<div class="mb-4">
+    <label class="block text-sm font-medium text-slate-700 mb-2">Visibility</label>
+    <select id="group-input-visibility" class="w-full border-slate-200 rounded-lg p-2">
+        <option value="public">Public — anyone can join</option>
+        <option value="private">Private — requires approval</option>
+    </select>
+</div>
 </div>
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
 <button class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium" onclick="toggleGroupModal(false)">Cancel</button>
@@ -326,7 +333,11 @@ document.getElementById('save-group')?.addEventListener('click', async () => {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken
             },
-            body: JSON.stringify({ name, description })
+         body: JSON.stringify({
+    name,
+    description,
+    visibility: document.getElementById('group-input-visibility').value
+})
         });
 
         if (!response.ok) throw new Error('Failed to create group');
@@ -376,13 +387,23 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
 });
 
         // Global click out to hide floating panels
-        document.addEventListener('click', (e) => {
+      document.addEventListener('click', (e) => {
             if (contextMenu && !contextMenu.contains(e.target)) contextMenu.classList.add('hidden');
             if (emojiPicker && !emojiPicker.contains(e.target)) emojiPicker.classList.add('hidden');
+            const shareMenu = document.getElementById('share-menu');
+            if (shareMenu && !e.target.closest('#share-menu') && !e.target.closest('[title="Share this discussion"]')) {
+                shareMenu.classList.add('hidden');
+            }
         });
 
         // Initial bootstrap render
         fetchGroups();
+         const topicParam = new URLSearchParams(window.location.search).get('topic');
+        fetchTopics().then(() => {
+            if (topicParam) {
+                openTopic(parseInt(topicParam, 10));
+            }
+        });
         fetchTopics();
         fetchQuizzes();
         updateView(initialView);
@@ -489,7 +510,10 @@ async function recordTopicView(topicId) {
                                     <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
                                         <i class="fa-solid fa-users text-xl"></i>
                                     </div>
-                                    <h3 class="text-lg font-bold text-slate-900 mb-2">${group.name}</h3>
+                                    <h3 class="text-lg font-bold text-slate-900 mb-2">
+    ${group.name}
+    ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
+</h3>
                                     <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
                                     <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
                                         <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
@@ -501,19 +525,36 @@ async function recordTopicView(topicId) {
                 `;
                 break;
 
+
+
+               case 'pending-requests':
+    html = `
+        <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
+        <div id="all-pending-requests-container" class="space-y-3">
+            <div class="text-slate-400">Loading...</div>
+        </div>
+    `;
+    break;
+    
+
              // NEW:
 case 'group_details':
     const group = state.groups.find(g => g.id === state.selectedGroupId);
     const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
 
-    let membershipButton = '';
-    if (group.isCreator) {
-        membershipButton = `<span class="text-xs font-medium text-slate-400 px-3 py-2">You created this group</span>`;
-    } else if (group.isMember) {
-        membershipButton = `<button onclick="leaveGroup(${group.id})" class="border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors">Leave Group</button>`;
-    } else {
-        membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Join Group</button>`;
-    }
+    // Replace with:
+let membershipButton = '';
+if (group.isCreator) {
+    membershipButton = `<span class="text-xs font-medium text-slate-400 px-3 py-2">You created this group</span>`;
+} else if (group.isMember) {
+    membershipButton = `<button onclick="leaveGroup(${group.id})" class="border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors">Leave Group</button>`;
+} else if (group.hasPendingRequest) {
+    membershipButton = `<span class="text-xs font-medium text-amber-600 px-3 py-2">Request pending approval</span>`;
+} else if (group.visibility === 'private') {
+    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
+} else {
+    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Join Group</button>`;
+}
 
     html = `
         <div class="mb-6 flex items-center space-x-2 text-sm">
@@ -528,9 +569,11 @@ case 'group_details':
             </div>
             <div class="flex items-center space-x-3">
                 ${membershipButton}
-                <button onclick="toggleTopicModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors">
-                    <i class="fa-solid fa-plus mr-2"></i> Create Topic
-                </button>
+                ${group.isMember || group.isCreator ? `
+<button onclick="toggleTopicModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors">
+    <i class="fa-solid fa-plus mr-2"></i> Create Topic
+</button>
+` : ''}
             </div>
         </div>
         <div class="space-y-3">
@@ -678,15 +721,36 @@ case 'my-topics':
                     break;
                 }
                 html = `
-                    <div class="flex flex-col h-full -m-8">
-                        <div class="h-16 bg-white border-b px-8 flex items-center justify-between">
-                            <div class="flex items-center">
+                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-8 sticky  ">
+                            <div class="  flex items-center">
                                 <button onclick="updateView('${state.selectedGroupId ? 'group_details' : 'discussions'}')" class="mr-4 text-slate-400 hover:text-slate-600">
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </button>
                                 <h2 class="text-lg font-bold text-slate-800">${topic.title}</h2>
                             </div>
+                            <div class="flex items-center space-x-2">
+                                <a href="/topics/${topic.id}/export-pdf" target="_blank" class="flex items-center px-3 py-2 text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" title="Export thread as PDF">
+                                    <i class="fa-solid fa-file-pdf mr-2"></i> Export PDF
+                                </a>
+                                <div class="relative">
+                                    <button onclick="toggleShareMenu(event)" class="flex  px-3 py-2 text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" title="Share this discussion">
+                                        <i class="fa-solid fa-share-nodes mr-2"></i> Share
+                                    </button>
+                                    <div id="share-menu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-lg shadow-lg z-30 py-1">
+                                        <button onclick="shareTopic('twitter')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-x-twitter mr-3 w-4"></i> X / Twitter
+                                        </button>
+                                        <button onclick="shareTopic('linkedin')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-linkedin mr-3 w-4 text-[#0A66C2]"></i> LinkedIn
+                                        </button>
+                                        <button onclick="shareTopic('facebook')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-facebook mr-3 w-4 text-[#1877F2]"></i> Facebook
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
                         <div class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50" id="chat-messages">
                             <div class="max-w-4xl mx-auto space-y-6">
                                 ${topicMessages.map(msg => `
@@ -757,6 +821,11 @@ case 'my-topics':
         }
         
         mainContent.innerHTML = html;
+
+         if (state.activeView === 'pending-requests') {
+    fetchAllPendingRequests();
+} 
+
         if(state.activeView === 'chat') {
             const chatBox = document.getElementById('chat-messages');
             if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
@@ -866,20 +935,36 @@ async function handleLike(event, btn) {
 
         const data = await response.json();
 
-        state.groups = data.map(group => ({
-            id: group.id,
-            name: group.name,
-            description: group.description,
-            memberCount: group.members_count ?? 0,
-            isMember: group.is_member ?? false,
-            isCreator: group.created_by === currentUserId,
-            likes: 0
-        }));
+       state.groups = data.map(group => ({
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    memberCount: group.members_count ?? 0,
+    isMember: group.is_member ?? false,
+    isCreator: group.created_by === currentUserId,
+    visibility: group.visibility,
+    hasPendingRequest: group.has_pending_request ?? false,
+    likes: 0
+}));
+   
+state.hasPrivateGroups = state.groups.some(g => g.isCreator && g.visibility === 'private');
 
         renderView();
         setupContextListeners();
     } catch (err) {
         console.error('Failed to load groups:', err);
+    }
+   
+updateSidebarForPendingRequests();
+}
+
+function updateSidebarForPendingRequests() {
+    const settingsBtn = document.querySelector('[data-view="settings"]');
+    if (!settingsBtn) return;
+
+    if (state.hasPrivateGroups) {
+        settingsBtn.innerHTML = `<i class="fa-solid fa-user-clock mr-3"></i> Pending Requests`;
+        settingsBtn.setAttribute('data-view', 'pending-requests');
     }
 }
 
@@ -1018,7 +1103,56 @@ async function toggleReaction(event, badge, emoji) {
         
         emojiPicker?.classList.remove('hidden');
     }
+async function fetchAllPendingRequests() {
+    const container = document.getElementById('all-pending-requests-container');
+    if (!container) return;
 
+    try {
+        const response = await fetch('/my-pending-requests');
+        const requests = await response.json();
+
+        if (requests.length === 0) {
+            container.innerHTML = '<div class="text-slate-400 py-10 text-center">No pending requests right now.</div>';
+            return;
+        }
+
+        container.innerHTML = requests.map(req => `
+            <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg">
+                <div>
+                    <span class="font-bold text-slate-800">${req.user.name}</span>
+                    <span class="text-xs text-slate-400 ml-2">${req.user.email}</span>
+                    <div class="text-xs text-slate-500 mt-1">Requesting to join: <span class="font-medium">${req.group.name}</span></div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="respondToGlobalRequest(${req.id}, 'approve')" class="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">Approve</button>
+                    <button onclick="respondToGlobalRequest(${req.id}, 'reject')" class="px-3 py-1 bg-red-100 text-red-600 text-xs rounded-lg hover:bg-red-200">Reject</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-red-500">Could not load requests.</div>';
+    }
+}
+
+async function respondToGlobalRequest(requestId, action) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/group-requests/${requestId}/${action}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to respond');
+
+        await fetchAllPendingRequests();
+        await fetchGroups();
+    } catch (err) {
+        console.error(err);
+        alert('Could not process this request.');
+    }
+}
     // NEW:
 async function handleContextAction(action) {
     if (!currentContextElement || !currentContextMessageId) return;
@@ -1078,6 +1212,37 @@ async function toggleMessageFlag(messageId) {
         console.error(err);
         alert('Could not update flag. Please try again.');
     }
+}
+
+function toggleShareMenu(e) {
+    e.stopPropagation();
+    document.getElementById('share-menu')?.classList.toggle('hidden');
+}
+
+function shareTopic(platform) {
+    const topic = state.topics.find(t => t.id === state.selectedTopicId);
+    if (!topic) return;
+
+    const shareUrl = `${window.location.origin}/topics/${topic.id}/preview`;
+    const shareText = `Check out this discussion: ${topic.title}`;
+
+    let intentUrl;
+    switch (platform) {
+        case 'twitter':
+            intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            break;
+        case 'linkedin':
+            intentUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+            break;
+        case 'facebook':
+            intentUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            break;
+        default:
+            return;
+    }
+
+    window.open(intentUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+    document.getElementById('share-menu')?.classList.add('hidden');
 }
 
     // NEW:

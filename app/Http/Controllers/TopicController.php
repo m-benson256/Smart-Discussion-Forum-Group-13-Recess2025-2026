@@ -6,33 +6,50 @@ use App\Models\Topic;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Models\TopicView;
+use Illuminate\Support\Str;
 
 class TopicController extends Controller
 {
     // GET /topics — list all topics for the Discussions screen
-    public function index(Request $request): JsonResponse
-    {
-        $topics = Topic::with([
-            'user:id,name',
-            'group' => function ($query) {
-                $query->withCount('members')
-                    ->with('creator:id,name');
-            },
-        ])
-            ->withCount('messages')
-            ->latest()
-            ->get();
+   public function index(Request $request): JsonResponse
+{
+    $userId = $request->user()->id;
 
-        $topics->each(function ($topic) use ($request) {
-            if ($topic->group) {
-                $topic->group->is_member = $topic->group->members()
-                    ->where('user_id', $request->user()->id)
-                    ->exists();
-            }
-        });
+    $topics = Topic::with([
+        'user:id,name',
+        'group' => function ($query) {
+            $query->withCount('members')
+                ->with('creator:id,name');
+        },
+    ])
+        ->withCount('messages')
+        ->latest()
+        ->get();
 
-        return response()->json($topics);
-    }
+    $topics->each(function ($topic) use ($userId) {
+        if ($topic->group) {
+            $topic->group->is_member = $topic->group->members()
+                ->where('user_id', $userId)
+                ->exists();
+        }
+    });
+
+    // NEW: filter out private-group topics the current user can't access
+    $topics = $topics->filter(function ($topic) use ($userId) {
+        if (!$topic->group) {
+            return true; // general discussion, always visible
+        }
+
+        if ($topic->group->visibility === 'public') {
+            return true;
+        }
+
+        // Private group — only visible to the creator or an approved member
+        return $topic->group->created_by === $userId || $topic->group->is_member;
+    })->values();
+
+    return response()->json($topics);
+}
 
     // POST /api/topics — create a new topic
     public function store(Request $request): JsonResponse
@@ -46,6 +63,16 @@ class TopicController extends Controller
         'interest_id' => 'nullable|integer|exists:user_interests,InterestID',
 ]);
 
+       // NEW: if posting into a group, confirm membership first
+if (!empty($validated['group_id'])) {
+    $group = \App\Models\Group::findOrFail($validated['group_id']);
+    $isMember = $group->members()->where('user_id', $request->user()->id)->exists();
+
+    if (!$isMember) {
+        return response()->json(['message' => 'You must be a member of this group to post here'], 403);
+    }
+}
+
         $topic = Topic::create([
             ...$validated,
             'user_id' => $request->user()->id,
@@ -57,12 +84,22 @@ class TopicController extends Controller
     }
 
     // GET /api/topics/{topic} — view a single topic
-    public function show(Topic $topic): JsonResponse
-    {
-        $topic->load('user:id,name');
+   public function show(Request $request, Topic $topic): JsonResponse
+{
+    $topic->load(['user:id,name', 'group:id,visibility,created_by']);
 
-        return response()->json($topic);
+    if ($topic->group && $topic->group->visibility === 'private') {
+        $userId = $request->user()->id;
+        $isMember = $topic->group->created_by === $userId
+            || $topic->group->members()->where('user_id', $userId)->exists();
+
+        if (!$isMember) {
+            return response()->json(['message' => 'You do not have access to this topic'], 403);
+        }
     }
+
+    return response()->json($topic->makeHidden('group'));
+}
 
     // PUT/PATCH /api/topics/{topic} — edit a topic (author only)
     public function update(Request $request, Topic $topic): JsonResponse
@@ -104,5 +141,22 @@ class TopicController extends Controller
     $view->update(['last_viewed_at' => now()]);
 
     return response()->json(['message' => 'View recorded']);
+}
+
+// GET /topics/{topic}/preview — public page for social crawlers & signed-out visitors
+public function publicPreview(Topic $topic)
+{
+    $topic->load('group:id,visibility');
+
+    $isPrivate = $topic->group && $topic->group->visibility === 'private';
+
+    return view('topics.public-preview', [
+        'topic' => $topic,
+        'title' => $isPrivate ? 'Private Discussion' : $topic->title,
+        'description' => $isPrivate
+            ? 'This discussion is only visible to members of a private group.'
+            : Str::limit(strip_tags($topic->content), 160),
+        'isPrivate' => $isPrivate,
+    ]);
 }
 }
