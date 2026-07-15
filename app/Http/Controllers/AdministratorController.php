@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Administrator;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Models\Warnings;
+use App\Models\Group;
 
 class AdministratorController extends Controller
 {
@@ -18,7 +20,7 @@ class AdministratorController extends Controller
     $inactiveUsers = User::where('status', 'inactive')->count();
     $blockedUsers = User::where('status', 'blocked')->count();
 
-$users = User::select('id', 'name', 'email', 'role', 'status')->get()->map(function ($u) {
+$users = User::select('id', 'name', 'email', 'role', 'status','verification_status')->get()->map(function ($u) {
     return [
         'id' => $u->id,
         'name' => $u->name,
@@ -57,7 +59,7 @@ $warnings = \App\Models\Warnings::with('user:id,name')->latest()->get()->map(fun
 });
 
 $warningsJson = $warnings->toJson();
-return view('admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson', 'groups', 'groupsJson', 'warnings', 'warningsJson'));
+return view('admin.admin', compact('totalUsers', 'activeUsers', 'inactiveUsers', 'blockedUsers', 'users', 'usersJson', 'groups', 'groupsJson', 'warnings', 'warningsJson'));
 }
 
 public function verifyLecturer(\App\Models\User $user)
@@ -66,6 +68,33 @@ public function verifyLecturer(\App\Models\User $user)
     $user->save();
 
     return response()->json(['success' => true]);
+}
+
+public function storeWarning(Request $request)
+{
+    $request->validate([
+        'user_id' => 'required|exists:users,id',
+        'reason' => 'required|string',
+        'warning_number' => 'required|integer|min:1|max:3',
+    ]);
+
+    $warnings = Warnings::create([
+        'user_id' => $request->user_id,
+        'reason' => $request->reason,
+        'warning_number' => $request->warning_number,
+        'issued_at' => now(),
+        'status' => 'active',
+    ]);
+
+    return response()->json(['success' => true, 'warning' => $warnings]);
+}
+public function toggleGroupStatus($id)
+{
+    $group = Group::findOrFail($id);
+    $group->status = $group->status === 'blocked' ? 'active' : 'blocked';
+    $group->save();
+
+    return response()->json(['success' => true, 'status' => $group->status]);
 }
   
 

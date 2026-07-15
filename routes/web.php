@@ -48,6 +48,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/dashboard', [AdministratorController::class, 'index'])->name('admin.dashboard');
     Route::patch('/administrator/users/{user}/verify', [AdministratorController::class, 'verifyLecturer'])->name('admin.users.verify');
+    Route::post('/admin/warnings', [AdministratorController::class, 'storeWarning'])->name('admin.warnings.store');
+    Route::post('/admin/groups/{id}/toggle-status', [AdministratorController::class, 'toggleGroupStatus'])->name('admin.groups.toggle-status');
 
     // Profile management paths
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

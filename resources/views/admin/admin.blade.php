@@ -586,42 +586,6 @@
                         <select><option>English</option><option>French</option><option>Spanish</option></select>
                         <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save</button>
                     </div>
-                    <div class="settings-card">
-                        <h4>Security Options</h4>
-                        <label>Password Policy</label>
-                        <select><option>Standard (8+ chars)</option><option selected>Strong (12+ chars, symbols)</option></select>
-                        <label>2FA Enforcement</label>
-                        <select><option>Disabled</option><option selected>Optional</option><option>Required</option></select>
-                        <label>Session Timeout</label>
-                        <select><option>30 minutes</option><option selected>60 minutes</option><option>120 minutes</option></select>
-                        <button class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
-                    </div>
-                    <div class="settings-card">
-                        <h4>Content Policies</h4>
-                        <label>Word Filters</label>
-                        <input type="text" value="spam, offensive, inappropriate">
-                        <label>Posting Limits (per day)</label>
-                        <select><option>10</option><option selected>25</option><option>50</option><option>Unlimited</option></select>
-                        <label>Auto-moderation</label>
-                        <select><option>Disabled</option><option selected>Basic</option><option>Strict</option></select>
-                        <button class="btn btn-primary"><i class="fas fa-save"></i> Save</button>
-                    </div>
-                    <div class="settings-card">
-                        <h4>Backup & Restore</h4>
-                        <label>Auto-backup Frequency</label>
-                        <select><option>Daily</option><option selected>Weekly</option><option>Monthly</option></select>
-                        <label>Backup Location</label>
-                        <select><option>Local</option><option selected>Cloud</option><option>Both</option></select>
-                        <button class="btn btn-success"><i class="fas fa-database"></i> Create Backup</button>
-                        <button class="btn btn-warning"><i class="fas fa-undo"></i> Restore</button>
-                    </div>
-                </div>
-
-                <div style="margin-top:18px; background:#fee2e2; border-radius:12px; padding:16px; border:1px solid #fecaca;">
-                    <h4 style="color:#991b1b;"><i class="fas fa-exclamation-triangle"></i> Danger Zone</h4>
-                    <p style="font-size:13px; color:#64748b;">These actions are irreversible and will permanently delete data.</p>
-                    <button class="btn btn-danger" style="margin-top:8px;" onclick="if(confirm('Are you sure?')) alert('All data reset!')"><i class="fas fa-database"></i> Reset All Data</button>
-                    <button class="btn btn-danger" style="margin-top:8px; margin-left:8px;" onclick="if(confirm('Purge all inactive users?')) { users = users.filter(u => u.status !== 'inactive'); renderUsers(); updateKPIs(); updateBadges(); }"><i class="fas fa-users-slash"></i> Purge All Inactive</button>
                 </div>
             </div>
         </div>
@@ -988,23 +952,49 @@
             }
         }
 
-        function blockGroup(id) {
-            const g = groups.find(g => g.id === id);
-            if (g) {
-                if (!confirm(`Are you sure you want to block ${g.name}?`)) return;
-                g.status = 'blocked';
-                renderGroups();
-                alert(`🛑 Group "${g.name}" has been blocked.`);
-            }
-        }
+    function blockGroup(id) {
+    const g = groups.find(g => g.id === id);
+    if (!g) return;
+    if (!confirm(`Are you sure you want to block ${g.name}?`)) return;
 
-        function toggleGroupStatus(id) {
-            const g = groups.find(g => g.id === id);
-            if (g) {
-                g.status = g.status === 'blocked' ? 'active' : 'blocked';
-                renderGroups();
-            }
+    fetch(`/admin/groups/${id}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         }
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`🚫 Group "${g.name}" has been blocked.`);
+        location.reload();
+    })
+    .catch(error => {
+        alert('❌ Failed to update group status.');
+        console.error(error);
+    });
+}
+function toggleGroupStatus(id) {
+    const g = groups.find(g => g.id === id);
+    if (!g) return;
+
+    fetch(`/admin/groups/${id}/toggle-status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`✅ Group "${g.name}" is now ${data.status}.`);
+        location.reload();
+    })
+    .catch(error => {
+        alert('❌ Failed to update group status.');
+        console.error(error);
+    });
+}
 
         // ===== WARNING ACTIONS =====
         function resolveWarning(id) {
@@ -1121,20 +1111,35 @@
                 if (id) {
                     const w = warnings.find(w => w.id == id);
                     if (w) { w.user = user; w.reason = reason; w.number = number; }
-                } else {
-                    const date = new Date();
-                    const exp = new Date();
-                    exp.setDate(exp.getDate() + 30);
-                    warnings.push({ 
-                        id: nextIds.warning++, 
-                        user, 
-                        reason, 
-                        number, 
-                        issued: date.toISOString().split('T')[0], 
-                        expires: exp.toISOString().split('T')[0], 
-                        status: 'active' 
-                    });
                 }
+                 else {
+    const selectedUser = users.find(u => u.name === user);
+
+    fetch('/admin/warnings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            user_id: selectedUser.id,
+            reason: reason,
+            warning_number: number
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('✅ Warning issued successfully!');
+        location.reload();
+    })
+    .catch(error => {
+        alert('❌ Failed to issue warning.');
+        console.error(error);
+    });
+
+    closeModal();
+    return;
+}
                 renderWarnings();
                 updateBadges();
                 alert('✅ Warning issued successfully!');
