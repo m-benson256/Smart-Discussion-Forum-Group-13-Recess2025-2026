@@ -19,10 +19,10 @@ class LecturerController extends Controller
         $totalStudents = User::where('role', 'student')->count();
         $activeDiscussions = Topic::count();
 
-        $announcements = Announcements::with('user', 'quiz')
-            ->latest()
-            ->get();
-
+       $announcements = Announcements::where('user_id', auth()->id())
+        ->with('user', 'quiz')
+        ->latest()
+        ->get();
         return view('lecturer.dashboard', [
             'lecturerName' => $lecturerName,
             'announcements' => $announcements,

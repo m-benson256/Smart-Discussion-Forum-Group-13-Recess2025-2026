@@ -14,7 +14,11 @@ class AnnouncementsController extends Controller
      */
     public function index()
     {
-        //
+         $announcements = Announcements::with('user:id,name', 'quiz:id,title')
+        ->latest()
+        ->get();
+
+    return response()->json($announcements);
     }
 
     /**

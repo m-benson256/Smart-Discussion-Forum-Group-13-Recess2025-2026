@@ -136,36 +136,12 @@
                 </a>
 </div>
 <div class="flex border-b border-gray-100 mb-8 gap-6">
-<button class="pb-4 border-b-2 border-brand font-bold">All Quizzes</button>
-<button class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand">Scheduled</button>
-<button class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand">Past Due</button>
+<button id="quiz-tab-all" class="pb-4 border-b-2 border-brand font-bold" onclick="setQuizTab('all')">All Quizzes</button>
+<button id="quiz-tab-scheduled" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand" onclick="setQuizTab('scheduled')">Scheduled</button>
+<button id="quiz-tab-pastdue" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand" onclick="setQuizTab('pastdue')">Past Due</button>
 </div>
-<div class="space-y-4">
-<div class="flex items-center gap-4 p-6 bg-surface-low rounded-[1.5rem] border border-transparent hover:border-brand/20 transition-all-200 group">
-<div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-<div class="flex-1">
-<h4 class="font-bold">CS101: Introduction to Algorithms</h4>
-</div>
-<div class="flex gap-2">
-<button class="p-2 text-gray-400 hover:text-brand"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-<button class="p-2 text-gray-400 hover:text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-</div>
-</div>
-<div class="flex items-center gap-4 p-6 bg-surface-low rounded-[1.5rem] border border-transparent hover:border-brand/20 transition-all-200 group">
-<div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand">
-<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
-</div>
-<div class="flex-1">
-<h4 class="font-bold">DB202: Relational Schema Design</h4>
-<p class="text-sm text-gray-500">Active until Friday • 15 Questions • 30 Mins</p>
-</div>
-<div class="flex gap-2">
-<button class="p-2 text-gray-400 hover:text-brand"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-<button class="p-2 text-gray-400 hover:text-red-500"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></button>
-</div>
-</div>
+<div class="space-y-4" id="quiz-list-container">
+<div class="text-center text-gray-400 py-8">Loading quizzes...</div>
 </div>
 </div>
 <!-- Right Col: Tasks & Activity -->
@@ -184,33 +160,8 @@
               Create New Assessment
             </a>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-<!-- Example Cards -->
-<div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
-<div class="flex justify-between mb-4">
-<span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-full">ACTIVE</span>
-<span class="text-gray-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span>
-</div>
-<h4 class="font-bold text-lg mb-2">Final Exam: Networks</h4>
-<p class="text-sm text-gray-500 mb-4">Due Dec 12 • 100 Marks</p>
-<div class="flex justify-between items-center text-sm font-medium">
-<span class="text-brand">84 Submissions</span>
-<button class="text-brand hover:underline">Edit Quiz</button>
-</div>
-</div>
-<!-- Duplicate for visual filler -->
-<div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
-<div class="flex justify-between mb-4">
-<span class="px-3 py-1 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full">DRAFT</span>
-<span class="text-gray-400"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg></span>
-</div>
-<h4 class="font-bold text-lg mb-2">Midterm: Security</h4>
-<p class="text-sm text-gray-500 mb-4">No due date set • 50 Marks</p>
-<div class="flex justify-between items-center text-sm font-medium">
-<span class="text-gray-400">0 Submissions</span>
-<button class="text-brand hover:underline">Edit Quiz</button>
-</div>
-</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="quiz-management-list">
+<div class="text-center text-gray-400 py-8 col-span-full">Loading quizzes...</div>
 </div>
 </section>
 <!-- END: Quizzes View -->
@@ -230,7 +181,6 @@
 <th class="px-8 py-4">Group Name</th>
 <th class="px-8 py-4">Created By</th>
 <th class="px-8 py-4">Members</th>
-<th class="px-8 py-4">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="groups-table-body">
@@ -267,6 +217,7 @@
 <th class="px-8 py-4">Student Name</th>
 <th class="px-8 py-4">Quiz Title</th>
 <th class="px-8 py-4">Score</th>
+<th class="px-8 py-4">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="reports-table-body">
@@ -360,9 +311,16 @@
         }
       });
 
+      if (viewId === 'dashboard') {
+    loadQuizzes();
+     }
+     if (viewId === 'quizzes') {
+    loadQuizManagement();
+    }
+
       if (viewId === 'groups') {
     loadGroups(); // NEW — fetch fresh group data every time this tab opens
-  }
+    }
   if (viewId === 'discussions') {
     loadDiscussions(); // NEW — fetch fresh discussion data every time this tab opens
   }
@@ -404,21 +362,16 @@
         }
 
         tbody.innerHTML = groups.map(group => `
-            <tr class="hover:bg-surface-low transition-colors">
-                <td class="px-8 py-4 font-medium">${group.name}</td>
-                <td class="px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
-                <td class="px-8 py-4">
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded">
-                        ${group.members_count} member${group.members_count === 1 ? '' : 's'}
-                    </span>
-                </td>
-                <td class="px-8 py-4">
-                    <span class="px-2 py-1 ${group.is_member ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'} text-[10px] font-bold rounded">
-                        ${group.is_member ? 'MEMBER' : 'NOT JOINED'}
-                    </span>
-                </td>
-            </tr>
-        `).join('');
+    <tr class="hover:bg-surface-low transition-colors">
+        <td class="px-8 py-4 font-medium">${group.name}</td>
+        <td class="px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
+        <td class="px-8 py-4">
+            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded">
+                ${group.members_count} member${group.members_count === 1 ? '' : 's'}
+            </span>
+        </td>
+    </tr>
+`).join('');
     } catch (err) {
         console.error(err);
         tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load groups.</td></tr>`;
@@ -672,6 +625,127 @@ async function postReply(topicId) {
     } catch (err) {
         console.error(err);
         alert('Could not post your reply. Please try again.');
+    }
+}
+let allQuizzes = [];
+let currentQuizTab = 'all';
+
+async function loadQuizzes() {
+    const container = document.getElementById('quiz-list-container');
+
+    try {
+        const response = await fetch('/lecturer/quizzes', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Failed to load quizzes');
+
+        allQuizzes = await response.json();
+        renderQuizList();
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="text-center text-red-500 py-8">Could not load quizzes.</div>`;
+    }
+}
+
+function setQuizTab(tab) {
+    currentQuizTab = tab;
+
+    const tabs = ['all', 'scheduled', 'pastdue'];
+    tabs.forEach(t => {
+        const btn = document.getElementById(`quiz-tab-${t}`);
+        if (t === tab) {
+            btn.className = 'pb-4 border-b-2 border-brand font-bold';
+        } else {
+            btn.className = 'pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand';
+        }
+    });
+
+    renderQuizList();
+}
+
+function renderQuizList() {
+    const container = document.getElementById('quiz-list-container');
+    const now = new Date();
+
+    let filtered = allQuizzes;
+
+    if (currentQuizTab === 'scheduled') {
+        filtered = allQuizzes.filter(q =>
+            q.status === 'published' && q.start_time && new Date(q.start_time) > now
+        );
+    } else if (currentQuizTab === 'pastdue') {
+        filtered = allQuizzes.filter(q =>
+            q.status === 'published' && q.start_time && new Date(q.start_time) < now
+        );
+    }
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<div class="text-center text-gray-400 py-8">No quizzes found.</div>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(q => `
+    <div class="flex items-center gap-4 p-6 bg-surface-low rounded-[1.5rem] border border-transparent hover:border-brand/20 transition-all-200 group cursor-pointer" onclick="window.location.href='/lecturer/quizzes/${q.id}/edit'">
+        <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+        </div>
+        <div class="flex-1">
+            <h4 class="font-bold">${q.title}</h4>
+            <p class="text-sm text-gray-500">
+                ${q.status === 'draft' ? 'Draft' : (q.start_time ? new Date(q.start_time).toLocaleDateString() : 'No start time')}
+                &bull; ${q.questions_count} Question${q.questions_count === 1 ? '' : 's'}
+                &bull; ${q.duration_minutes} Mins
+            </p>
+        </div>
+    </div>
+`).join('');
+}
+document.addEventListener('DOMContentLoaded', function () {
+    loadQuizzes();
+});
+async function loadQuizManagement() {
+    const container = document.getElementById('quiz-management-list');
+
+    try {
+        const response = await fetch('/lecturer/quizzes', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Failed to load quizzes');
+
+        const quizzes = await response.json();
+
+        if (quizzes.length === 0) {
+            container.innerHTML = `<div class="text-center text-gray-400 py-8 col-span-full">No quizzes created yet.</div>`;
+            return;
+        }
+
+        container.innerHTML = quizzes.map(q => {
+            const isActive = q.status === 'published';
+            const badgeClass = isActive ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700';
+            const badgeText = isActive ? 'ACTIVE' : 'DRAFT';
+            const dueDate = q.start_time
+                ? new Date(q.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                : 'No due date set';
+
+            return `
+                <div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
+                    <div class="flex justify-between mb-4">
+                        <span class="px-3 py-1 ${badgeClass} text-xs font-bold rounded-full">${badgeText}</span>
+                    </div>
+                    <h4 class="font-bold text-lg mb-2">${q.title}</h4>
+                    <p class="text-sm text-gray-500 mb-4">Due ${dueDate} &bull; ${q.total_marks} Marks</p>
+                    <div class="flex justify-between items-center text-sm font-medium">
+                        <span class="${q.submissions_count > 0 ? 'text-brand' : 'text-gray-400'}">${q.submissions_count} Submission${q.submissions_count === 1 ? '' : 's'}</span>
+                        <a href="/lecturer/quizzes/${q.id}/edit" class="text-brand hover:underline">Edit Quiz</a>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div class="text-center text-red-500 py-8 col-span-full">Could not load quizzes.</div>`;
     }
 }
 

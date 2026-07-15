@@ -10,14 +10,17 @@ class QuizController extends Controller
 {
     // GET /lecturer/quizzes — list quizzes created by the logged-in lecturer
     public function index(Request $request): JsonResponse
-    {
-        $quizzes = Quiz::where('created_by', $request->user()->id)
-            ->withCount('questions')
-            ->latest()
-            ->get();
+{
+    $quizzes = Quiz::where('created_by', $request->user()->id)
+        ->withCount('questions')
+        ->withCount(['attempts as submissions_count' => function ($query) {
+            $query->whereNotNull('submitted_at');
+        }])
+        ->latest()
+        ->get();
 
-        return response()->json($quizzes);
-    }
+    return response()->json($quizzes);
+}
 
     // POST /quizzes — create a new draft quiz (the "Configure Quiz" tab)
     public function store(Request $request): JsonResponse

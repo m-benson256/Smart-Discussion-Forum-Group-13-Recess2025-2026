@@ -166,11 +166,10 @@ if ($deadline && now()->greaterThan($deadline->copy()->addSeconds($graceSeconds)
             $correctCount++;
         }
 
-        $attempt->answers()->create([
-            'question_id' => $question->id,
-            'selected_answer' => $selected,
-            'is_correct' => $isCorrect,
-        ]);
+        $attempt->answers()->updateOrCreate(
+            ['question_id' => $question->id,],
+            ['selected_answer' => $selected,'is_correct' => $isCorrect,]
+            );
     }
 
     $totalQuestions = $questions->count();

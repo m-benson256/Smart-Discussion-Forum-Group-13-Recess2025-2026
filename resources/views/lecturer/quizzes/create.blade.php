@@ -546,7 +546,9 @@ async function saveQuestion() {
             const existingId = quizData.questions[currentEditingIndex].id;
             response = await fetch(`/questions/${existingId}`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                headers: { 'Content-Type': 'application/json', 
+                           'X-CSRF-TOKEN': csrfToken ,
+                           'Accept': 'application/json'},
                 body: JSON.stringify({
                     type,
                     prompt,
@@ -558,7 +560,11 @@ async function saveQuestion() {
             // Creating a brand new question
             response = await fetch(`/quizzes/${quizId}/questions`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrfToken },
+                headers: { 
+                    'Content-Type': 'application/json', 
+                    'X-CSRF-TOKEN': csrfToken ,
+                     'Accept': 'application/json'
+                    },
                 body: JSON.stringify({
                     type,
                     prompt,
@@ -568,7 +574,11 @@ async function saveQuestion() {
             });
         }
 
-        if (!response.ok) throw new Error('Failed to save question');
+        if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const message = errorData.message || (errorData.errors ? Object.values(errorData.errors).flat().join(' ') : 'Failed to save question');
+    throw new Error(message);
+}
 
         const saved = await response.json();
         questionObj.id = saved.id; // remember the real database ID for future edits
@@ -584,7 +594,7 @@ async function saveQuestion() {
         resetEditor();
     } catch (err) {
         console.error(err);
-        alert('Could not save question. Please try again.');
+        alert(err.message || 'Could not save question. Please try again.');
     }
 }
 
