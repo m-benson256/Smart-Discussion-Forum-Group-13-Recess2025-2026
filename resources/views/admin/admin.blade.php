@@ -908,27 +908,45 @@
             }
         }
 
-        function blockUser(id) {
-            const u = users.find(u => u.id === id);
-            if (u) {
-                if (!confirm(`Are you sure you want to block ${u.name}?`)) return;
-                u.status = 'blocked';
-                renderUsers();
-                updateKPIs();
-                alert(`🛑 ${u.name} has been blocked.`);
-            }
-        }
+        
 
-        function unblockUser(id) {
-            const u = users.find(u => u.id === id);
-            if (u) {
-                u.status = 'active';
-                renderUsers();
-                updateKPIs();
-                alert(`✅ ${u.name} has been unblocked.`);
-            }
+        
+            function blockUser(id) {
+    fetch(`/admin/users/${id}/block`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
         }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const u = users.find(u => u.id === id);
+            if (u) u.status = data.status;
+            renderUsers();
+        }
+    });
+}
 
+function unblockUser(id) {
+    fetch(`/admin/users/${id}/unblock`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            const u = users.find(u => u.id === id);
+            if (u) u.status = data.status;
+            renderUsers();
+        }
+    });
+}
+        
         function notifyUser(id) {
             const u = users.find(u => u.id === id);
             if (u) alert(`📧 Notification sent to ${u.name} (${u.email})`);

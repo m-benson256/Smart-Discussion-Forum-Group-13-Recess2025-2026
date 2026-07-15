@@ -50,6 +50,8 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/administrator/users/{user}/verify', [AdministratorController::class, 'verifyLecturer'])->name('admin.users.verify');
     Route::post('/admin/warnings', [AdministratorController::class, 'storeWarning'])->name('admin.warnings.store');
     Route::post('/admin/groups/{id}/toggle-status', [AdministratorController::class, 'toggleGroupStatus'])->name('admin.groups.toggle-status');
+    Route::post('/admin/users/{id}/block', [AdministratorController::class, 'blockUser'])->name('admin.users.block');
+    Route::post('/admin/users/{id}/unblock', [AdministratorController::class, 'unblockUser'])->name('admin.users.unblock');
 
     // Profile management paths
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

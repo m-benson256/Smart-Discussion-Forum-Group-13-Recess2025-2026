@@ -97,7 +97,23 @@ public function toggleGroupStatus($id)
     return response()->json(['success' => true, 'status' => $group->status]);
 }
   
+public function blockUser($id)
+{
+    $user = User::findOrFail($id);
+    $user->status = 'blocked';
+    $user->save();
 
+    return response()->json(['success' => true, 'status' => $user->status]);
+}
+
+public function unblockUser($id)
+{
+    $user = User::findOrFail($id);
+    $user->status = 'active';
+    $user->save();
+
+    return response()->json(['success' => true, 'status' => $user->status]);
+}
     /**
      * Show the form for creating a new resource.
      */
