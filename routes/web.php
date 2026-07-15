@@ -154,7 +154,7 @@ Route::middleware(['auth'])->group(function () {
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
-
+Route::post('/messages/{message}/react', [MessageController::class, 'toggleReaction']);
 Route::get('/announcements', [AnnouncementsController::class, 'index']);
 
 

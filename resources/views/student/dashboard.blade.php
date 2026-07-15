@@ -735,9 +735,9 @@ case 'my-topics':
                                              <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likeCount || 0}</span>
                                                </button>
                                                 <div class="reaction-container flex flex-wrap gap-1 ${msg.isMe ? 'flex-row-reverse' : ''}">
-                                                    ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
+                                                 ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
                                                 </div>
-                                                ${msg.flagged ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
+                                               ${msg.myFlag ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -948,7 +948,9 @@ async function fetchMessages(topicId) {
             myFlag: msg.flagged_by_me ?? false,
              likeCount: msg.liked_by_count ?? 0,
              myLike: msg.liked_by_me ?? false,
+             reactions: msg.grouped_reactions ?? [],
             hidden: false
+
         }));
 
         // Preserve whatever the student is currently typing before re-rendering
@@ -1012,26 +1014,16 @@ async function leaveGroup(groupId) {
 }
 
 
-    function toggleReaction(event, badge, emoji) {
-        event.stopPropagation();
-        const isActive = badge.classList.contains('active');
-        const text = badge.innerText;
-        const countStr = text.replace(emoji, '').trim();
-        let currentCount = parseInt(countStr);
+   // NEW:
+async function toggleReaction(event, badge, emoji) {
+    event.stopPropagation();
 
-        if (isActive) {
-            badge.classList.remove('active');
-            currentCount--;
-            if (currentCount <= 0) {
-                badge.remove();
-            } else {
-                badge.innerText = `${emoji} ${currentCount}`;
-            }
-        } else {
-            badge.classList.add('active');
-            badge.innerText = `${emoji} ${currentCount + 1}`;
-        }
-    }
+    const wrapper = badge.closest('[data-message-id]');
+    const messageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
+    if (!messageId) return;
+
+    await sendReaction(messageId, emoji);
+}
 
     function toggleEmojiPicker(event, isContextMenuMode) {
         event.stopPropagation();
@@ -1116,27 +1108,44 @@ async function toggleMessageFlag(messageId) {
     }
 }
 
-    function insertReaction(emoji) {
-        if (!currentContextElement) return;
-        const container = currentContextElement.closest('.group').querySelector('.reaction-container');
-        if (!container) return;
-        
-        let existingBadge = Array.from(container.querySelectorAll('.reaction-badge')).find(b => b.innerText.includes(emoji));
-        
-        if (existingBadge) {
-            if (!existingBadge.classList.contains('active')) {
-                toggleReaction({ stopPropagation: () => {} }, existingBadge, emoji);
-            }
-        } else {
-            const badge = document.createElement('div');
-            badge.className = 'reaction-badge active';
-            badge.innerHTML = `${emoji} 1`;
-            badge.onclick = (e) => toggleReaction(e, badge, emoji);
-            container.appendChild(badge);
+    // NEW:
+async function insertReaction(emoji) {
+    if (!currentContextMessageId) return;
+
+    await sendReaction(currentContextMessageId, emoji);
+    emojiPicker?.classList.add('hidden');
+}
+
+async function sendReaction(messageId, emoji) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}/react`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ emoji })
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle reaction');
+
+        const result = await response.json();
+
+        const topicMessages = state.messages[state.selectedTopicId] || [];
+        const msg = topicMessages.find(m => m.id == messageId);
+        if (msg) {
+            msg.reactions = result.reactions;
         }
-        
-        emojiPicker?.classList.add('hidden');
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error(err);
+        alert('Could not update reaction. Please try again.');
     }
+}
 
     function insertToInput(emoji) {
         const input = document.getElementById('chat-input');
