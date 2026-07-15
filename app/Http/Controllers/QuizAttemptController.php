@@ -166,11 +166,10 @@ if ($deadline && now()->greaterThan($deadline->copy()->addSeconds($graceSeconds)
             $correctCount++;
         }
 
-        $attempt->answers()->create([
-            'question_id' => $question->id,
-            'selected_answer' => $selected,
-            'is_correct' => $isCorrect,
-        ]);
+        $attempt->answers()->updateOrCreate(
+            ['question_id' => $question->id,],
+            ['selected_answer' => $selected,'is_correct' => $isCorrect,]
+            );
     }
 
     $totalQuestions = $questions->count();
@@ -216,12 +215,5 @@ public function report(Request $request): JsonResponse
 
     return response()->json($report);
 }
-    return response()->json([
-        'score' => $score,
-        'total_marks' => $quiz->total_marks,
-        'correct_count' => $correctCount,
-        'total_questions' => $totalQuestions,
-        'submitted_at' => $attempt->submitted_at?->toIso8601String(),
-    ]);
-}
+    
 }

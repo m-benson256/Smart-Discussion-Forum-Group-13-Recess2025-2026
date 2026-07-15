@@ -135,6 +135,9 @@
 <button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="performance">
 <i class="fa-solid fa-chart-line mr-3 w-5"></i> Performance
 </button>
+<button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="announcements">
+<i class="fa-solid fa-bullhorn mr-3 w-5"></i> Announcements
+</button>
 </nav>
 <div class="p-3 border-t border-slate-700/50 space-y-1" data-purpose="sidebar-footer">
 <button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="settings">
@@ -256,6 +259,7 @@ const currentUserId = {{ Auth::id() }};
 
 
         quizzes: [],
+        announcements: [],
             
     };
 
@@ -388,6 +392,7 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         updateView(initialView);
         fetchInterests();
         fetchRecommendedTopics();
+        fetchAnnouncements();
 
         window.Echo.channel('forum-notifications')
         .listen('MessageSent', (data) => {
@@ -665,6 +670,29 @@ case 'my-topics':
                     </div>
                 `;
                 break;
+
+             case 'announcements':
+                html = `
+                    <h2 class="text-2xl font-bold mb-6">Announcements</h2>
+                    <div class="space-y-4">
+                        ${state.announcements.length ? state.announcements.map(a => `
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        ${(a.user?.name ?? 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">${a.user?.name ?? 'Unknown Lecturer'}</h4>
+                                        <p class="text-xs text-slate-400">${new Date(a.created_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <p class="text-slate-700 leading-relaxed">${a.content}</p>
+                                ${a.quiz ? `<p class="text-xs text-blue-600 mt-3 font-bold">Related quiz: ${a.quiz.title}</p>` : ''}
+                            </div>
+                        `).join('') : '<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">No announcements yet.</div>'}
+                    </div>
+                `;
+                break;   
 
             case 'chat':
                 const topic = state.topics.find(t => t.id === state.selectedTopicId);
@@ -1225,6 +1253,17 @@ async function fetchQuizzes() {
         renderView();
     } catch (err) {
         console.error('Failed to load quizzes:', err);
+    }
+}
+async function fetchAnnouncements() {
+    try {
+        const response = await fetch('/announcements');
+        const data = await response.json();
+
+        state.announcements = data;
+        renderView();
+    } catch (err) {
+        console.error('Failed to load announcements:', err);
     }
 }
 

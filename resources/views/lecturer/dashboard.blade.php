@@ -181,7 +181,6 @@
 <th class="px-8 py-4">Group Name</th>
 <th class="px-8 py-4">Created By</th>
 <th class="px-8 py-4">Members</th>
-<th class="px-8 py-4">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="groups-table-body">
@@ -218,6 +217,7 @@
 <th class="px-8 py-4">Student Name</th>
 <th class="px-8 py-4">Quiz Title</th>
 <th class="px-8 py-4">Score</th>
+<th class="px-8 py-4">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="reports-table-body">
@@ -362,21 +362,16 @@
         }
 
         tbody.innerHTML = groups.map(group => `
-            <tr class="hover:bg-surface-low transition-colors">
-                <td class="px-8 py-4 font-medium">${group.name}</td>
-                <td class="px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
-                <td class="px-8 py-4">
-                    <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded">
-                        ${group.members_count} member${group.members_count === 1 ? '' : 's'}
-                    </span>
-                </td>
-                <td class="px-8 py-4">
-                    <span class="px-2 py-1 ${group.is_member ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'} text-[10px] font-bold rounded">
-                        ${group.is_member ? 'MEMBER' : 'NOT JOINED'}
-                    </span>
-                </td>
-            </tr>
-        `).join('');
+    <tr class="hover:bg-surface-low transition-colors">
+        <td class="px-8 py-4 font-medium">${group.name}</td>
+        <td class="px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
+        <td class="px-8 py-4">
+            <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded">
+                ${group.members_count} member${group.members_count === 1 ? '' : 's'}
+            </span>
+        </td>
+    </tr>
+`).join('');
     } catch (err) {
         console.error(err);
         tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load groups.</td></tr>`;
