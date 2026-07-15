@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.String?>
+<?import javafx.collections.FXCollections?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane prefHeight="700.0" prefWidth="900.0" styleClass="root-pane" stylesheets="@style.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://github.com/fxml/1" fx:controller="org.example.RegisterController">
+    <children>
+        <VBox alignment="CENTER" fillWidth="false" prefHeight="650.0" prefWidth="480.0" spacing="15.0" styleClass="glass-card" StackPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="30.0" left="40.0" right="40.0" top="30.0" />
+            </padding>
+            <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Create Your Account" />
+
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Name" />
+                        <TextField fx:id="nameField" promptText="Full Name" />
+                    </children>
+                </VBox>
+
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Email Address" />
+                        <TextField fx:id="emailField" onKeyReleased="#handleEmailKeyReleased" promptText="Email (@students.ed or @lecturers.ed)" />
+                    </children>
+                </VBox>
+
+                <VBox fx:id="studentFieldsContainer" managed="false" prefWidth="320.0" spacing="5.0" visible="false">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Academic Category" />
+                        <ComboBox fx:id="studentCategoryDropdown" prefWidth="320.0" promptText="Select your specialization...">
+                            <items>
+                                <FXCollections fx:factory="observableArrayList">
+                                    <String fx:value="software_engineering" />
+                                    <String fx:value="web_development" />
+                                    <String fx:value="programming" />
+                                    <String fx:value="computer_science" />
+                                </FXCollections>
+                            </items>
+                        </ComboBox>
+                    </children>
+                </VBox>
+
+                <VBox fx:id="lecturerFieldsContainer" managed="false" prefWidth="320.0" spacing="10.0" visible="false">
+                    <children>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label style="-fx-text-fill: white;" text="Highest Degree Level" />
+                                <ComboBox fx:id="degreeTypeDropdown" prefWidth="320.0" promptText="Select degree level...">
+                                    <items>
+                                        <FXCollections fx:factory="observableArrayList">
+                                            <String fx:value="undergraduate" />
+                                            <String fx:value="masters" />
+                                            <String fx:value="phd" />
+                                        </FXCollections>
+                                    </items>
+                                </ComboBox>
+                            </children>
+                        </VBox>
+                        <VBox spacing="5.0">
+                            <children>
+                                <Label style="-fx-text-fill: white;" text="Desk / Office Phone Contact" />
+                                <TextField fx:id="deskContactField" promptText="+1 (555) 019-2834" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Password" />
+                        <PasswordField fx:id="passwordField" promptText="Password" />
+                    </children>
+                </VBox>
+
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Confirm Password" />
+                        <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
+                    </children>
+                </VBox>
+
+                <CheckBox fx:id="termsCheckBox" prefWidth="320.0" style="-fx-text-fill: white;" text="I agree to the discussion forum rules" />
+
+                <Button fx:id="registerButton" onAction="#handleRegistrationSubmit" prefWidth="320.0" styleClass="button-primary" text="Register" />
+
+                <Label fx:id="statusLabel" alignment="CENTER" prefWidth="320.0" style="-fx-text-fill: #ff3333; -fx-font-weight: bold;" textAlignment="CENTER" wrapText="true" />
+            </children>
+        </VBox>
+    </children>
+</StackPane>

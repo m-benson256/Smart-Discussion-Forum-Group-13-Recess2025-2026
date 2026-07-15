@@ -16,6 +16,7 @@ class Group extends Model
         'created_by',
         'name',
         'description',
+        'visibility',
     ];
 
     public function creator(): BelongsTo
@@ -33,4 +34,9 @@ class Group extends Model
         return $this->belongsToMany(User::class, 'group_members', 'group_id', 'user_id')
             ->withTimestamps();
     }
+
+    public function joinRequests(): HasMany
+{
+    return $this->hasMany(GroupJoinRequest::class);
+}
 }

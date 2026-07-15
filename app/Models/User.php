@@ -12,6 +12,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 /**
  * @property int $id
@@ -31,8 +32,22 @@ use Illuminate\Support\Str;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */ 
+    
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'academic_category',
+        'degree_program',
+        'desk_contact_number',
+    ];
     /**
      * Get the attributes that should be cast.
      *

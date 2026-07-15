@@ -21,7 +21,14 @@ CREATE TABLE `announcements` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`)
+  `user_id` bigint(20) unsigned NOT NULL,
+  `quiz_id` bigint(20) unsigned DEFAULT NULL,
+  `content` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `announcements_user_id_foreign` (`user_id`),
+  KEY `announcements_quiz_id_foreign` (`quiz_id`),
+  CONSTRAINT `announcements_quiz_id_foreign` FOREIGN KEY (`quiz_id`) REFERENCES `quizzes` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `announcements_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `cache`;
@@ -73,6 +80,23 @@ CREATE TABLE `failed_jobs` (
   KEY `failed_jobs_connection_queue_failed_at_index` (`connection`,`queue`,`failed_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `group_join_requests`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `group_join_requests` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `group_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `status` enum('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `group_join_requests_group_id_user_id_unique` (`group_id`,`user_id`),
+  KEY `group_join_requests_user_id_foreign` (`user_id`),
+  CONSTRAINT `group_join_requests_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `group_join_requests_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `group_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -99,6 +123,7 @@ CREATE TABLE `groups` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `name` varchar(255) NOT NULL,
   `description` text DEFAULT NULL,
+  `visibility` enum('public','private') NOT NULL DEFAULT 'public',
   PRIMARY KEY (`id`),
   KEY `groups_created_by_foreign` (`created_by`),
   CONSTRAINT `groups_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE CASCADE
@@ -183,6 +208,39 @@ CREATE TABLE `message_flags` (
   CONSTRAINT `message_flags_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `message_likes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `message_likes` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `message_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `message_likes_message_id_user_id_unique` (`message_id`,`user_id`),
+  KEY `message_likes_user_id_foreign` (`user_id`),
+  CONSTRAINT `message_likes_message_id_foreign` FOREIGN KEY (`message_id`) REFERENCES `messages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `message_likes_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `message_reactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `message_reactions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `message_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `emoji` varchar(16) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `message_reactions_message_id_user_id_emoji_unique` (`message_id`,`user_id`,`emoji`),
+  KEY `message_reactions_user_id_foreign` (`user_id`),
+  CONSTRAINT `message_reactions_message_id_foreign` FOREIGN KEY (`message_id`) REFERENCES `messages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `message_reactions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `messages`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -237,6 +295,26 @@ CREATE TABLE `password_reset_tokens` (
   `token` varchar(255) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `personal_access_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `personal_access_tokens` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `tokenable_type` varchar(255) NOT NULL,
+  `tokenable_id` bigint(20) unsigned NOT NULL,
+  `name` text NOT NULL,
+  `token` varchar(64) NOT NULL,
+  `abilities` text DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`),
+  KEY `personal_access_tokens_expires_at_index` (`expires_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `quiz_attempt_answers`;
@@ -363,6 +441,24 @@ CREATE TABLE `students` (
   CONSTRAINT `students_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `topic_views`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `topic_views` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `topic_id` bigint(20) unsigned NOT NULL,
+  `view_count` int(10) unsigned NOT NULL DEFAULT 1,
+  `last_viewed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `topic_views_user_id_topic_id_unique` (`user_id`,`topic_id`),
+  KEY `topic_views_topic_id_foreign` (`topic_id`),
+  CONSTRAINT `topic_views_topic_id_foreign` FOREIGN KEY (`topic_id`) REFERENCES `topics` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `topic_views_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `topics`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -371,6 +467,7 @@ CREATE TABLE `topics` (
   `user_id` bigint(20) unsigned NOT NULL,
   `group_id` bigint(20) unsigned DEFAULT NULL,
   `category_id` bigint(20) unsigned DEFAULT NULL,
+  `interest_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `title` varchar(255) NOT NULL,
@@ -379,8 +476,10 @@ CREATE TABLE `topics` (
   KEY `topics_user_id_foreign` (`user_id`),
   KEY `topics_group_id_foreign` (`group_id`),
   KEY `topics_category_id_foreign` (`category_id`),
+  KEY `topics_interest_id_foreign` (`interest_id`),
   CONSTRAINT `topics_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`CategoryID`) ON DELETE SET NULL,
   CONSTRAINT `topics_group_id_foreign` FOREIGN KEY (`group_id`) REFERENCES `groups` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `topics_interest_id_foreign` FOREIGN KEY (`interest_id`) REFERENCES `user_interests` (`InterestID`) ON DELETE SET NULL,
   CONSTRAINT `topics_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -465,8 +564,18 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (28,'2026_07_05_000
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (29,'2026_07_05_104026_add_role_columns_to_lecturers_table',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (30,'2026_07_05_105014_add_relations_to_students_table',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (31,'2026_07_05_182411_add_relations_to_quizzes',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (32,'2026_07_05_183433_create_quiz_questions_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (33,'2026_07_05_183801_create_quiz_options_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (34,'2026_07_05_184115_add_relations_to_quizz_attempts',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (35,'2026_07_05_184540_create_quiz_attempt_answers_table',3);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (36,'2026_07_06_000001_backfill_submitted_at_on_quiz_attempts',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (32,'2026_07_05_183433_create_quiz_questions_table',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (33,'2026_07_05_183801_create_quiz_options_table',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (34,'2026_07_05_184115_add_relations_to_quizz_attempts',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (35,'2026_07_05_184540_create_quiz_attempt_answers_table',7);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (36,'2026_07_06_000001_backfill_submitted_at_on_quiz_attempts',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (37,'2026_07_08_122000_topic_views',9);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (38,'2026_07_09_122637_add-interest_id-to-topics',10);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (39,'2026_07_07_063944_add_fields_to_announcements_table',11);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (40,'2026_07_10_113905_message_likes',11);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (41,'2026_07_11_152009_message_reactions',12);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (42,'2026_07_11_161734_message_reactions',13);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (43,'2026_07_11_193110_add_visibility_to_groups_table',14);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (44,'2026_07_11_193453_group_join_requests',15);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (45,'2026_07_13_142913_create_personal_access_tokens_table',16);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (46,'2026_07_13_181303_adding_visiblity_to_groups',17);

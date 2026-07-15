@@ -1,0 +1,50 @@
+/* Glassmorphic Background matching guest.blade.php */
+.root-pane {
+    -fx-background-image: url('discussion.jpg'); /* Place discussion.jpg in resources folder! */
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: cover;
+    -fx-background-position: center;
+}
+
+/* Glassmorphic Card container */
+.glass-card {
+    -fx-background-color: rgba(255, 255, 255, 0.12); /* bg-white/10 */
+    -fx-border-color: rgba(255, 255, 255, 0.2);     /* border-white/20 */
+    -fx-border-width: 1.5px;
+    -fx-background-radius: 16px;                     /* rounded-2xl */
+    -fx-border-radius: 16px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.35), 25, 0, 0, 15); /* shadow-2xl */
+}
+
+/* Input Styles */
+.text-input {
+    -fx-background-color: white;
+    -fx-text-fill: black;
+    -fx-background-radius: 6px;
+    -fx-border-radius: 6px;
+    -fx-padding: 8px 12px;
+}
+
+/* ComboBox Styles */
+.combo-box {
+    -fx-background-color: white;
+    -fx-background-radius: 6px;
+}
+
+/* Primary indigo Button */
+.button-primary {
+    -fx-background-color: #4f46e5; /* indigo-600 */
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 20px;
+    -fx-cursor: hand;
+}
+.button-primary:hover {
+    -fx-background-color: #4338ca; /* Indigo-700 hover state */
+}
+
+/* Base text elements */
+.text-white {
+    -fx-fill: white;
+}
