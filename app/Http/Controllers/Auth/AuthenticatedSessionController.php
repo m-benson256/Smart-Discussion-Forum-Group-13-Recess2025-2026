@@ -29,16 +29,16 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Fetch the logged-in user
-    $user = $request->user();
+        $user = $request->user();
 
-    // Dynamically check the email domain
-    if (str_ends_with($user->email, '@lecturers.ed')) {
-        return redirect()->intended(route('lecturer.dashboard'));
-    }
+        // Dynamically check the email domain
+        if (str_ends_with($user->email, '@lecturers.ed')) {
+            return redirect()->intended(route('lecturer.dashboard'));
+        }
 
-    if (str_ends_with($user->email, '@students.ed')) {
-        return redirect()->intended(route('student.dashboard'));
-    }
+        if (str_ends_with($user->email, '@students.ed')) {
+            return redirect()->intended(route('student.dashboard'));
+        }
 
         return redirect()->intended(route('dashboard', absolute: false));
     }

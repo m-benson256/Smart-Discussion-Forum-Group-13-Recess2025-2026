@@ -11,10 +11,10 @@ class StudentController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {   
-    return view('student.dashboard');
-}
-    
+    {
+
+        return view('student.dashboard');
+    }
 
     /**
      * Show the form for creating a new resource.

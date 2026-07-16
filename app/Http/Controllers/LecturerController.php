@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Announcements;
 use App\Models\Lecturer;
+use App\Models\User;
+use App\Models\Topic;
 use Illuminate\Http\Request;
 
 class LecturerController extends Controller
@@ -12,9 +15,20 @@ class LecturerController extends Controller
      */
     public function index()
     {
-        
-        return view('lecturer.dashboard'); // Loads resources/views/lecturer/dashboard.blade.php
+        $lecturerName = auth()->user()?->name ?? 'Lecturer';
+        $totalStudents = User::where('role', 'student')->count();
+        $activeDiscussions = Topic::count();
 
+       $announcements = Announcements::where('user_id', auth()->id())
+        ->with('user', 'quiz')
+        ->latest()
+        ->get();
+        return view('lecturer.dashboard', [
+            'lecturerName' => $lecturerName,
+            'announcements' => $announcements,
+            'totalStudents' => $totalStudents,
+            'activeDiscussions' => $activeDiscussions,
+        ]); // Loads resources/views/lecturer/dashboard.blade.php
     }
 
     /**

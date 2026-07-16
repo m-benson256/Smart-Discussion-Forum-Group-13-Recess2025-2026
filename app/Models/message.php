@@ -2,15 +2,47 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class message extends Model
+class Message extends Model
 {
-    //
-    protected $primaryKey = 'PostID'; [cite: 23]
-    protected $fillable = ['Content', 'TopicID', 'UserID']; [cite: 23]
+    use HasFactory, SoftDeletes;
 
-    public function member() { return $this->belongsTo(Member::class, 'UserID'); } [cite: 35]
-    public function topic() { return $this->belongsTo(Topic::class, 'TopicID'); } [cite: 35]
+    protected $fillable = [
+        'topic_id',
+        'user_id',
+        'body',
+    ];
 
+    public function topic(): BelongsTo
+    {
+        return $this->belongsTo(Topic::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function flaggedBy(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'message_flags', 'message_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    public function likedBy(): BelongsToMany
+{
+    return $this->belongsToMany(User::class, 'message_likes', 'message_id', 'user_id')
+                 ->withTimestamps();
+}
+
+public function reactions(): HasMany
+{
+    return $this->hasMany(\App\Models\MessageReaction::class);
+}
 }

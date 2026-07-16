@@ -8,6 +8,8 @@
 <title>Smart Discussion Forum - Unified Dashboard</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  
+@vite(['resources/css/app.css', 'resources/js/app.js'])
 
 <style data-purpose="custom-colors">
         :root {
@@ -133,6 +135,9 @@
 <button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="performance">
 <i class="fa-solid fa-chart-line mr-3 w-5"></i> Performance
 </button>
+<button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="announcements">
+<i class="fa-solid fa-bullhorn mr-3 w-5"></i> Announcements
+</button>
 </nav>
 <div class="p-3 border-t border-slate-700/50 space-y-1" data-purpose="sidebar-footer">
 <button class="nav-item flex items-center w-full px-4 py-3 rounded-lg hover-sidebar transition-colors" data-view="settings">
@@ -155,8 +160,8 @@
 <input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md focus:ring-2 focus:ring-blue-500 transition-all text-sm" id="global-search" placeholder="Search groups, topics, quizzes..." type="text"/>
 </div>
 <div class="flex items-center space-x-4">
-<span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">Benson</span></span>
-<div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">B</div>
+<span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
+<div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
 </div>
 </header>
 <main class="p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
@@ -178,6 +183,13 @@
 <label class="block text-sm font-medium text-slate-700 mb-1">Description</label>
 <textarea class="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500" id="group-input-desc" placeholder="What is this group about?" rows="3"></textarea>
 </div>
+<div class="mb-4">
+    <label class="block text-sm font-medium text-slate-700 mb-2">Visibility</label>
+    <select id="group-input-visibility" class="w-full border-slate-200 rounded-lg p-2">
+        <option value="public">Public — anyone can join</option>
+        <option value="private">Private — requires approval</option>
+    </select>
+</div>
 </div>
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
 <button class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium" onclick="toggleGroupModal(false)">Cancel</button>
@@ -198,6 +210,13 @@
 <div>
 <label class="block text-sm font-medium text-slate-700 mb-1">Post content</label>
 <textarea class="w-full rounded-lg border-slate-300 focus:ring-blue-500 focus:border-blue-500" id="topic-input-desc" placeholder="Start the discussion..." rows="4"></textarea>
+</div>
+<div class="mb-4">
+    <label class="block text-sm font-medium text-slate-700 mb-2"> Interest</label>
+    <select id="topic-input-interest" class="w-full border-slate-200 rounded-lg p-2">
+        <option value="">Select an interest the topic targets...</option>
+        <!-- Options populated by JS -->
+    </select>
 </div>
 </div>
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
@@ -224,45 +243,31 @@
 </div>
 </div>
 <script data-purpose="state-management">
+
+const currentUserId = {{ Auth::id() }};
+
     // Mock Data State
     const state = {
-        user: "Benson",
+        user: "{{ Auth::user()->name }}",
         activeView: 'groups', 
         selectedGroupId: null,
         selectedTopicId: null,
         
-        groups: [
-            { id: 1, name: "Data Science Group", description: "Exploring Python, R, and Machine Learning algorithms.", memberCount: 124, likes: 5 },
-            { id: 2, name: "Introduction to Web Development", description: "Fundamentals of HTML, CSS, and modern JavaScript frameworks.", memberCount: 89, likes: 2 },
-            { id: 3, name: "UI/UX Design Patterns", description: "Discussing accessibility, typography, and color theory in modern apps.", memberCount: 45, likes: 12 }
-        ],
-        
-        topics: [
-            { id: 101, groupId: 1, title: "Neural Networks for Beginners", author: "Sarah Miller", date: "2 hours ago", replies: 15, likes: 8 },
-            { id: 102, groupId: 1, title: "Pandas vs Polars Performance", author: "Alex Chen", date: "1 day ago", replies: 28, likes: 4 },
-            { id: 103, groupId: 2, title: "Centering a Div in 2024", author: "Benson", date: "5 hours ago", replies: 42, likes: 15 },
-            { id: 104, groupId: 2, title: "React 19 Server Components", author: "Mike Ross", date: "3 days ago", replies: 12, likes: 0 },
-            { id: 105, groupId: 3, title: "The Role of Contrast in Accessibility", author: "Emma Watson", date: "1 week ago", replies: 8, likes: 20 }
-        ],
-        
-        messages: {
-            101: [
-                { id: 1, author: "Sarah Miller", text: "Hey everyone! I'm starting a series on basic neural networks. Any interest?", time: "10:30 AM", isMe: false, likes: 2, myLike: false, reactions: [] },
-                { id: 2, author: "Alex Chen", text: "That sounds great! Will you cover backpropagation?", time: "10:35 AM", isMe: false, likes: 0, myLike: false, reactions: [] },
-                { id: 3, author: "Benson", text: "Count me in. I've been wanting to learn more about the math behind it.", time: "10:45 AM", isMe: true, likes: 1, myLike: false, reactions: [] }
-            ],
-            103: [
-                { id: 1, author: "Benson", text: "Is flexbox still the king or are we moving fully to Grid for centering everything?", time: "09:00 AM", isMe: true, likes: 4, myLike: false, reactions: [] },
-                { id: 2, author: "Mike Ross", text: "Flexbox for 1D, Grid for 2D. But for simple centering, place-content: center on a grid is cleaner IMO.", time: "09:15 AM", isMe: false, likes: 1, myLike: false, reactions: [] }
-            ]
-        },
 
-        quizzes: [
-            { id: 201, title: "Machine Learning Basics", category: "Data Science", dueDate: "Oct 25, 2024", duration: "45 mins", status: "incoming" },
-            { id: 202, title: "CSS Layout Fundamentals", category: "Web Dev", dueDate: "Oct 28, 2024", duration: "30 mins", status: "incoming" },
-            { id: 203, title: "Python Data Structures", category: "Data Science", dueDate: "Oct 15, 2024", score: "92/100", status: "submitted" },
-            { id: 204, title: "JavaScript ES6 Essentials", category: "Web Dev", dueDate: "Oct 10, 2024", score: "88/100", status: "submitted" }
-        ]
+        // NEW:
+         groups: [],
+        
+        // Formats your real database topics into what your layout JS loops through
+        topics: [],
+        recommendedTopics: [],
+        messages: {},
+
+       
+
+
+        quizzes: [],
+        announcements: [],
+            
     };
 
     const emojis = [
@@ -272,9 +277,14 @@
         '❤️', '🧡', '💛', '💚', '💙', '💜', '🖤', '🔥', '✨', '💯', '🚀', '⭐'
     ];
 
+
+   
+
     let currentContextElement = null;
     let pickerMode = 'reaction'; 
     let mainContent, navItems, groupModal, topicModal, contextMenu, emojiPicker, emojiGrid;
+
+    let messagePollingInterval = null;
 
     // Wait until DOM is completely parsed before bootstrapping views
     document.addEventListener('DOMContentLoaded', () => {
@@ -310,39 +320,105 @@
             }
         });
 
-        // Connect Modal Handlers securely
-        document.getElementById('save-group')?.addEventListener('click', () => {
-            const name = document.getElementById('group-input-name').value;
-            const desc = document.getElementById('group-input-desc').value;
-            if(name.trim() && desc.trim()) {
-                state.groups.unshift({ id: Date.now(), name, description: desc, memberCount: 1, likes: 0 });
-                toggleGroupModal(false);
-                renderView();
-                setupContextListeners();
-            }
+        const initialView = new URLSearchParams(window.location.search).get('view') || 'groups';
+
+        // NEW:
+document.getElementById('save-group')?.addEventListener('click', async () => {
+    const name = document.getElementById('group-input-name').value;
+    const description = document.getElementById('group-input-desc').value;
+    if (!name.trim() || !description.trim()) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch('/groups', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+         body: JSON.stringify({
+    name,
+    description,
+    visibility: document.getElementById('group-input-visibility').value
+})
         });
 
-        document.getElementById('save-topic')?.addEventListener('click', () => {
-            const title = document.getElementById('topic-input-name').value;
-            const content = document.getElementById('topic-input-desc').value;
-            if(title.trim() && content.trim()) {
-                const topicId = Date.now();
-                state.topics.unshift({ id: topicId, groupId: state.selectedGroupId || state.groups[0].id, title, author: state.user, date: "Just now", replies: 0, likes: 0 });
-                state.messages[topicId] = [{ id: Date.now() + 1, author: state.user, text: content, time: "Just now", isMe: true, likes: 0, myLike: false, reactions: [] }];
-                toggleTopicModal(false);
-                renderView();
-                setupContextListeners();
-            }
+        if (!response.ok) throw new Error('Failed to create group');
+
+        toggleGroupModal(false);
+        await fetchGroups();
+    } catch (err) {
+        console.error(err);
+        alert('Could not create group. Please try again.');
+    }
+});
+
+        
+
+// NEW:
+document.getElementById('save-topic')?.addEventListener('click', async () => {
+    const title = document.getElementById('topic-input-name').value;
+    const content = document.getElementById('topic-input-desc').value;
+    const interestId = document.getElementById('topic-input-interest').value;
+    if (!title.trim() || !content.trim()) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch('/topics', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({
+                title: title,
+                content: content,
+                group_id: state.selectedGroupId || null,
+                interest_id: interestId || null
+            })
         });
+
+        if (!response.ok) throw new Error('Failed to create topic');
+
+        toggleTopicModal(false);
+        await fetchTopics();
+    } catch (err) {
+        console.error(err);
+        alert('Could not post topic. Please try again.');
+    }
+});
 
         // Global click out to hide floating panels
-        document.addEventListener('click', (e) => {
+      document.addEventListener('click', (e) => {
             if (contextMenu && !contextMenu.contains(e.target)) contextMenu.classList.add('hidden');
             if (emojiPicker && !emojiPicker.contains(e.target)) emojiPicker.classList.add('hidden');
+            const shareMenu = document.getElementById('share-menu');
+            if (shareMenu && !e.target.closest('#share-menu') && !e.target.closest('[title="Share this discussion"]')) {
+                shareMenu.classList.add('hidden');
+            }
         });
 
         // Initial bootstrap render
-        updateView('groups');
+        fetchGroups();
+         const topicParam = new URLSearchParams(window.location.search).get('topic');
+        fetchTopics().then(() => {
+            if (topicParam) {
+                openTopic(parseInt(topicParam, 10));
+            }
+        });
+        fetchTopics();
+        fetchQuizzes();
+        updateView(initialView);
+        fetchInterests();
+        fetchRecommendedTopics();
+        fetchAnnouncements();
+
+        window.Echo.channel('forum-notifications')
+        .listen('MessageSent', (data) => {
+            alert(`New message from ${data.sender}: "${data.message}"`);
+        });
     });
 
     function showNotification() {
@@ -354,6 +430,10 @@
     function updateView(viewName) {
         state.activeView = viewName;
         
+        if (viewName !== 'chat') {
+        stopMessagePolling();
+    }
+
         navItems?.forEach(item => {
             if(item.getAttribute('data-view') === viewName) {
                 item.classList.add('bg-sidebar-active');
@@ -366,6 +446,10 @@
 
         renderView();
         setupContextListeners();
+
+        if (viewName === 'groups') {
+            fetchGroups();
+        }
     }
 
     function openGroup(groupId) {
@@ -373,10 +457,43 @@
         updateView('group_details');
     }
 
-    function openTopic(topicId) {
-        state.selectedTopicId = topicId;
-        updateView('chat');
+     // NEW:
+function openTopic(topicId) {
+    state.selectedTopicId = topicId;
+    updateView('chat');
+    fetchMessages(topicId);
+    recordTopicView(topicId);
+     startMessagePolling(topicId);
+}
+
+function startMessagePolling(topicId) {
+    stopMessagePolling(); // clear any previous polling first, avoid stacking multiple intervals
+
+    messagePollingInterval = setInterval(() => {
+        fetchMessages(topicId);
+    }, 4000); // check for new messages every 4 seconds
+}
+
+function stopMessagePolling() {
+    if (messagePollingInterval) {
+        clearInterval(messagePollingInterval);
+        messagePollingInterval = null;
     }
+}
+
+async function recordTopicView(topicId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        await fetch(`/topics/${topicId}/view`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+    } catch (err) {
+        console.error('Failed to record topic view:', err);
+        // Deliberately silent to the user — a failed view-log shouldn't block reading the topic
+    }
+}
 
     function renderView() {
         let html = '';
@@ -391,43 +508,84 @@
                             <i class="fa-solid fa-plus mr-2"></i> Create Group
                         </button>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        ${state.groups.map(group => `
-                            <div onclick="openGroup(${group.id})" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all hover:shadow-md group flex flex-col h-full">
-                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <i class="fa-solid fa-users text-xl"></i>
+                    ${state.groups.length ? `
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            ${state.groups.map(group => `
+                                <div onclick="openGroup(${group.id})" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all hover:shadow-md group flex flex-col h-full">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        <i class="fa-solid fa-users text-xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-slate-900 mb-2">
+    ${group.name}
+    ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
+</h3>
+                                    <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
+                                    <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
+                                        <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
+                                    </div>
                                 </div>
-                                <h3 class="text-lg font-bold text-slate-900 mb-2">${group.name}</h3>
-                                <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
-                                <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
-                                    <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
+                            `).join('')}
+                        </div>
+                    ` : '<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">No groups found yet.</div>'}
                 `;
                 break;
 
-            case 'group_details':
-                const group = state.groups.find(g => g.id === state.selectedGroupId);
-                const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
-                html = `
-                    <div class="mb-6 flex items-center space-x-2 text-sm">
-                        <button onclick="updateView('groups')" class="text-blue-600 hover:underline">Groups</button>
-                        <span class="text-slate-400">/</span>
-                        <span class="text-slate-600 font-medium">${group.name}</span>
-                    </div>
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">${group.name} Topics</h2>
-                        <button onclick="toggleTopicModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors">
-                            <i class="fa-solid fa-plus mr-2"></i> Create Topic
-                        </button>
-                    </div>
-                    <div class="space-y-3">
-                        ${gTopics.map(topic => renderTopicItem(topic)).join('')}
-                    </div>
-                `;
-                break;
+
+
+               case 'pending-requests':
+    html = `
+        <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
+        <div id="all-pending-requests-container" class="space-y-3">
+            <div class="text-slate-400">Loading...</div>
+        </div>
+    `;
+    break;
+    
+
+             // NEW:
+case 'group_details':
+    const group = state.groups.find(g => g.id === state.selectedGroupId);
+    const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
+
+    // Replace with:
+let membershipButton = '';
+if (group.isCreator) {
+    membershipButton = `<span class="text-xs font-medium text-slate-400 px-3 py-2">You created this group</span>`;
+} else if (group.isMember) {
+    membershipButton = `<button onclick="leaveGroup(${group.id})" class="border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg font-medium transition-colors">Leave Group</button>`;
+} else if (group.hasPendingRequest) {
+    membershipButton = `<span class="text-xs font-medium text-amber-600 px-3 py-2">Request pending approval</span>`;
+} else if (group.visibility === 'private') {
+    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
+} else {
+    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Join Group</button>`;
+}
+
+    html = `
+        <div class="mb-6 flex items-center space-x-2 text-sm">
+            <button onclick="updateView('groups')" class="text-blue-600 hover:underline">Groups</button>
+            <span class="text-slate-400">/</span>
+            <span class="text-slate-600 font-medium">${group.name}</span>
+        </div>
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-2xl font-bold">${group.name} Topics</h2>
+                <p class="text-sm text-slate-400 mt-1">${group.memberCount} members</p>
+            </div>
+            <div class="flex items-center space-x-3">
+                ${membershipButton}
+                ${group.isMember || group.isCreator ? `
+<button onclick="toggleTopicModal(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium flex items-center transition-colors">
+    <i class="fa-solid fa-plus mr-2"></i> Create Topic
+</button>
+` : ''}
+            </div>
+        </div>
+        <div class="space-y-3">
+            ${gTopics.map(topic => renderTopicItem(topic)).join('')}
+        </div>
+    `;
+    break;
 
             case 'discussions':
                 html = `
@@ -443,17 +601,25 @@
                 `;
                 break;
 
-            case 'my-topics':
-                const myTopics = state.topics.filter(t => t.author === state.user);
-                html = `
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-bold">My Topics</h2>
-                    </div>
-                    <div class="space-y-3">
-                        ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
-                    </div>
-                `;
-                break;
+            // NEW:
+case 'my-topics':
+    const myTopics = state.topics.filter(t => t.author === state.user);
+    html = `
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">My Topics</h2>
+        </div>
+        <div class="space-y-3 mb-10">
+            ${myTopics.length ? myTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">You haven\'t started any topics yet.</div>'}
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">Recommended Topics</h2>
+        </div>
+        <div class="space-y-3">
+            ${state.recommendedTopics.length ? state.recommendedTopics.map(topic => renderTopicItem(topic)).join('') : '<div class="text-slate-400 py-10 text-center">No recommendations yet \u2014 pick some interests to get suggestions.</div>'}
+        </div>
+    `;
+    break;
 
             case 'quizzes':
                 const incoming = state.quizzes.filter(q => q.status === 'incoming');
@@ -475,9 +641,9 @@
                                         <h4 class="font-bold text-slate-800 text-lg mb-1">${q.title}</h4>
                                         <p class="text-sm text-slate-500 mb-4"><i class="fa-regular fa-clock mr-1"></i> ${q.duration}</p>
                                     </div>
-                                    <button class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors">Start Quiz</button>
+                                   <button onclick="window.location.href = '/student/quizzes/${q.id}/attempt'" class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"> Start Quiz </button>
                                 </div>
-                            `).join('')}
+                                   `).join('')}
                         </div>
                     </div>
                     <div>
@@ -499,7 +665,7 @@
                                         <tr>
                                             <td class="px-6 py-4 font-bold text-slate-800">${q.title}</td>
                                             <td class="px-6 py-4">${q.category}</td>
-                                            <td class="px-6 py-4 text-slate-500">${q.dueDate}</td>
+                                                <td class="px-6 py-4 text-slate-500">${q.submittedDate ?? '—'}</td>
                                             <td class="px-6 py-4 text-right font-bold text-green-600">${q.score}</td>
                                         </tr>
                                     `).join('')}
@@ -548,23 +714,75 @@
                 `;
                 break;
 
+             case 'announcements':
+                html = `
+                    <h2 class="text-2xl font-bold mb-6">Announcements</h2>
+                    <div class="space-y-4">
+                        ${state.announcements.length ? state.announcements.map(a => `
+                            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold">
+                                        ${(a.user?.name ?? 'U').charAt(0).toUpperCase()}
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-slate-800">${a.user?.name ?? 'Unknown Lecturer'}</h4>
+                                        <p class="text-xs text-slate-400">${new Date(a.created_at).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                                <p class="text-slate-700 leading-relaxed">${a.content}</p>
+                                ${a.quiz ? `<p class="text-xs text-blue-600 mt-3 font-bold">Related quiz: ${a.quiz.title}</p>` : ''}
+                            </div>
+                        `).join('') : '<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">No announcements yet.</div>'}
+                    </div>
+                `;
+                break;   
+
             case 'chat':
                 const topic = state.topics.find(t => t.id === state.selectedTopicId);
-                const topicMessages = state.messages[state.selectedTopicId] || [];
+                const topicMessages = state.messages?.[state.selectedTopicId] || [];
+                if (!topic) {
+                    html = `
+                        <div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">
+                            Loading topic...
+                        </div>
+                    `;
+                    break;
+                }
                 html = `
-                    <div class="flex flex-col h-full -m-8">
-                        <div class="h-16 bg-white border-b px-8 flex items-center justify-between">
-                            <div class="flex items-center">
+                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-8 sticky  ">
+                            <div class="  flex items-center">
                                 <button onclick="updateView('${state.selectedGroupId ? 'group_details' : 'discussions'}')" class="mr-4 text-slate-400 hover:text-slate-600">
                                     <i class="fa-solid fa-arrow-left"></i>
                                 </button>
                                 <h2 class="text-lg font-bold text-slate-800">${topic.title}</h2>
                             </div>
+                            <div class="flex items-center space-x-2">
+                                <a href="/topics/${topic.id}/export-pdf" target="_blank" class="flex items-center px-3 py-2 text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" title="Export thread as PDF">
+                                    <i class="fa-solid fa-file-pdf mr-2"></i> Export PDF
+                                </a>
+                                <div class="relative">
+                                    <button onclick="toggleShareMenu(event)" class="flex  px-3 py-2 text-sm text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors" title="Share this discussion">
+                                        <i class="fa-solid fa-share-nodes mr-2"></i> Share
+                                    </button>
+                                    <div id="share-menu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-slate-200 rounded-lg shadow-lg z-30 py-1">
+                                        <button onclick="shareTopic('twitter')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-x-twitter mr-3 w-4"></i> X / Twitter
+                                        </button>
+                                        <button onclick="shareTopic('linkedin')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-linkedin mr-3 w-4 text-[#0A66C2]"></i> LinkedIn
+                                        </button>
+                                        <button onclick="shareTopic('facebook')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 flex items-center">
+                                            <i class="fa-brands fa-facebook mr-3 w-4 text-[#1877F2]"></i> Facebook
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
                         <div class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50" id="chat-messages">
                             <div class="max-w-4xl mx-auto space-y-6">
                                 ${topicMessages.map(msg => `
-                                    <div class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
+                                    <div data-message-id="${msg.id}" class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
                                         <div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">
                                             ${msg.author.charAt(0)}
                                         </div>
@@ -577,13 +795,13 @@
                                                 ${msg.text}
                                             </div>
                                             <div class="flex items-center space-x-2 mt-1 ${msg.isMe ? 'flex-row-reverse space-x-reverse' : ''}">
-                                                <button onclick="handleLike(event, this)" class="like-button ${msg.myLike ? 'active' : ''}">
-                                                    <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likes || 0}</span>
-                                                </button>
+                                               <button onclick="handleLike(event, this)" class="like-button ${msg.myLike ? 'active' : ''}">
+                                             <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likeCount || 0}</span>
+                                               </button>
                                                 <div class="reaction-container flex flex-wrap gap-1 ${msg.isMe ? 'flex-row-reverse' : ''}">
-                                                    ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
+                                                 ${(msg.reactions || []).map(r => `<div class="reaction-badge ${r.me ? 'active' : ''}" onclick="toggleReaction(event, this, '${r.emoji}')">${r.emoji} ${r.count}</div>`).join('')}
                                                 </div>
-                                                ${msg.flagged ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
+                                               ${msg.myFlag ? '<div class="flag-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>' : ''}
                                             </div>
                                         </div>
                                     </div>
@@ -631,6 +849,11 @@
         }
         
         mainContent.innerHTML = html;
+
+         if (state.activeView === 'pending-requests') {
+    fetchAllPendingRequests();
+} 
+
         if(state.activeView === 'chat') {
             const chatBox = document.getElementById('chat-messages');
             if (chatBox) chatBox.scrollTop = chatBox.scrollHeight;
@@ -665,42 +888,227 @@
         `;
     }
 
-    function handleLike(event, btn) {
-        event.stopPropagation();
-        const isActive = btn.classList.contains('active');
+    
+// NEW:
+async function handleLike(event, btn) {
+    event.stopPropagation();
+
+    const wrapper = btn.closest('[data-message-id]');
+    const messageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
+    if (!messageId) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}/like`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle like');
+
+        const result = await response.json();
         const countSpan = btn.querySelector('span:last-child');
-        let currentCount = parseInt(countSpan.innerText);
-        
-        if (isActive) {
-            btn.classList.remove('active');
-            countSpan.innerText = Math.max(0, currentCount - 1);
-        } else {
+
+        if (result.liked) {
             btn.classList.add('active');
-            countSpan.innerText = currentCount + 1;
             showNotification();
-        }
-    }
-
-    function toggleReaction(event, badge, emoji) {
-        event.stopPropagation();
-        const isActive = badge.classList.contains('active');
-        const text = badge.innerText;
-        const countStr = text.replace(emoji, '').trim();
-        let currentCount = parseInt(countStr);
-
-        if (isActive) {
-            badge.classList.remove('active');
-            currentCount--;
-            if (currentCount <= 0) {
-                badge.remove();
-            } else {
-                badge.innerText = `${emoji} ${currentCount}`;
-            }
         } else {
-            badge.classList.add('active');
-            badge.innerText = `${emoji} ${currentCount + 1}`;
+            btn.classList.remove('active');
         }
+        countSpan.innerText = result.like_count;
+    } catch (err) {
+        console.error(err);
+        alert('Could not update like. Please try again.');
     }
+}
+
+    async function fetchTopics() {
+    try {
+        const response = await fetch('/topics');
+        const data = await response.json();
+
+        state.topics = data.map(topic => ({
+            id: topic.id,
+            groupId: topic.group_id,
+            title: topic.title,
+            content: topic.content,
+            author: topic.user ? topic.user.name : 'Unknown',
+            date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
+            replies: topic.messages_count || 0,
+            likes: 0
+        }));
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error('Failed to load topics:', err);
+    }
+}
+
+   // NEW:
+ async function fetchGroups() {
+    try {
+        const response = await fetch('/groups', {
+            credentials: 'same-origin',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Groups request failed with status ${response.status}`);
+        }
+
+        const data = await response.json();
+
+       state.groups = data.map(group => ({
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    memberCount: group.members_count ?? 0,
+    isMember: group.is_member ?? false,
+    isCreator: group.created_by === currentUserId,
+    visibility: group.visibility,
+    hasPendingRequest: group.has_pending_request ?? false,
+    likes: 0
+}));
+   
+state.hasPrivateGroups = state.groups.some(g => g.isCreator && g.visibility === 'private');
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error('Failed to load groups:', err);
+    }
+   
+updateSidebarForPendingRequests();
+}
+
+function updateSidebarForPendingRequests() {
+    const settingsBtn = document.querySelector('[data-view="settings"]');
+    if (!settingsBtn) return;
+
+    if (state.hasPrivateGroups) {
+        settingsBtn.innerHTML = `<i class="fa-solid fa-user-clock mr-3"></i> Pending Requests`;
+        settingsBtn.setAttribute('data-view', 'pending-requests');
+    }
+}
+
+  async function fetchRecommendedTopics() {
+    try {
+        const response = await fetch('/recommended-topics');
+        const data = await response.json();
+
+        state.recommendedTopics = data.map(topic => ({
+            id: topic.id,
+            groupId: topic.group_id,
+            title: topic.title,
+            author: topic.user ? topic.user.name : 'Unknown',
+            date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
+            replies: topic.messages_count || 0,
+            likes: 0
+        }));
+
+        renderView();
+    } catch (err) {
+        console.error('Failed to load recommended topics:', err);
+    }
+}
+     
+   // NEW:
+async function fetchMessages(topicId) {
+    try {
+        const response = await fetch(`/topics/${topicId}/messages`);
+        const data = await response.json();
+
+        state.messages[topicId] = data.map(msg => ({
+            id: msg.id,
+            author: msg.user ? msg.user.name : 'Unknown',
+            text: msg.body,
+            time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            isMe: msg.user_id === currentUserId,
+            flagCount: msg.flagged_by_count ?? 0,
+            myFlag: msg.flagged_by_me ?? false,
+             likeCount: msg.liked_by_count ?? 0,
+             myLike: msg.liked_by_me ?? false,
+             reactions: msg.grouped_reactions ?? [],
+            hidden: false
+
+        }));
+
+        // Preserve whatever the student is currently typing before re-rendering
+        const chatInput = document.getElementById('chat-input');
+        const draftText = chatInput ? chatInput.value : '';
+
+        renderView();
+        setupContextListeners();
+
+        // Restore the draft and put the cursor back at the end, so typing isn't interrupted
+        const newChatInput = document.getElementById('chat-input');
+        if (newChatInput && draftText) {
+            newChatInput.value = draftText;
+            newChatInput.focus();
+            newChatInput.setSelectionRange(draftText.length, draftText.length);
+        }
+    } catch (err) {
+        console.error('Failed to load messages:', err);
+    }
+}
+     
+   async function joinGroup(groupId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/groups/${groupId}/join`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to join group');
+
+        await fetchGroups();
+        renderView();
+    } catch (err) {
+        console.error(err);
+        alert('Could not join group. Please try again.');
+    }
+}
+
+async function leaveGroup(groupId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/groups/${groupId}/leave`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.message || 'Failed to leave group');
+        }
+
+        await fetchGroups();
+        renderView();
+    } catch (err) {
+        console.error(err);
+        alert(err.message || 'Could not leave group. Please try again.');
+    }
+}
+
+
+   // NEW:
+async function toggleReaction(event, badge, emoji) {
+    event.stopPropagation();
+
+    const wrapper = badge.closest('[data-message-id]');
+    const messageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
+    if (!messageId) return;
+
+    await sendReaction(messageId, emoji);
+}
 
     function toggleEmojiPicker(event, isContextMenuMode) {
         event.stopPropagation();
@@ -723,47 +1131,186 @@
         
         emojiPicker?.classList.remove('hidden');
     }
+async function fetchAllPendingRequests() {
+    const container = document.getElementById('all-pending-requests-container');
+    if (!container) return;
 
-    function handleContextAction(action) {
-        if (!currentContextElement) return;
+    try {
+        const response = await fetch('/my-pending-requests');
+        const requests = await response.json();
 
-        const postMeta = currentContextElement.closest('.group').querySelector('.flex.items-center.space-x-2, .flex.items-center.space-x-3');
-
-        switch(action) {
-            case 'flag':
-                let flagIcon = postMeta?.querySelector('.flag-icon');
-                if (!flagIcon && postMeta) {
-                    flagIcon = document.createElement('div');
-                    flagIcon.className = 'flag-icon';
-                    flagIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-                    postMeta.appendChild(flagIcon);
-                }
-                break;
+        if (requests.length === 0) {
+            container.innerHTML = '<div class="text-slate-400 py-10 text-center">No pending requests right now.</div>';
+            return;
         }
-        contextMenu?.classList.add('hidden');
-    }
 
-    function insertReaction(emoji) {
-        if (!currentContextElement) return;
-        const container = currentContextElement.closest('.group').querySelector('.reaction-container');
-        if (!container) return;
-        
-        let existingBadge = Array.from(container.querySelectorAll('.reaction-badge')).find(b => b.innerText.includes(emoji));
-        
-        if (existingBadge) {
-            if (!existingBadge.classList.contains('active')) {
-                toggleReaction({ stopPropagation: () => {} }, existingBadge, emoji);
+        container.innerHTML = requests.map(req => `
+            <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg">
+                <div>
+                    <span class="font-bold text-slate-800">${req.user.name}</span>
+                    <span class="text-xs text-slate-400 ml-2">${req.user.email}</span>
+                    <div class="text-xs text-slate-500 mt-1">Requesting to join: <span class="font-medium">${req.group.name}</span></div>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="respondToGlobalRequest(${req.id}, 'approve')" class="px-3 py-1 bg-green-600 text-white text-xs rounded-lg hover:bg-green-700">Approve</button>
+                    <button onclick="respondToGlobalRequest(${req.id}, 'reject')" class="px-3 py-1 bg-red-100 text-red-600 text-xs rounded-lg hover:bg-red-200">Reject</button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="text-red-500">Could not load requests.</div>';
+    }
+}
+
+async function respondToGlobalRequest(requestId, action) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/group-requests/${requestId}/${action}`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to respond');
+
+        await fetchAllPendingRequests();
+        await fetchGroups();
+    } catch (err) {
+        console.error(err);
+        alert('Could not process this request.');
+    }
+}
+    // NEW:
+async function handleContextAction(action) {
+    if (!currentContextElement || !currentContextMessageId) return;
+
+    switch(action) {
+        case 'flag':
+            await toggleMessageFlag(currentContextMessageId);
+            break;
+    }
+    contextMenu?.classList.add('hidden');
+}
+
+async function toggleMessageFlag(messageId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}/flag`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle flag');
+
+        const result = await response.json();
+
+        if (result.hidden) {
+            // Message crossed the flag threshold — remove it immediately
+            const wrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+            wrapper?.remove();
+            return;
+        }
+
+        // Toggle the visual flag icon based on whether *this user's* flag is now on or off
+        const postMeta = currentContextElement.closest('.group').querySelector('.flex.items-center.space-x-2, .flex.items-center.space-x-3');
+        let flagIcon = postMeta?.querySelector('.flag-icon');
+
+        if (result.flagged) {
+            if (!flagIcon && postMeta) {
+                flagIcon = document.createElement('div');
+                flagIcon.className = 'flag-icon';
+                flagIcon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                postMeta.appendChild(flagIcon);
             }
         } else {
-            const badge = document.createElement('div');
-            badge.className = 'reaction-badge active';
-            badge.innerHTML = `${emoji} 1`;
-            badge.onclick = (e) => toggleReaction(e, badge, emoji);
-            container.appendChild(badge);
+            flagIcon?.remove();
         }
-        
-        emojiPicker?.classList.add('hidden');
+         const topicMessages = state.messages[state.selectedTopicId] || [];
+        const msg = topicMessages.find(m => m.id == messageId);
+        if (msg) {
+            msg.myFlag = result.flagged;
+            msg.flagCount = result.flag_count;
+        }
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error(err);
+        alert('Could not update flag. Please try again.');
     }
+}
+
+function toggleShareMenu(e) {
+    e.stopPropagation();
+    document.getElementById('share-menu')?.classList.toggle('hidden');
+}
+
+function shareTopic(platform) {
+    const topic = state.topics.find(t => t.id === state.selectedTopicId);
+    if (!topic) return;
+
+    const shareUrl = `${window.location.origin}/topics/${topic.id}/preview`;
+    const shareText = `Check out this discussion: ${topic.title}`;
+
+    let intentUrl;
+    switch (platform) {
+        case 'twitter':
+            intentUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
+            break;
+        case 'linkedin':
+            intentUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+            break;
+        case 'facebook':
+            intentUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`;
+            break;
+        default:
+            return;
+    }
+
+    window.open(intentUrl, '_blank', 'noopener,noreferrer,width=600,height=500');
+    document.getElementById('share-menu')?.classList.add('hidden');
+}
+
+    // NEW:
+async function insertReaction(emoji) {
+    if (!currentContextMessageId) return;
+
+    await sendReaction(currentContextMessageId, emoji);
+    emojiPicker?.classList.add('hidden');
+}
+
+async function sendReaction(messageId, emoji) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}/react`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ emoji })
+        });
+
+        if (!response.ok) throw new Error('Failed to toggle reaction');
+
+        const result = await response.json();
+
+        const topicMessages = state.messages[state.selectedTopicId] || [];
+        const msg = topicMessages.find(m => m.id == messageId);
+        if (msg) {
+            msg.reactions = result.reactions;
+        }
+
+        renderView();
+        setupContextListeners();
+    } catch (err) {
+        console.error(err);
+        alert('Could not update reaction. Please try again.');
+    }
+}
 
     function insertToInput(emoji) {
         const input = document.getElementById('chat-input');
@@ -782,23 +1329,29 @@
         emojiPicker?.classList.add('hidden');
     }
 
-    function setupContextListeners() {
-        const elements = document.querySelectorAll('.message-bubble');
-        elements.forEach(el => {
-            el.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                currentContextElement = el;
-                
-                if (contextMenu) {
-                    contextMenu.style.left = `${e.clientX}px`;
-                    contextMenu.style.top = `${e.clientY}px`;
-                    contextMenu.classList.remove('hidden');
-                }
-                emojiPicker?.classList.add('hidden');
-            });
+    // NEW:
+let currentContextMessageId = null;
+
+function setupContextListeners() {
+    const elements = document.querySelectorAll('.message-bubble');
+    elements.forEach(el => {
+        el.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            currentContextElement = el;
+
+            const wrapper = el.closest('[data-message-id]');
+            currentContextMessageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
+            
+            if (contextMenu) {
+                contextMenu.style.left = `${e.clientX}px`;
+                contextMenu.style.top = `${e.clientY}px`;
+                contextMenu.classList.remove('hidden');
+            }
+            emojiPicker?.classList.add('hidden');
         });
-    }
+    });
+}
 
     function toggleGroupModal(show) {
         groupModal?.classList.toggle('hidden', !show);
@@ -808,25 +1361,86 @@
         topicModal?.classList.toggle('hidden', !show);
     }
 
-    function sendMessage() {
-        const input = document.getElementById('chat-input');
-        if (!input) return;
-        const text = input.value.trim();
-        if(!text) return;
-        if(!state.messages[state.selectedTopicId]) state.messages[state.selectedTopicId] = [];
-        state.messages[state.selectedTopicId].push({
-            id: Date.now(),
-            author: state.user,
-            text: text,
-            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            isMe: true,
-            likes: 0,
-            myLike: false,
-            reactions: []
+    // NEW:
+async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input) return;
+    const text = input.value.trim();
+    if (!text) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/topics/${state.selectedTopicId}/messages`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
+            },
+            body: JSON.stringify({ body: text })
         });
+
+        if (!response.ok) throw new Error('Failed to send message');
+
         input.value = '';
-        renderView();
-        setupContextListeners();
+        await fetchMessages(state.selectedTopicId);
+    } catch (err) {
+        console.error(err);
+        alert('Could not send message. Please try again.');
     }
+}
+
+async function fetchInterests() {
+    try {
+        const response = await fetch('/user-interests');
+        const data = await response.json();
+
+        const select = document.getElementById('topic-input-interest');
+        if (!select) return;
+
+        data.forEach(interest => {
+            const opt = document.createElement('option');
+            opt.value = interest.InterestID;
+            opt.textContent = interest.InterestName;
+            select.appendChild(opt);
+        });
+    } catch (err) {
+        console.error('Failed to load interests:', err);
+    }
+}
+
+async function fetchQuizzes() {
+    try {
+        const response = await fetch('/student/quizzes');
+        const data = await response.json();
+
+        state.quizzes = data.map(quiz => ({
+    id: quiz.id,
+    title: quiz.title,
+    category: quiz.description ?? '',
+    dueDate: quiz.start_time ? new Date(quiz.start_time).toLocaleDateString() : 'Not scheduled',
+    submittedDate: quiz.submitted_at ? new Date(quiz.submitted_at).toLocaleString() : null,
+    duration: quiz.duration_minutes + ' mins',
+    status: quiz.status,
+    score: quiz.score !== null ? `${quiz.score}/${quiz.total_marks}` : null
+}));
+        renderView();
+    } catch (err) {
+        console.error('Failed to load quizzes:', err);
+    }
+}
+async function fetchAnnouncements() {
+    try {
+        const response = await fetch('/announcements');
+        const data = await response.json();
+
+        state.announcements = data;
+        renderView();
+    } catch (err) {
+        console.error('Failed to load announcements:', err);
+    }
+}
+
+ 
 </script>
 </body></html>

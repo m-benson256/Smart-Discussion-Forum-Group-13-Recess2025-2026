@@ -3,15 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lecturer extends Model
 {
-    //
-    protected $primaryKey = 'LecturerID'; 
-    public $incrementing = false;
-    protected $fillable = ['LecturerID', 'Department', 'DegreeType']; 
+    protected $fillable = ['user_id', 'contact', 'DegreeType'];
 
-    public function member() { return $this->belongsTo(Member::class, 'LecturerID'); } 
-    public function quizzes() { return $this->hasMany(Quiz::class, 'LecturerID'); } 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
+    public function quizzes(): HasMany
+    {
+        return $this->hasMany(Quizzes::class, 'LecturerID', 'id');
+    }
 }
