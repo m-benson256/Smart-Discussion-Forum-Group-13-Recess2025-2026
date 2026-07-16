@@ -11,9 +11,21 @@ class WarningsController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        //
-    }
+{
+    $warnings = \App\Models\Warnings::with('user:id,name')->latest()->get()->map(function ($w) {
+        return [
+            'id' => $w->id,
+            'user' => $w->user->name ?? 'Unknown',
+            'number' => $w->warning_number,
+            'reason' => $w->reason,
+            'issued' => $w->issued_at,
+            'expires' => $w->expires_at,
+            'status' => $w->status,
+        ];
+    });
+
+    return $warnings;
+}
 
     /**
      * Show the form for creating a new resource.

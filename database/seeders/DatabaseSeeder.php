@@ -25,6 +25,15 @@ class DatabaseSeeder extends Seeder
                 'status' => 'active',
             ]
         );
+        User::updateOrCreate(
+            ['email' => 'admin@admin.ed'],
+            [
+                'name' => 'Admin User',
+                'password' => Hash::make('password123'),
+                'role' => 'admin',
+                'status' => 'active',
+            ]
+        );
 
         $this->call(QuizDemoSeeder::class);
     }

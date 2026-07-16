@@ -17,6 +17,11 @@ class GroupController extends Controller
             ->latest()
             ->get();
 
+
+        $groups->each(function ($group) use ($request) {
+            $group->is_member = $group->members->contains('id', $request->user()->id);
+        });
+
        // In GroupController@index, update the each() block:
 $groups->each(function ($group) use ($request) {
     $group->is_member = $group->members->contains('id', $request->user()->id);
@@ -71,6 +76,24 @@ $groups->each(function ($group) use ($request) {
 
     // POST /groups/{group}/join — current user joins a group
     public function join(Request $request, Group $group): JsonResponse
+    {
+        $alreadyMember = $group->members()
+            ->where('user_id', $request->user()->id)
+            ->exists();
+
+        if ($alreadyMember) {
+            return response()->json(['message' => 'Already a member'], 409);
+        }
+
+        $group->members()->attach($request->user()->id);
+
+        $group->loadCount('members');
+
+        return response()->json($group);
+    }
+
+
+  public function requestToJoin(Request $request, Group $group): JsonResponse
 {
     $userId = $request->user()->id;
 
