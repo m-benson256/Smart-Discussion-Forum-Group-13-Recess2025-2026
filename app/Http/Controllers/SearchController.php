@@ -59,4 +59,55 @@ class SearchController extends Controller
             'reports' => $reports,
         ]);
     }
+
+   // GET /student/search?q=... — search groups, topics, and quizzes visible to this student
+public function studentSearch(Request $request): JsonResponse
+{
+    $query = trim($request->query('q', ''));
+    $userId = $request->user()->id;
+
+    if ($query === '') {
+        return response()->json(['groups' => [], 'topics' => [], 'quizzes' => []]);
+    }
+
+    $visibleToStudent = function ($g) use ($userId) {
+        $g->where('visibility', 'public')
+          ->orWhere('created_by', $userId)
+          ->orWhereHas('members', fn ($m) => $m->where('user_id', $userId));
+    };
+
+    $groups = \App\Models\Group::where($visibleToStudent)
+        ->where(function ($g) use ($query) {
+            $g->where('name', 'like', "%{$query}%")
+              ->orWhere('description', 'like', "%{$query}%");
+        })
+        ->select('id', 'name', 'description', 'visibility')
+        ->limit(10)
+        ->get();
+
+    $topics = \App\Models\Topic::where(function ($t) use ($query) {
+            $t->where('title', 'like', "%{$query}%")
+              ->orWhere('content', 'like', "%{$query}%");
+        })
+        ->where(function ($t) use ($visibleToStudent) {
+            $t->whereNull('group_id')
+              ->orWhereHas('group', $visibleToStudent);
+        })
+        ->select('id', 'title', 'group_id')
+        ->limit(10)
+        ->get();
+
+    $quizzes = Quiz::where('status', 'published')
+        ->where('title', 'like', "%{$query}%")
+        ->select('id', 'title', 'duration_minutes', 'total_marks')
+        ->limit(10)
+        ->get();
+
+    return response()->json([
+        'groups' => $groups,
+        'topics' => $topics,
+        'quizzes' => $quizzes,
+    ]);
+}
+
 }

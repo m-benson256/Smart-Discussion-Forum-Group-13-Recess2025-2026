@@ -46,6 +46,8 @@ class User extends Authenticatable
         'password',
         'academic_category',
         'degree_program',
+        'role',
+        'status',
         'desk_contact_number',
     ];
     /**
