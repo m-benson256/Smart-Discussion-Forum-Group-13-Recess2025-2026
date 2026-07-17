@@ -100,6 +100,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/quizzes/{quiz}/start', [QuizAttemptController::class, 'start']);
     Route::post('/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
     Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+
+    Route::get('/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
    
     Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
 Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
@@ -177,6 +179,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/groups', [GroupController::class, 'store']);
     Route::get('/lecturer/reports', [QuizAttemptController::class, 'report']);
      Route::get('/lecturer/search', [SearchController::class, 'search']);
+     Route::get('/student/search', [SearchController::class, 'studentSearch']);
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);

@@ -215,5 +215,28 @@ public function report(Request $request): JsonResponse
 
     return response()->json($report);
 }
+
+// GET /student/performance-stats — this student's average score % and rank among all students
+public function performanceStats(Request $request): JsonResponse
+{
+    $userId = $request->user()->id;
+
+    $studentAverages = QuizAttempt::whereNotNull('submitted_at')
+        ->join('quizzes', 'quizzes.id', '=', 'quiz_attempts.quiz_id')
+        ->selectRaw('quiz_attempts.user_id, AVG(quiz_attempts.score / quizzes.total_marks * 100) as avg_score')
+        ->groupBy('quiz_attempts.user_id')
+        ->orderByDesc('avg_score')
+        ->get();
+
+    $myStats = $studentAverages->firstWhere('user_id', $userId);
+    $rankIndex = $studentAverages->search(fn ($row) => $row->user_id === $userId);
+
+    return response()->json([
+        'average_score' => $myStats ? round($myStats->avg_score) : null,
+        'quizzes_completed' => QuizAttempt::where('user_id', $userId)->whereNotNull('submitted_at')->count(),
+        'global_rank' => $rankIndex === false ? null : $rankIndex + 1,
+        'total_ranked_students' => $studentAverages->count(),
+    ]);
+}
     
 }
