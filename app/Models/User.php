@@ -7,12 +7,14 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
+
+
+
 
 /**
  * @property int $id
@@ -27,11 +29,15 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
+<<<<<<< HEAD
 
 #[Fillable(['name', 'email', 'password','status','role','verification_status'])]
 
+=======
+#[Fillable(['name', 'email', 'password','status','role','verification_statusS'])]
+>>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable 
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
@@ -76,6 +82,7 @@ class User extends Authenticatable
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
     }
+<<<<<<< HEAD
 
     public function interests(): BelongsToMany
     {
@@ -95,4 +102,6 @@ public function reactionsGiven()
 {
     return $this->hasMany(MessageReaction::class);
 }
+=======
+>>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
 }

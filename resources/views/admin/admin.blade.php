@@ -751,6 +751,7 @@
                         <button class="action-btn success" onclick="toggleGroupStatus(${g.id})"><i class="fas fa-unlock"></i><span class="tooltip">Unblock</span></button>
                     `;
                 }
+
                 return `
                 <tr>
                     <td><strong>${g.name}</strong></td>
@@ -995,6 +996,7 @@ function toggleGroupStatus(id) {
     const g = groups.find(g => g.id === id);
     if (!g) return;
 
+<<<<<<< HEAD
     fetch(`/admin/groups/${id}/toggle-status`, {
         method: 'POST',
         headers: {
@@ -1013,6 +1015,8 @@ function toggleGroupStatus(id) {
     });
 }
 
+=======
+>>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
         // ===== WARNING ACTIONS =====
         function resolveWarning(id) {
             const w = warnings.find(w => w.id === id);

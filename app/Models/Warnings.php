@@ -12,6 +12,10 @@ class Warnings extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+<<<<<<< HEAD
 }
 
     
+=======
+}
+>>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
