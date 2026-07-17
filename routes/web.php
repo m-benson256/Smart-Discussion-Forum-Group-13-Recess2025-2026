@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserInterestsController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ParticipationController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -180,7 +181,11 @@ Route::get('/recommended-topics', [RecommendationController::class, 'index']);
  Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
  
  Route::get('/topics/{topic}/preview', [TopicController::class, 'publicPreview'])->name('topics.preview');
-});
+
+Route::get('/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
+Route::post('/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
+Route::get('/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+ });
 
 
  
