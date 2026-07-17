@@ -472,6 +472,7 @@
         <div class="page-panel" id="page-users">
             <div class="placeholder-content">
                 <h2><i class="fas fa-users" style="color:#2563eb;"></i> User Management</h2>
+                <p>View all registered students and lecturers. Admins can verify lecturer accounts, while student accounts remain managed without verification.</p>
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="userSearch" placeholder="Search users..." oninput="filterUsers()">
@@ -595,29 +596,10 @@
                 <i class="fas fa-sign-out-alt" style="font-size:48px; color:#f87171; display:block; margin-bottom:16px;"></i>
                 <h2>Log Out</h2>
                 <p>This will clear your session token and return you to the login portal.</p>
-<<<<<<< HEAD
                 <div class="actions" style="justify-content:center;">
-                    <button class="btn btn-danger" onclick="document.getElementById('logout-form').submit()">Confirm Logout</button>
+                    <button class="btn btn-danger" onclick="alert('Session terminated. Redirecting to login...')"><i class="fas fa-sign-out-alt"></i> Confirm Logout</button>
                     <button class="btn" onclick="navigateTo('overview')">Cancel</button>
                 </div>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
-                    @csrf
-                </form>
-            </div>
-        </div>
-                        <i class="fas fa-sign-out-alt"></i> Confirm Logout
-                    </button>
-                    <button class="btn" onclick="navigateTo('overview')">Cancel</button>
-                </div>
-=======
-              <div class="actions" style="justify-content:center;">
-    <form method="POST" action="{{ route('logout') }}">
-        @csrf
-        <button type="submit" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Confirm Logout</button>
-    </form>
-    <button class="btn" onclick="navigateTo('overview')">Cancel</button>
-</div>  
->>>>>>> ee10467 (Logging out of admin and groups in the lecturer)
             </div>
         </div>
     </main>
@@ -1014,7 +996,6 @@ function toggleGroupStatus(id) {
     const g = groups.find(g => g.id === id);
     if (!g) return;
 
-<<<<<<< HEAD
     fetch(`/admin/groups/${id}/toggle-status`, {
         method: 'POST',
         headers: {
@@ -1033,8 +1014,6 @@ function toggleGroupStatus(id) {
     });
 }
 
-=======
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
         // ===== WARNING ACTIONS =====
         function resolveWarning(id) {
             const w = warnings.find(w => w.id === id);
@@ -1376,4 +1355,4 @@ function toggleGroupStatus(id) {
         console.log('✅ Smart Discussion Forum Admin System initialized');
     </script>
 </body>
-</html>
+</html> 

@@ -57,6 +57,7 @@ class User extends Authenticatable
         'role',
         'status',
         'desk_contact_number',
+        'avatar_path',
     ];
     /**
      * Get the attributes that should be cast.
@@ -102,6 +103,16 @@ public function reactionsGiven()
 {
     return $this->hasMany(MessageReaction::class);
 }
+<<<<<<< HEAD
 =======
 >>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+=======
+
+public function avatarUrl(): ?string
+    {
+        return $this->avatar_path
+            ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->avatar_path)
+            : null;
+    }
+>>>>>>> 736b3dd (profile pic)
 }

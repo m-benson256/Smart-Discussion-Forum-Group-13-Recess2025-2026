@@ -162,7 +162,13 @@
 </div>
 <div class="flex items-center space-x-4">
 <span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
-<div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+@if (auth()->user()?->avatar_path)
+    <a href="{{ route('profile.edit') }}">
+        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+    </a>
+@else
+    <a href="{{ route('profile.edit') }}" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</a>
+@endif
 </div>
 </header>
 <main class="p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
@@ -554,13 +560,13 @@ async function recordTopicView(topicId) {
 
 
                case 'pending-requests':
-    html = `
-        <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
-        <div id="all-pending-requests-container" class="space-y-3">
-            <div class="text-slate-400">Loading...</div>
-        </div>
-    `;
-    break;
+                          html = `
+                              <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
+                              <div id="all-pending-requests-container" class="space-y-3">
+                                  <div class="text-slate-400">Loading...</div>
+                             </div>
+                     `;
+                        break;
     
 
              // NEW:
@@ -807,9 +813,10 @@ case 'my-topics':
                             <div class="max-w-4xl mx-auto space-y-6">
                                 ${topicMessages.map(msg => `
                                     <div data-message-id="${msg.id}" class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
-                                        <div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">
-                                            ${msg.author.charAt(0)}
-                                        </div>
+                                        ${msg.authorAvatar
+                                            ? `<img src="${msg.authorAvatar}" alt="${msg.author}" class="w-8 h-8 rounded-full mt-1 flex-shrink-0 object-cover">`
+                                            : `<div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">${msg.author.charAt(0)}</div>`
+                                        }
                                         <div class="max-w-[70%] group">
                                             <div class="flex items-center mb-1 ${msg.isMe ? 'justify-end' : ''}">
                                                 <span class="text-xs font-bold text-slate-700 mr-2">${msg.author}</span>
@@ -1050,6 +1057,7 @@ async function fetchMessages(topicId) {
         state.messages[topicId] = data.map(msg => ({
             id: msg.id,
             author: msg.user ? msg.user.name : 'Unknown',
+            authorAvatar: msg.user ? msg.user.avatar_url : null,
             text: msg.body,
             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isMe: msg.user_id === currentUserId,
