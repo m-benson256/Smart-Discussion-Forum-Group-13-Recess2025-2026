@@ -1,31 +1,31 @@
 <?php
 
-<<<<<<< HEAD
+
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\MessageController;
-=======
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+
+ 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-<<<<<<< HEAD
+
 use App\Http\Controllers\UserInterestsController;
 use App\Http\Controllers\RecommendationController;
 use App\Http\Controllers\ParticipationController;
-=======
+
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\AdministratorController;
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+
 
 // 1. Welcome Page
 Route::get('/', function () {
     return view('welcome');
 });
 
-<<<<<<< HEAD
+
 Route::middleware('auth')->group(function () {
     // 1.1 Onboarding Page
     Route::view('/onboarding', 'onboarding')->name('onboarding');
@@ -109,8 +109,7 @@ Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::clas
 Route::post('/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
 });
 
-=======
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)
 Route::get('/dashboard', function () {
    $user = auth()->user();
@@ -130,7 +129,7 @@ if ($user && str_ends_with($user->email, '@students.ed')) {
     return redirect()->route('student.dashboard');
 }
     
-<<<<<<< HEAD
+
     $user = auth()->user();
 
     // 1. If it's a lecturer, send them to the lecturer route
@@ -142,8 +141,7 @@ if ($user && str_ends_with($user->email, '@students.ed')) {
     if ($user && str_ends_with($user->email, '@students.ed')) {
         return redirect()->route('student.dashboard');
     }
-=======
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+
     // 3. If it's a random email, log them out and block them with an error
     auth()->logout();
     return redirect()->route('login')->withErrors([
@@ -171,8 +169,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-<<<<<<< HEAD
-=======
+
 
     Route::get('/topics', [TopicController::class, 'index']);
     Route::post('/topics', [TopicController::class, 'store']);
@@ -213,7 +210,7 @@ Route::get('/recommended-topics', [RecommendationController::class, 'index']);
  Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
 
  Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
-<<<<<<< HEAD
+
  
  Route::get('/topics/{topic}/preview', [TopicController::class, 'publicPreview'])->name('topics.preview');
 
@@ -221,9 +218,8 @@ Route::get('/lecturer/participation/criteria', [ParticipationController::class, 
 Route::post('/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/lecturer/participation/scores', [ParticipationController::class, 'scores']);
  });
-=======
->>>>>>> origin
+ 
 });
->>>>>>> a71614295232ad323805f7255ab2b0c2a15bcebf
+
 
 require __DIR__.'/auth.php';
