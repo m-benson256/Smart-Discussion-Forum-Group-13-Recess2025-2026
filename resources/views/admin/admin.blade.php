@@ -472,7 +472,6 @@
         <div class="page-panel" id="page-users">
             <div class="placeholder-content">
                 <h2><i class="fas fa-users" style="color:#2563eb;"></i> User Management</h2>
-                <p>View all registered students and lecturers. Admins can verify lecturer accounts, while student accounts remain managed without verification.</p>
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="userSearch" placeholder="Search users..." oninput="filterUsers()">
@@ -597,7 +596,16 @@
                 <h2>Log Out</h2>
                 <p>This will clear your session token and return you to the login portal.</p>
                 <div class="actions" style="justify-content:center;">
-                    <button class="btn btn-danger" onclick="alert('Session terminated. Redirecting to login...')"><i class="fas fa-sign-out-alt"></i> Confirm Logout</button>
+                    <button class="btn btn-danger" onclick="document.getElementById('logout-form').submit()">Confirm Logout</button>
+                    <button class="btn" onclick="navigateTo('overview')">Cancel</button>
+                </div>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
+            </div>
+        </div>
+                        <i class="fas fa-sign-out-alt"></i> Confirm Logout
+                    </button>
                     <button class="btn" onclick="navigateTo('overview')">Cancel</button>
                 </div>
             </div>

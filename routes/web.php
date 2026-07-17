@@ -153,6 +153,13 @@ if ($user && str_ends_with($user->email, '@students.ed')) {
         'email' => 'Access denied. You must register using an authorized institution email address.'
     ]); 
 })->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/logout', function (Illuminate\Http\Request $request) {
+    auth()->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout')->middleware('auth');
+    
 
 // 3. Isolated Role-Based Dashboards
 Route::middleware(['auth'])->group(function () {
