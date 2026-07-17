@@ -48,6 +48,8 @@ class User extends Authenticatable
         'password',
         'academic_category',
         'degree_program',
+        'role',
+        'status',
         'desk_contact_number',
     ];
     /**
@@ -84,4 +86,13 @@ class User extends Authenticatable
             'InterestID'
         )->withTimestamps();
     }
+    public function messages()
+{
+    return $this->hasMany(Message::class);
+}
+
+public function reactionsGiven()
+{
+    return $this->hasMany(MessageReaction::class);
+}
 }

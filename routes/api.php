@@ -11,6 +11,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\QuizAttemptController;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,41 +38,53 @@ Route::post('/desktop/login', function (LoginRequest $request) {
 
 // Desktop Registration (Matches your register.blade.php custom fields)
 Route::post('/desktop/register', function (Request $request) {
-    // Validate matching the fields you have in your blade view
-   $request->validate([
-    'name' => 'required|string|max:255',
-    'email' => 'required|string|email|max:255|unique:users',
-    'password' => 'required|string|min:8',
-    
-    // Correctly require academic_category if email ends with @students.ed
-    'academic_category' => [
-        Rule::requiredIf(fn () => str_ends_with($request->email, '@students.ed')),
-        'nullable',
-        'string',
-    ],
-    
-    // Correctly require degree_program if email ends with @students.ed
-    'degree_program' => [
-        Rule::requiredIf(fn () => str_ends_with($request->email, '@lecturers.ed')),
-        'nullable',
-        'string',
-    ], 
-       
-    
-    // Correctly require desk_contact_number if email ends with @lecturers.ed
-    'desk_contact_number' => [
-        Rule::requiredIf(fn () => str_ends_with($request->email, '@lecturers.ed')),
-        'nullable',
-        'string',
-    ],
-]);
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'email' => [
+            'required',
+            'string',
+            'email',
+            'max:255',
+            'unique:users',
+            function ($attribute, $value, $fail) {
+                if (!str_ends_with($value, '@students.ed') && !str_ends_with($value, '@lecturers.ed')) {
+                    $fail('You must register using an authorized institution email address.');
+                }
+            },
+        ],
+        'password' => 'required|string|min:8',
 
-    // Create the core user account
+        'academic_category' => [
+            Rule::requiredIf(fn () => str_ends_with($request->email, '@students.ed')),
+            'nullable',
+            'string',
+        ],
+
+        // degree_program belongs to lecturers
+        'degree_program' => [
+            Rule::requiredIf(fn () => str_ends_with($request->email, '@lecturers.ed')),
+            'nullable',
+            'string',
+        ],
+
+        'desk_contact_number' => [
+            Rule::requiredIf(fn () => str_ends_with($request->email, '@lecturers.ed')),
+            'nullable',
+            'string',
+        ],
+    ]);
+
+    $role = str_ends_with($request->email, '@lecturers.ed') ? 'lecturer' : 'student';
+
     $user = User::create([
         'name' => $request->name,
         'email' => $request->email,
         'password' => Hash::make($request->password),
-        // If your database profile tables have specific columns for categories/degrees, save them here
+        'role' => $role,
+        'status' => 'active',
+        'category' => $request->academic_category,
+        'DegreeType' => $request->degree_program,
+        'contact' => $request->desk_contact_number,
     ]);
 
     $token = $user->createToken('javafx-desktop-token')->plainTextToken;

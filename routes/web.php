@@ -18,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserInterestsController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ParticipationController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -99,6 +100,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/quizzes/{quiz}/start', [QuizAttemptController::class, 'start']);
     Route::post('/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
     Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+
+    Route::get('/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
    
     Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
 Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
@@ -183,6 +186,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/groups', [GroupController::class, 'store']);
     Route::get('/lecturer/reports', [QuizAttemptController::class, 'report']);
      Route::get('/lecturer/search', [SearchController::class, 'search']);
+     Route::get('/student/search', [SearchController::class, 'studentSearch']);
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
@@ -211,7 +215,11 @@ Route::get('/recommended-topics', [RecommendationController::class, 'index']);
  Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
  
  Route::get('/topics/{topic}/preview', [TopicController::class, 'publicPreview'])->name('topics.preview');
-});
+
+Route::get('/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
+Route::post('/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
+Route::get('/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+ });
 
 
  

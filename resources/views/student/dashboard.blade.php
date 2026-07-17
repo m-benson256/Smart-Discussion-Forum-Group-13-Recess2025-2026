@@ -157,7 +157,8 @@
 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
 <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
 </span>
-<input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md focus:ring-2 focus:ring-blue-500 transition-all text-sm" id="global-search" placeholder="Search groups, topics, quizzes..." type="text"/>
+<input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md focus:ring-2 focus:ring-blue-500 transition-all text-sm" id="global-search" placeholder="Search groups, topics, quizzes..." type="text" autocomplete="off"/>
+<div id="search-results" class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg z-30 py-2 max-h-96 overflow-y-auto"></div>
 </div>
 <div class="flex items-center space-x-4">
 <span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
@@ -263,8 +264,8 @@ const currentUserId = {{ Auth::id() }};
         messages: {},
 
        
-
-
+        performanceStats: null,
+        
         quizzes: [],
         announcements: [],
             
@@ -285,6 +286,8 @@ const currentUserId = {{ Auth::id() }};
     let mainContent, navItems, groupModal, topicModal, contextMenu, emojiPicker, emojiGrid;
 
     let messagePollingInterval = null;
+
+    let searchDebounceTimer = null;
 
     // Wait until DOM is completely parsed before bootstrapping views
     document.addEventListener('DOMContentLoaded', () => {
@@ -354,7 +357,15 @@ document.getElementById('save-group')?.addEventListener('click', async () => {
     }
 });
 
-        
+       document.getElementById('global-search')?.addEventListener('input', (e) => {
+    clearTimeout(searchDebounceTimer);
+    const q = e.target.value.trim();
+    if (!q) {
+        hideSearchResults();
+        return;
+    }
+    searchDebounceTimer = setTimeout(() => performSearch(q), 300);
+}); 
 
 // NEW:
 document.getElementById('save-topic')?.addEventListener('click', async () => {
@@ -398,6 +409,11 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
             if (shareMenu && !e.target.closest('#share-menu') && !e.target.closest('[title="Share this discussion"]')) {
                 shareMenu.classList.add('hidden');
             }
+
+             const searchResults = document.getElementById('search-results');
+            if (searchResults && !e.target.closest('#search-results') && e.target.id !== 'global-search') {
+                searchResults.classList.add('hidden');
+            }
         });
 
         // Initial bootstrap render
@@ -408,6 +424,7 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
                 openTopic(parseInt(topicParam, 10));
             }
         });
+        fetchPerformanceStats();
         fetchTopics();
         fetchQuizzes();
         updateView(initialView);
@@ -449,6 +466,10 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
 
         if (viewName === 'groups') {
             fetchGroups();
+        }
+
+         if (viewName === 'performance') {
+            fetchPerformanceStats();
         }
     }
 
@@ -678,12 +699,15 @@ case 'my-topics':
 
             case 'performance':
                 const scores = state.quizzes.filter(q => q.status === 'submitted');
+                const perf = state.performanceStats;
+
+
                 html = `
                     <h2 class="text-2xl font-bold mb-6">Performance Overview</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                   <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                             <p class="text-slate-500 text-sm mb-1">Average Score</p>
-                            <h4 class="text-3xl font-bold text-blue-600">90%</h4>
+                            <h4 class="text-3xl font-bold text-blue-600">${perf && perf.average_score !== null ? perf.average_score + '%' : '—'}</h4>
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                             <p class="text-slate-500 text-sm mb-1">Quizzes Completed</p>
@@ -691,7 +715,7 @@ case 'my-topics':
                         </div>
                         <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                             <p class="text-slate-500 text-sm mb-1">Global Rank</p>
-                            <h4 class="text-3xl font-bold text-slate-800">#12</h4>
+                            <h4 class="text-3xl font-bold text-slate-800">${perf && perf.global_rank ? '#' + perf.global_rank + ' of ' + perf.total_ranked_students : '—'}</h4>
                         </div>
                     </div>
                     <h3 class="text-lg font-bold mb-4">Quiz Score History</h3>
@@ -1361,6 +1385,86 @@ function setupContextListeners() {
         topicModal?.classList.toggle('hidden', !show);
     }
 
+
+    async function performSearch(query) {
+    try {
+        const response = await fetch(`/student/search?q=${encodeURIComponent(query)}`);
+        if (!response.ok) throw new Error('Search failed');
+        renderSearchResults(await response.json());
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+}
+
+function renderSearchResults(data) {
+    const container = document.getElementById('search-results');
+    if (!container) return;
+
+    if (!data.groups.length && !data.topics.length && !data.quizzes.length) {
+        container.innerHTML = `<div class="p-4 text-sm text-slate-400 text-center">No results found</div>`;
+        container.classList.remove('hidden');
+        return;
+    }
+
+    let html = '';
+
+    if (data.groups.length) {
+        html += `<div class="px-3 pt-2 pb-1 text-xs font-bold text-slate-400 uppercase">Groups</div>`;
+        data.groups.forEach(g => {
+            html += `
+                <button onclick="hideSearchResults(); openGroup(${g.id})" class="w-full text-left px-3 py-2 hover:bg-slate-100 rounded-md flex items-center">
+                    <i class="fa-solid fa-users text-slate-400 mr-3 w-4"></i>
+                    <div class="text-sm font-medium text-slate-700 truncate">${escapeHtml(g.name)}</div>
+                </button>`;
+        });
+    }
+
+    if (data.topics.length) {
+        html += `<div class="px-3 pt-2 pb-1 text-xs font-bold text-slate-400 uppercase">Topics</div>`;
+        data.topics.forEach(t => {
+            html += `
+                <button onclick="goToTopicFromSearch(${t.id})" class="w-full text-left px-3 py-2 hover:bg-slate-100 rounded-md flex items-center">
+                    <i class="fa-solid fa-comments text-slate-400 mr-3 w-4"></i>
+                    <div class="text-sm font-medium text-slate-700 truncate">${escapeHtml(t.title)}</div>
+                </button>`;
+        });
+    }
+
+    if (data.quizzes.length) {
+        html += `<div class="px-3 pt-2 pb-1 text-xs font-bold text-slate-400 uppercase">Quizzes</div>`;
+        data.quizzes.forEach(q => {
+            html += `
+                <button onclick="window.location.href='/student/quizzes/${q.id}/attempt'" class="w-full text-left px-3 py-2 hover:bg-slate-100 rounded-md flex items-center">
+                    <i class="fa-solid fa-file-pen text-slate-400 mr-3 w-4"></i>
+                    <div class="text-sm font-medium text-slate-700 truncate">${escapeHtml(q.title)}</div>
+                </button>`;
+        });
+    }
+
+    container.innerHTML = html;
+    container.classList.remove('hidden');
+}
+
+function hideSearchResults() {
+    document.getElementById('search-results')?.classList.add('hidden');
+}
+
+async function goToTopicFromSearch(topicId) {
+    hideSearchResults();
+    if (!state.topics.find(t => t.id === topicId)) {
+        await fetchTopics();
+    }
+    openTopic(topicId);
+}
+
+
+
     // NEW:
 async function sendMessage() {
     const input = document.getElementById('chat-input');
@@ -1429,6 +1533,18 @@ async function fetchQuizzes() {
         console.error('Failed to load quizzes:', err);
     }
 }
+
+async function fetchPerformanceStats() {
+    try {
+        const response = await fetch('/student/performance-stats');
+        if (!response.ok) throw new Error('Failed to load performance stats');
+        state.performanceStats = await response.json();
+        renderView();
+    } catch (err) {
+        console.error('Failed to load performance stats:', err);
+    }
+}
+
 async function fetchAnnouncements() {
     try {
         const response = await fetch('/announcements');
@@ -1440,6 +1556,8 @@ async function fetchAnnouncements() {
         console.error('Failed to load announcements:', err);
     }
 }
+
+
 
  
 </script>

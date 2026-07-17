@@ -1,6 +1,7 @@
 <!DOCTYPE html><html class="h-full bg-[#faf9fc]" lang="en"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
+<meta name="csrf-token" content="{{ csrf_token() }}">
 <title>Smart Discussion Forum - Lecturer Dashboard</title>
 <!-- Google Font: Manrope -->
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
@@ -60,6 +61,11 @@
         </button>
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="groups" onclick="switchView('groups')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Groups</button>
+
+<button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="participation" onclick="switchView('participation')">
+<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+          Participation
+        </button>          
 
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="discussions" onclick="switchView('discussions')">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -192,6 +198,54 @@
 </div>
 </section>
 <!-- END: Groups (Students) View -->
+ <!-- BEGIN: Participation View -->
+<section class="hidden space-y-6" id="view-participation">
+<div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+<h3 class="text-xl font-bold mb-1">Participation Criteria</h3>
+<p class="text-gray-500 text-sm mb-6">Set how discussion activity translates into participation marks.</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Points per Message</label>
+<input type="number" id="points-per-message" min="0" class="w-full rounded-lg border-gray-200 focus:ring-brand focus:border-brand p-2">
+</div>
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Points per Reaction Given</label>
+<input type="number" id="points-per-reaction" min="0" class="w-full rounded-lg border-gray-200 focus:ring-brand focus:border-brand p-2">
+</div>
+<div>
+<label class="block text-xs font-bold text-gray-500 uppercase mb-1">Max Score</label>
+<input type="number" id="max-score" min="1" class="w-full rounded-lg border-gray-200 focus:ring-brand focus:border-brand p-2">
+</div>
+</div>
+
+<button onclick="saveParticipationCriteria()" class="bg-brand text-white px-6 py-3 rounded-full font-bold hover:bg-brand-dark transition-all-200">
+Save Criteria
+</button>
+</div>
+
+<div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+<div class="p-8 border-b border-gray-100">
+<h3 class="text-xl font-bold">Student Participation Scores</h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-low text-[10px] uppercase font-bold text-gray-500">
+<tr>
+<th class="px-8 py-4">Student</th>
+<th class="px-8 py-4">Messages Posted</th>
+<th class="px-8 py-4">Reactions Given</th>
+<th class="px-8 py-4">Score</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100" id="participation-table-body">
+<tr><td class="px-8 py-4 text-gray-400" colspan="4">Loading...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<!-- END: Participation View -->
  <!-- BEGIN: Discussions View -->
 <section class="hidden space-y-6" id="view-discussions">
 <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
@@ -294,7 +348,7 @@
      * @param {string} viewId - The ID of the view to show
      */
     function switchView(viewId) {
-      const views = ['dashboard', 'quizzes', 'groups','discussions', 'reports', 'announcements'];
+      const views = ['dashboard', 'quizzes', 'groups','discussions', 'reports', 'announcements','participation'];
       
       views.forEach(v => {
         const el = document.getElementById('view-' + v);
@@ -327,6 +381,10 @@
   if (viewId === 'reports') {
     loadReports(); // NEW — fetch fresh report data every time this tab opens
   } 
+  if (viewId === 'participation') {
+    loadParticipationCriteria();
+    loadParticipationScores();
+}
       
       // Update browser history/state if needed
       console.log('Switched to view:', viewId);
@@ -746,6 +804,81 @@ async function loadQuizManagement() {
     } catch (err) {
         console.error(err);
         container.innerHTML = `<div class="text-center text-red-500 py-8 col-span-full">Could not load quizzes.</div>`;
+    }
+}
+async function loadParticipationCriteria() {
+    try {
+        const response = await fetch('/lecturer/participation/criteria', {
+            headers: { 'Accept': 'application/json' }
+        });
+        const data = await response.json();
+
+        document.getElementById('points-per-message').value = data.points_per_message;
+        document.getElementById('points-per-reaction').value = data.points_per_reaction_given;
+        document.getElementById('max-score').value = data.max_score;
+    } catch (err) {
+        console.error('Failed to load criteria:', err);
+    }
+}
+
+async function saveParticipationCriteria() {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const payload = {
+        points_per_message: parseInt(document.getElementById('points-per-message').value) || 0,
+        points_per_reaction_given: parseInt(document.getElementById('points-per-reaction').value) || 0,
+        max_score: parseInt(document.getElementById('max-score').value) || 100,
+    };
+
+    try {
+        const response = await fetch('/lecturer/participation/criteria', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) throw new Error('Failed to save criteria');
+
+        alert('Participation criteria saved.');
+        loadParticipationScores(); // refresh scores with new criteria applied
+    } catch (err) {
+        console.error(err);
+        alert('Could not save criteria. Please try again.');
+    }
+}
+
+async function loadParticipationScores() {
+    const tbody = document.getElementById('participation-table-body');
+
+    try {
+        const response = await fetch('/lecturer/participation/scores', {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error('Failed to load scores');
+
+        const scores = await response.json();
+
+        if (scores.length === 0) {
+            tbody.innerHTML = `<tr><td class="px-8 py-4 text-gray-400" colspan="4">No students found.</td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = scores.map(s => `
+            <tr class="hover:bg-surface-low transition-colors">
+                <td class="px-8 py-4 font-medium">${s.student_name}</td>
+                <td class="px-8 py-4 text-gray-500">${s.message_count}</td>
+                <td class="px-8 py-4 text-gray-500">${s.reactions_given_count}</td>
+                <td class="px-8 py-4 font-bold text-brand">${s.score}/${s.max_score}</td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error(err);
+        tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load scores.</td></tr>`;
     }
 }
 
