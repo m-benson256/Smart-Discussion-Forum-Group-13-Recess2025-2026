@@ -3,6 +3,7 @@
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\AdministratorController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QuizAttemptController;
@@ -17,6 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserInterestsController;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\ParticipationController;
 
 // 1. Welcome Page
 Route::get('/', function () {
@@ -108,6 +110,23 @@ Route::post('/group-requests/{groupJoinRequest}/reject', [GroupController::class
 
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)
 Route::get('/dashboard', function () {
+   $user = auth()->user();
+    
+   // 0. If it's an admin, send them to the admin route
+if ($user && $user->role === 'admin') {
+    return redirect()->route('admin.dashboard');
+}
+
+// 1. If it's a lecturer, send them to the lecturer route
+if ($user && str_ends_with($user->email, '@lecturers.ed')) {
+    return redirect()->route('lecturer.dashboard');
+}
+
+// 2. If it's a student, send them to the student route
+if ($user && str_ends_with($user->email, '@students.ed')) {
+    return redirect()->route('student.dashboard');
+}
+    
     $user = auth()->user();
 
     // 1. If it's a lecturer, send them to the lecturer route
@@ -119,7 +138,6 @@ Route::get('/dashboard', function () {
     if ($user && str_ends_with($user->email, '@students.ed')) {
         return redirect()->route('student.dashboard');
     }
-
     // 3. If it's a random email, log them out and block them with an error
     auth()->logout();
 
@@ -136,6 +154,13 @@ Route::middleware(['auth'])->group(function () {
 
     // Lecturer Dashboard
     Route::get('/lecturer/dashboard', [LecturerController::class, 'index'])->name('lecturer.dashboard');
+
+    Route::get('/admin/dashboard', [AdministratorController::class, 'index'])->name('admin.dashboard');
+    Route::patch('/administrator/users/{user}/verify', [AdministratorController::class, 'verifyLecturer'])->name('admin.users.verify');
+    Route::post('/admin/warnings', [AdministratorController::class, 'storeWarning'])->name('admin.warnings.store');
+    Route::post('/admin/groups/{id}/toggle-status', [AdministratorController::class, 'toggleGroupStatus'])->name('admin.groups.toggle-status');
+    Route::post('/admin/users/{id}/block', [AdministratorController::class, 'blockUser'])->name('admin.users.block');
+    Route::post('/admin/users/{id}/unblock', [AdministratorController::class, 'unblockUser'])->name('admin.users.unblock');
 
     // Profile management paths
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -183,7 +208,11 @@ Route::get('/recommended-topics', [RecommendationController::class, 'index']);
  Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
  
  Route::get('/topics/{topic}/preview', [TopicController::class, 'publicPreview'])->name('topics.preview');
-});
+
+Route::get('/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
+Route::post('/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
+Route::get('/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+ });
 
 
  

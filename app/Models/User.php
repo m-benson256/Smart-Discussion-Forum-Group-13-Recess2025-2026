@@ -27,7 +27,9 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  */
-#[Fillable(['name', 'email', 'password', 'role', 'status'])]
+
+#[Fillable(['name', 'email', 'password','status','role','verification_status'])]
+
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -84,4 +86,13 @@ class User extends Authenticatable
             'InterestID'
         )->withTimestamps();
     }
+    public function messages()
+{
+    return $this->hasMany(Message::class);
+}
+
+public function reactionsGiven()
+{
+    return $this->hasMany(MessageReaction::class);
+}
 }
