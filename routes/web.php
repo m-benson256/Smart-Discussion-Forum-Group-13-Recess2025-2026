@@ -203,11 +203,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
         
- Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
+    Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
-
+    Route::post('/groups/{group}/request-join', [GroupController::class, 'requestToJoin']);
+     
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
