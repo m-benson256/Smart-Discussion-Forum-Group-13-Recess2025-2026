@@ -569,12 +569,12 @@ async function recordTopicView(topicId) {
                         break;
     
 
-             // NEW:
+           
 case 'group_details':
     const group = state.groups.find(g => g.id === state.selectedGroupId);
     const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
 
-    // Replace with:
+    
 let membershipButton = '';
 if (group.isCreator) {
     membershipButton = `<span class="text-xs font-medium text-slate-400 px-3 py-2">You created this group</span>`;
@@ -583,7 +583,7 @@ if (group.isCreator) {
 } else if (group.hasPendingRequest) {
     membershipButton = `<span class="text-xs font-medium text-amber-600 px-3 py-2">Request pending approval</span>`;
 } else if (group.visibility === 'private') {
-    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
+    membershipButton = `<button onclick="requestToJoinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
 } else {
     membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Join Group</button>`;
 }
@@ -1105,6 +1105,25 @@ async function fetchMessages(topicId) {
     } catch (err) {
         console.error(err);
         alert('Could not join group. Please try again.');
+    }
+}
+
+// new function, near joinGroup()
+async function requestToJoinGroup(groupId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    try {
+        const response = await fetch(`/groups/${groupId}/request-join`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+        if (!response.ok) throw new Error('Failed to send request');
+
+        await fetchGroups();
+        renderView();
+        showToast('Join request sent'); // or whatever your toast helper is
+    } catch (err) {
+        console.error(err);
+        alert('Could not send join request. Please try again.');
     }
 }
 
