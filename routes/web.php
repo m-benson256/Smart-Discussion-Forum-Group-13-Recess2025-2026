@@ -145,6 +145,13 @@ if ($user && str_ends_with($user->email, '@students.ed')) {
         'email' => 'Access denied. You must register using an authorized institution email address.',
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
+Route::post('/logout', function (Illuminate\Http\Request $request) {
+    auth()->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+    return redirect('/login');
+})->name('logout')->middleware('auth');
+    
 
 // 3. Isolated Role-Based Dashboards
 Route::middleware(['auth'])->group(function () {
@@ -166,6 +173,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+     
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
 
     Route::get('/topics', [TopicController::class, 'index']);
     Route::post('/topics', [TopicController::class, 'store']);
@@ -184,11 +194,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
         
- Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
+    Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
-
+    Route::post('/groups/{group}/request-join', [GroupController::class, 'requestToJoin']);
+     
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);

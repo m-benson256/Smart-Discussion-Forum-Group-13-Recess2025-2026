@@ -472,7 +472,6 @@
         <div class="page-panel" id="page-users">
             <div class="placeholder-content">
                 <h2><i class="fas fa-users" style="color:#2563eb;"></i> User Management</h2>
-                <p>View all registered students and lecturers. Admins can verify lecturer accounts, while student accounts remain managed without verification.</p>
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="userSearch" placeholder="Search users..." oninput="filterUsers()">

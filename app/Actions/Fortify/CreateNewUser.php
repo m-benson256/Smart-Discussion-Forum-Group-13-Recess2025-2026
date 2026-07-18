@@ -48,6 +48,7 @@ class CreateNewUser
                 'password' => $input['password'],
                 'role' => $role,
                 'status' => 'active',
+                'verification_status' => $role === 'lecturer' ? 'pending' : 'approved',
             ]);
 
             if ($role === 'lecturer') {
