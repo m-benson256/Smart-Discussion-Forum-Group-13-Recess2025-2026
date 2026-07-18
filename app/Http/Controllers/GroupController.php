@@ -176,6 +176,8 @@ public function rejectRequest(Request $request, GroupJoinRequest $groupJoinReque
 
 
 
+// Add to GroupController.php
+
 public function myPendingRequests(Request $request): JsonResponse
 {
     $userId = $request->user()->id;
