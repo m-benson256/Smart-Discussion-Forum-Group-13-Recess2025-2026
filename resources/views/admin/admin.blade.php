@@ -596,10 +596,13 @@
                 <i class="fas fa-sign-out-alt" style="font-size:48px; color:#f87171; display:block; margin-bottom:16px;"></i>
                 <h2>Log Out</h2>
                 <p>This will clear your session token and return you to the login portal.</p>
-                <div class="actions" style="justify-content:center;">
-                    <button class="btn btn-danger" onclick="alert('Session terminated. Redirecting to login...')"><i class="fas fa-sign-out-alt"></i> Confirm Logout</button>
-                    <button class="btn" onclick="navigateTo('overview')">Cancel</button>
-                </div>
+              <div class="actions" style="justify-content:center;">
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" class="btn btn-danger"><i class="fas fa-sign-out-alt"></i> Confirm Logout</button>
+    </form>
+    <button class="btn" onclick="navigateTo('overview')">Cancel</button>
+</div>  
             </div>
         </div>
     </main>
