@@ -32,7 +32,7 @@ class QuizController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|integer',
+             'category_id' => 'required|exists:categories,CategoryID',
             'start_time' => 'nullable|date',
             'duration_minutes' => 'required|integer|min:1',
             'total_marks' => 'required|integer|min:1',
@@ -59,7 +59,7 @@ class QuizController extends Controller
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'category_id' => 'nullable|integer',
+            'category_id' => 'required|exists:categories,CategoryID',
             'start_time' => 'nullable|date',
             'duration_minutes' => 'sometimes|integer|min:1',
             'total_marks' => 'sometimes|integer|min:1',

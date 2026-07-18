@@ -647,33 +647,59 @@ case 'my-topics':
         </div>
     `;
     break;
-
-            case 'quizzes':
-                const incoming = state.quizzes.filter(q => q.status === 'incoming');
-                const submitted = state.quizzes.filter(q => q.status === 'submitted');
-                html = `
-                    <h2 class="text-2xl font-bold mb-6">Quizzes</h2>
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
-                            <i class="fa-solid fa-hourglass-half mr-2 text-blue-500"></i> Incoming Quizzes
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${incoming.map(q => `
-                                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex justify-between items-start mb-2">
-                                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${q.category}</span>
-                                            <span class="text-xs text-slate-400">Due: ${q.dueDate}</span>
-                                        </div>
-                                        <h4 class="font-bold text-slate-800 text-lg mb-1">${q.title}</h4>
-                                        <p class="text-sm text-slate-500 mb-4"><i class="fa-regular fa-clock mr-1"></i> ${q.duration}</p>
-                                    </div>
-                                   <button onclick="window.location.href = '/student/quizzes/${q.id}/attempt'" class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"> Start Quiz </button>
-                                </div>
-                                   `).join('')}
+            // after
+case 'quizzes':
+    const incoming = state.quizzes.filter(q => q.status === 'incoming');
+    const missed = state.quizzes.filter(q => q.status === 'missed');
+    const submitted = state.quizzes.filter(q => q.status === 'submitted');
+    html = `
+        <h2 class="text-2xl font-bold mb-6">Quizzes</h2>
+        <div class="mb-10">
+            <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
+                <i class="fa-solid fa-hourglass-half mr-2 text-blue-500"></i> Incoming Quizzes
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${incoming.map(q => `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${q.category}</span>
+                                <span class="text-xs text-slate-400">Due: ${q.dueDate}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-1">${q.title}</h4>
+                            <p class="text-sm text-slate-500 mb-4"><i class="fa-regular fa-clock mr-1"></i> ${q.duration}</p>
                         </div>
+                       <button onclick="window.location.href = '/student/quizzes/${q.id}/attempt'" class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"> Start Quiz </button>
                     </div>
-                    <div>
+                       `).join('')}
+            </div>
+        </div>
+        <div class="mb-10">
+            <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
+                <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i> Due Quizzes
+            </h3>
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">Quiz Title</th>
+                            <th class="px-6 py-4 font-semibold">Category</th>
+                            <th class="px-6 py-4 font-semibold">Was Due</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${missed.length ? missed.map(q => `
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-slate-800">${q.title}</td>
+                                <td class="px-6 py-4">${q.category}</td>
+                                <td class="px-6 py-4 text-red-500">${q.dueDate}</td>
+                            </tr>
+                        `).join('') : `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">No due quizzes.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
                         <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
                             <i class="fa-solid fa-circle-check mr-2 text-green-500"></i> Submitted Quizzes
                         </h3>
