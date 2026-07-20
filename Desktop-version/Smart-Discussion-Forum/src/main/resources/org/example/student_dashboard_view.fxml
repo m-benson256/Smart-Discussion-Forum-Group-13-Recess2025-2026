@@ -1,7 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Student Dashboard — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.StudentDashboardController">
+
+    <left>
+        <VBox spacing="4" prefWidth="220" styleClass="sidebar">
+            <padding>
+                <Insets top="24" right="16" bottom="24" left="16"/>
+            </padding>
+
+            <Label text="Smart Discussion Forum" styleClass="title-label" wrapText="true"/>
+            <Label text="Student Dashboard" styleClass="subtitle-label"/>
+
+            <VBox spacing="2" VBox.vgrow="ALWAYS">
+                <padding>
+                    <Insets top="24"/>
+                </padding>
+                <Button fx:id="navGroups" text="Groups" onAction="#handleNavGroups" styleClass="nav-button"/>
+                <Button fx:id="navDiscussions" text="Discussions" onAction="#handleNavDiscussions" styleClass="nav-button"/>
+                <Button fx:id="navMyTopics" text="My Topics" onAction="#handleNavMyTopics" styleClass="nav-button"/>
+                <Button fx:id="navQuizzes" text="Quizzes" onAction="#handleNavQuizzes" styleClass="nav-button"/>
+                <Button fx:id="navPerformance" text="Performance" onAction="#handleNavPerformance" styleClass="nav-button"/>
+            </VBox>
+
+            <Button text="Logout" onAction="#handleLogout" styleClass="link-label"/>
+        </VBox>
+    </left>
+
+    <top>
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar">
+            <padding>
+                <Insets top="12" right="24" bottom="12" left="24"/>
+            </padding>
+            <TextField promptText="Search groups, topics, quizzes..." HBox.hgrow="ALWAYS"/>
+            <Label fx:id="welcomeLabel" text="Welcome back"/>
+        </HBox>
+    </top>
+
+    <center>
+        <StackPane fx:id="contentArea">
+            <padding>
+                <Insets top="20" right="24" bottom="20" left="24"/>
+            </padding>
+        </StackPane>
+    </center>
+
+</BorderPane>
