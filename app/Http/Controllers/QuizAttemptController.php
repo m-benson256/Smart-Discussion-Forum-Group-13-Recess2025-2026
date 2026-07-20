@@ -260,5 +260,39 @@ public function performanceStats(Request $request): JsonResponse
         'total_ranked_students' => $studentAverages->count(),
     ]);
 }
-    
+   
+
+// GET /student/active-quiz — poll for a quiz that has just opened for my category
+public function activeQuiz(Request $request): JsonResponse
+{
+    $userId = $request->user()->id;
+    $categoryId = \App\Models\Student::where('user_id', $userId)->value('CategoryID');
+
+    if (! $categoryId) {
+        return response()->json(['active' => false]);
+    }
+
+    $quiz = Quiz::where('status', 'published')
+        ->where('category_id', $categoryId)
+        ->whereNotNull('start_time')
+        ->where('start_time', '<=', now())
+        ->whereRaw('DATE_ADD(start_time, INTERVAL duration_minutes MINUTE) >= ?', [now()])
+        ->whereDoesntHave('attempts', function ($q) use ($userId) {
+            $q->where('user_id', $userId)->whereNotNull('submitted_at');
+        })
+        ->latest('start_time')
+        ->first(['id', 'title', 'duration_minutes', 'start_time']);
+
+    if (! $quiz) {
+        return response()->json(['active' => false]);
+    }
+
+    return response()->json([
+        'active' => true,
+        'id' => $quiz->id,
+        'title' => $quiz->title,
+        'duration_minutes' => $quiz->duration_minutes,
+        'start_time' => $quiz->start_time,
+    ]);
+}
 }
