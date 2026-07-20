@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="12" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.MyTopicsController">
+
+    <Label text="My Topics" styleClass="title-label"/>
+    <VBox fx:id="myTopicsContainer" spacing="10"/>
+
+    <Label text="Recommended Topics" styleClass="title-label">
+        <VBox.margin>
+            <Insets top="16"/>
+        </VBox.margin>
+    </Label>
+
+    <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="edge-to-edge">
+        <VBox fx:id="recommendedContainer" spacing="10"/>
+    </ScrollPane>
+
+</VBox>
