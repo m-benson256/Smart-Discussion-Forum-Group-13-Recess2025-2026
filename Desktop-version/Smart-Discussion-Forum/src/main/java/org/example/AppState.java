@@ -5,6 +5,7 @@ public class AppState {
     private static Long selectedTopicId;
     private static String selectedTopicTitle;
     public static String returnView;
+    private static Long selectedQuizId;
 
     public static void setSelectedTopicTitle(String title) { selectedTopicTitle = title; }
     public static String getSelectedTopicTitle() { return selectedTopicTitle; }
@@ -30,7 +31,11 @@ public class AppState {
         returnView = fxmlFile;
     }
 
+    public static void setSelectedQuizId(Long id) { selectedQuizId = id; }
+    public static Long getSelectedQuizId() { return selectedQuizId; }
+
     public static String getReturnView() {
         return returnView;
     }
 }
+

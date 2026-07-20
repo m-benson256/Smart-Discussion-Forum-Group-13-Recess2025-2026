@@ -1,7 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="quizzes — coming soon"/>
-</StackPane>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.FlowPane?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.QuizzesController" styleClass="edge-to-edge">
+    <VBox spacing="16">
+        <padding>
+            <Insets top="4" right="4" bottom="20" left="4"/>
+        </padding>
+
+        <Label text="Quizzes" styleClass="title-label"/>
+
+        <Label text="Incoming Quizzes" styleClass="section-title"/>
+        <FlowPane fx:id="incomingContainer" hgap="16" vgap="16"/>
+
+        <Label text="Due Quizzes" styleClass="section-title">
+            <VBox.margin><Insets top="12"/></VBox.margin>
+        </Label>
+        <TableView fx:id="missedTable" prefHeight="180" styleClass="quiz-table">
+            <columns>
+                <TableColumn fx:id="missedTitleCol" text="Quiz Title" prefWidth="220"/>
+                <TableColumn fx:id="missedCategoryCol" text="Category" prefWidth="160"/>
+                <TableColumn fx:id="missedDueCol" text="Was Due" prefWidth="160"/>
+            </columns>
+        </TableView>
+
+        <Label text="Submitted Quizzes" styleClass="section-title">
+            <VBox.margin><Insets top="12"/></VBox.margin>
+        </Label>
+        <TableView fx:id="submittedTable" prefHeight="180" styleClass="quiz-table">
+            <columns>
+                <TableColumn fx:id="submittedTitleCol" text="Quiz Title" prefWidth="200"/>
+                <TableColumn fx:id="submittedCategoryCol" text="Category" prefWidth="140"/>
+                <TableColumn fx:id="submittedDateCol" text="Submitted Date" prefWidth="160"/>
+                <TableColumn fx:id="submittedScoreCol" text="Score" prefWidth="100"/>
+            </columns>
+        </TableView>
+    </VBox>
+</ScrollPane>

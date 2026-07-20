@@ -310,3 +310,90 @@
      -fx-text-fill: #2563eb; /* blue-600 */
      -fx-border-color: #93c5fd; /* blue-300 */
  }
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155; /* slate-700 */
+}
+
+/*
+   Quiz tables
+ */
+.quiz-table {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0; /* slate-200 */
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.quiz-table .column-header-background {
+    -fx-background-color: #f8fafc; /* slate-50 */
+    -fx-background-radius: 12 12 0 0;
+}
+
+.quiz-table .column-header, .quiz-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.quiz-table .column-header .label {
+    -fx-text-fill: #475569; /* slate-600 */
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.quiz-table .table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.quiz-table .table-row-cell:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.quiz-table .table-row-cell:selected {
+    -fx-background-color: #eff6ff; /* blue-50 */
+}
+
+.quiz-table .table-cell {
+    -fx-text-fill: #334155; /* slate-700 */
+    -fx-font-size: 13px;
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: transparent;
+}
+
+.quiz-table .placeholder .label {
+    -fx-text-fill: #94a3b8; /* slate-400 */
+    -fx-font-size: 13px;
+}
+
+/* Category pill on incoming-quiz cards */
+.category-badge {
+    -fx-background-color: #eff6ff; /* blue-50 */
+    -fx-text-fill: #2563eb; /* blue-600 */
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8 3 8;
+}
+
+.text-danger {
+    -fx-text-fill: #ef4444; /* red-500 */
+}
+
+.text-success {
+    -fx-text-fill: #16a34a; /* green-600 */
+    -fx-font-weight: bold;
+}
+
+/* Empty-state box (e.g. "No incoming quizzes") */
+.empty-state {
+    -fx-background-color: #f8fafc; /* slate-50 */
+    -fx-background-radius: 12;
+    -fx-padding: 30;
+    -fx-alignment: center;
+}

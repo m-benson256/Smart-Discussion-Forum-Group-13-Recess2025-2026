@@ -310,3 +310,9 @@
      -fx-text-fill: #2563eb; /* blue-600 */
      -fx-border-color: #93c5fd; /* blue-300 */
  }
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #334155; /* slate-700 */
+}
