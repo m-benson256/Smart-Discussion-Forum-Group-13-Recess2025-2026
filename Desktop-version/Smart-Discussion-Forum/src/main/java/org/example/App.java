@@ -23,11 +23,14 @@ public class App extends Application {
             FXMLLoader loader = new FXMLLoader(App.class.getResource(fxmlFile));
             Parent root = loader.load();
             Scene scene = new Scene(root, width, height);
+            scene.getStylesheets().add(App.class.getResource("style.css").toExternalForm());
             primaryStage.setScene(scene);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
 
     public static void main(String[] args) {
         launch(args);

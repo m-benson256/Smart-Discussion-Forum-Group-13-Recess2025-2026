@@ -95,6 +95,8 @@
                 <Button fx:id="registerButton" onAction="#handleRegistrationSubmit" prefWidth="320.0" styleClass="button-primary" text="Register" />
 
                 <Label fx:id="statusLabel" alignment="CENTER" prefWidth="320.0" style="-fx-text-fill: #ff3333; -fx-font-weight: bold;" textAlignment="CENTER" wrapText="true" />
+
+                <Label text="Already have an account? Log in" onMouseClicked="#goToLogin" styleClass="primary-button"/>
             </children>
         </VBox>
     </children>

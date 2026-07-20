@@ -3,5 +3,5 @@
 <?import javafx.scene.layout.StackPane?>
 
 <StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Lecturer Dashboard — coming soon" style="-fx-font-size: 20px;"/>
+    <Label text="performance — coming soon"/>
 </StackPane>

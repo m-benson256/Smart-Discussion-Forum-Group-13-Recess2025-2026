@@ -69,6 +69,7 @@ public class LoginController {
                     JsonNode user = body.get("user");
 
                     Session.set(
+                        user.get("id").asLong(),
                         token,
                         user.get("name").asText(),
                         user.get("email").asText(),
