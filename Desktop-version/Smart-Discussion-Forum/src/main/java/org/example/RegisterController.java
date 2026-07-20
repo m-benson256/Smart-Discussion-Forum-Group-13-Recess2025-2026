@@ -12,7 +12,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import javafx.scene.input.MouseEvent;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class RegisterController {
+    ObjectMapper mapper = new ObjectMapper();
 
     @FXML private TextField nameField;
     @FXML private TextField emailField;
@@ -49,6 +55,11 @@ public class RegisterController {
             degreeTypeDropdown.setValue(null);
             deskContactField.clear();
         }
+    }
+
+    @FXML
+    void goToLogin(MouseEvent event) {
+        App.switchScene("login_view.fxml", 900, 700);
     }
 
     // Handles the network submit request to Laravel API
@@ -98,10 +109,33 @@ public class RegisterController {
             .thenAccept(response -> {
                 Platform.runLater(() -> {
                     if (response.statusCode() == 201) {
-                        statusLabel.setStyle("-fx-text-fill: #10b981;"); // emerald green
-                        statusLabel.setText("Registered! Forwarding...");
-                        System.out.println("Registration Successful: " + response.body());
-                    } else {
+                        try {
+                            JsonNode body = mapper.readTree(response.body());
+                            String token = body.get("token").asText();
+                            JsonNode user = body.get("user");
+
+                            Session.set(
+                                user.get("id").asLong(),
+                                token,
+                                user.get("name").asText(),
+                                user.get("email").asText(),
+                                user.get("role").asText()
+                            );
+
+                            statusLabel.setStyle("-fx-text-fill: #10b981;");
+                            statusLabel.setText("Registered! Let's set up your interests...");
+
+                            javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.seconds(1.2));
+                            pause.setOnFinished(e -> App.switchScene("onboarding_view.fxml", 900, 700));
+                            pause.play();
+
+                        } catch (Exception e) {
+                            statusLabel.setStyle("-fx-text-fill: #ff3333;");
+                            statusLabel.setText("Registered, but couldn't process response.");
+                        }
+                    }
+
+                    else {
                         System.out.println("Server Error: " + response.body());
                         statusLabel.setStyle("-fx-text-fill: #ff3333;");
                         statusLabel.setText("Registration failed. Please check inputs.");

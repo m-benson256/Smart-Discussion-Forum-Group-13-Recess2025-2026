@@ -69,6 +69,14 @@ public function verifyLecturer(\App\Models\User $user)
 
     return response()->json(['success' => true]);
 }
+public function rejectLecturer(\App\Models\User $user)
+{
+    $user->verification_status = 'rejected';
+    $user->status = 'blocked';
+    $user->save();
+
+    return response()->json(['success' => true]);
+}
 
 public function storeWarning(Request $request)
 {

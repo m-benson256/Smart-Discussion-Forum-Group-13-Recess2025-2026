@@ -686,12 +686,16 @@
                     <button class="action-btn" onclick="viewUser(${u.id})"><i class="fas fa-eye"></i><span class="tooltip">View User</span></button>
                 `;
 
-                if (u.role === 'lecturer' && u.verification_status === 'pending') {
-                    actionButtons += `
-                        <button class="action-btn success" onclick="verifyLecturer(${u.id})"><i class="fas fa-check"></i><span class="tooltip">Verify Lecturer</span></button>
-                        <button class="action-btn danger" onclick="rejectLecturer(${u.id})"><i class="fas fa-times"></i><span class="tooltip">Reject</span></button>
-                    `;
-                }
+                if (u.role === 'lecturer' && (u.verification_status === 'pending' || u.verification_status === 'rejected')) {
+    actionButtons += `
+        <button class="action-btn success" onclick="verifyLecturer(${u.id})"><i class="fas fa-check"></i><span class="tooltip">Verify Lecturer</span></button>
+    `;
+}
+if (u.role === 'lecturer' && u.verification_status === 'pending') {
+    actionButtons += `
+        <button class="action-btn danger" onclick="rejectLecturer(${u.id})"><i class="fas fa-times"></i><span class="tooltip">Reject</span></button>
+    `;
+}
                 
                 if (u.status === 'blocked') {
                     actionButtons += `
@@ -897,17 +901,33 @@
             .catch(() => alert('❌ Something went wrong while verifying. Please try again.'));
         }
         function rejectLecturer(id) {
-            if (confirm('Reject this lecturer registration?')) {
-                const u = users.find(u => u.id === id);
-                if (u) {
-                    u.verification_status = 'rejected';
-                    u.status = 'blocked';
-                    renderUsers();
-                    updateKPIs();
-                    alert(`❌ Lecturer ${u.name} registration has been rejected.`);
-                }
+    if (!confirm('Reject this lecturer registration?')) return;
+
+    fetch(`/administrator/users/${id}/reject`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+        },
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Server error');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            const u = users.find(u => u.id === id);
+            if (u) {
+                u.verification_status = 'rejected';
+                u.status = 'blocked';
+                renderUsers();
+                updateKPIs();
+                alert(`❌ Lecturer ${u.name} registration has been rejected.`);
             }
         }
+    })
+    .catch(() => alert('❌ Something went wrong while rejecting. Please try again.'));
+}
 
         
 
