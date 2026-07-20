@@ -1,16 +1,22 @@
 package org.example;
 
 public class Session {
+    private static Long userId;
     private static String token;
     private static String userName;
     private static String userEmail;
     private static String userRole;
 
-    public static void set(String token, String name, String email, String role) {
+    public static void set( Long id, String token, String name, String email, String role) {
+        userId = id;
         Session.token = token;
         Session.userName = name;
         Session.userEmail = email;
         Session.userRole = role;
+    }
+
+    public static Long getUserId() {   // NEW
+        return userId;
     }
 
     public static String getToken() {
@@ -29,7 +35,15 @@ public class Session {
         return userRole;
     }
 
+    public static java.net.http.HttpRequest.Builder authorizedRequestBuilder(String url) {
+        return java.net.http.HttpRequest.newBuilder()
+            .uri(java.net.URI.create(url))
+            .header("Authorization", "Bearer " + token)
+            .header("Accept", "application/json")
+            .header("Content-Type", "application/json");
+    }
     public static void clear() {
+        userId = null;
         token = null;
         userName = null;
         userEmail = null;

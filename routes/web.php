@@ -29,6 +29,8 @@ Route::middleware('auth')->group(function () {
     // 1.1 Onboarding Page
     Route::view('/onboarding', 'onboarding')->name('onboarding');
 
+    Route::view('/pending-approval', 'auth.pending-approval')->name('pending-approval');
+
     Route::post('/onboarding', function (Request $request) {
         $allowedInterests = ['ml', 'web', 'db', 'mobile', 'security', 'design', 'cloud', 'data', 'ai'];
         $interestLabels = [
@@ -102,35 +104,35 @@ Route::middleware('auth')->group(function () {
     Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
 
     Route::get('/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
-   
-    Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
+   Route::get('/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
+    
+   Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
 Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
 Route::post('/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
 });
 
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)
 Route::get('/dashboard', function () {
-   $user = auth()->user();
-    
-   // 0. If it's an admin, send them to the admin route
-if ($user && $user->role === 'admin') {
-    return redirect()->route('admin.dashboard');
-}
-
-// 1. If it's a lecturer, send them to the lecturer route
-if ($user && str_ends_with($user->email, '@lecturers.ed')) {
-    return redirect()->route('lecturer.dashboard');
-}
-
-// 2. If it's a student, send them to the student route
-if ($user && str_ends_with($user->email, '@students.ed')) {
-    return redirect()->route('student.dashboard');
-}
-    
     $user = auth()->user();
 
-    // 1. If it's a lecturer, send them to the lecturer route
+    // 0. If it's an admin, send them to the admin route
+    if ($user && $user->role === 'admin') {
+        return redirect()->route('admin.dashboard');
+    }
+
+    // 1. If it's a lecturer, check verification status before granting access
     if ($user && str_ends_with($user->email, '@lecturers.ed')) {
+        if ($user->verification_status === 'pending') {
+            return redirect()->route('pending-approval');
+        }
+
+        if ($user->verification_status === 'rejected') {
+            auth()->logout();
+            return redirect()->route('login')->withErrors([
+                'email' => 'Your lecturer account was not approved. Please contact the administrator.',
+            ]);
+        }
+
         return redirect()->route('lecturer.dashboard');
     }
 
@@ -138,6 +140,7 @@ if ($user && str_ends_with($user->email, '@students.ed')) {
     if ($user && str_ends_with($user->email, '@students.ed')) {
         return redirect()->route('student.dashboard');
     }
+
     // 3. If it's a random email, log them out and block them with an error
     auth()->logout();
 
@@ -164,6 +167,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/admin/dashboard', [AdministratorController::class, 'index'])->name('admin.dashboard');
     Route::patch('/administrator/users/{user}/verify', [AdministratorController::class, 'verifyLecturer'])->name('admin.users.verify');
+    Route::patch('/administrator/users/{user}/reject', [AdministratorController::class, 'rejectLecturer'])->name('admin.users.reject');
     Route::post('/admin/warnings', [AdministratorController::class, 'storeWarning'])->name('admin.warnings.store');
     Route::post('/admin/groups/{id}/toggle-status', [AdministratorController::class, 'toggleGroupStatus'])->name('admin.groups.toggle-status');
     Route::post('/admin/users/{id}/block', [AdministratorController::class, 'blockUser'])->name('admin.users.block');
@@ -173,6 +177,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+     
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::delete('/profile/avatar', [ProfileController::class, 'destroyAvatar'])->name('profile.avatar.destroy');
 
     Route::get('/topics', [TopicController::class, 'index']);
     Route::post('/topics', [TopicController::class, 'store']);
@@ -191,11 +198,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
         
- Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
+    Route::get('/my-pending-requests', [GroupController::class, 'myPendingRequests']);
     Route::get('/groups/{group}', [GroupController::class, 'show']);
     Route::post('/groups/{group}/join', [GroupController::class, 'join']);
     Route::post('/groups/{group}/leave', [GroupController::class, 'leave']);
-
+    Route::post('/groups/{group}/request-join', [GroupController::class, 'requestToJoin']);
+     
 Route::get('/topics/{topic}/messages', [MessageController::class, 'index']);
 Route::post('/topics/{topic}/messages', [MessageController::class, 'store']);
 Route::post('/messages/{message}/flag', [MessageController::class, 'toggleFlag']);

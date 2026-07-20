@@ -693,7 +693,11 @@ async function saveQuestion() {
 
           async function ensureQuizCreated() {
     if (quizId) return true; // already created, nothing to do
-
+    
+     if (!quizData.categoryId) {
+        alert('Please select a category before continuing.');
+        return false;
+    }
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
     try {

@@ -9,6 +9,57 @@
         </p>
     </header>
 
+    <div class="mt-6 flex items-center gap-4">
+        <div class="w-16 h-16 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center text-white font-bold text-xl flex-shrink-0">
+            @if ($user->avatar_path)
+                <img src="{{ $user->avatarUrl() }}" alt="{{ $user->name }}" class="w-full h-full object-cover">
+            @else
+                {{ $user->initials() }}
+            @endif
+        </div>
+
+        <form method="post" action="{{ route('profile.avatar.update') }}" enctype="multipart/form-data">
+            @csrf
+            <label class="cursor-pointer">
+                <span class="px-3 py-2 text-sm bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50">
+                    {{ __('Change photo') }}
+                </span>
+                <input type="file" name="avatar" accept="image/*" class="hidden" onchange="this.form.submit()">
+            </label>
+        </form>
+
+        @if ($user->avatar_path)
+            <form method="post" action="{{ route('profile.avatar.destroy') }}">
+                @csrf
+                @method('delete')
+                <button type="submit" class="px-3 py-2 text-sm text-red-600 hover:text-red-800">
+                    {{ __('Remove') }}
+                </button>
+            </form>
+        @endif
+    </div>
+    @error('avatar')
+        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+    @enderror
+
+    @if (session('status') === 'avatar-updated')
+        <p
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 2000)"
+            class="mt-2 text-sm text-gray-600"
+        >{{ __('Photo updated.') }}</p>
+    @elseif (session('status') === 'avatar-removed')
+        <p
+            x-data="{ show: true }"
+            x-show="show"
+            x-transition
+            x-init="setTimeout(() => show = false, 2000)"
+            class="mt-2 text-sm text-gray-600"
+        >{{ __('Photo removed.') }}</p>
+    @endif
+
     <form id="send-verification" method="post" action="{{ route('verification.send') }}">
         @csrf
     </form>

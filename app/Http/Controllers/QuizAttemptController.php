@@ -12,18 +12,40 @@ class QuizAttemptController extends Controller
     // GET /student/quizzes — list published quizzes, split by attempted/not
     public function index(Request $request): JsonResponse
     {
-        $userId = $request->user()->id;
+         $userId = $request->user()->id;
 
-        $quizzes = Quiz::where('status', 'published')
-            ->withCount('questions')
-            ->with(['attempts' => function ($query) use ($userId) {
-                $query->where('user_id', $userId);
-            }])
-            ->latest()
-            ->get();
+    
+         $categoryId = \Illuminate\Support\Facades\DB::table('students')
+                 ->where('user_id', $userId)
+                 ->value('CategoryID');
+
+    $quizzes = Quiz::where('status', 'published')
+        ->when($categoryId, function ($query) use ($categoryId) {
+            $query->where(function ($q) use ($categoryId) {
+                $q->where('category_id', $categoryId)
+                  ->orWhereNull('category_id'); // uncategorized quizzes stay visible to everyone
+            });
+        })
+        ->withCount('questions')
+        ->with(['attempts' => function ($query) use ($userId) {
+            $query->where('user_id', $userId);
+        }])
+        ->latest()
+        ->get();
 
         $quizzes = $quizzes->map(function ($quiz) {
-            $myAttempt = $quiz->attempts->first(); // will be null if not attempted
+             $myAttempt = $quiz->attempts->first(); // will be null if not attempted
+
+    $deadline = $quiz->start_time
+        ? \Illuminate\Support\Carbon::parse($quiz->start_time)->addMinutes($quiz->duration_minutes)
+        : null;
+    $isPastDue = $deadline && now()->greaterThan($deadline);
+
+    $status = match (true) {
+        (bool) ($myAttempt && $myAttempt->submitted_at) => 'submitted',
+        $isPastDue => 'missed',
+        default => 'incoming',
+    };
 
             return [
                 'id' => $quiz->id,
@@ -33,7 +55,7 @@ class QuizAttemptController extends Controller
                 'start_time' => $quiz->start_time,
                 'total_marks' => $quiz->total_marks,
                 'questions_count' => $quiz->questions_count,
-                'status' => $myAttempt && $myAttempt->submitted_at ? 'submitted' : 'incoming',
+                'status' => $status,
                 'score' => $myAttempt->score ?? null,
                 'submitted_at' => $myAttempt->submitted_at ?? null,
             ];
@@ -238,5 +260,39 @@ public function performanceStats(Request $request): JsonResponse
         'total_ranked_students' => $studentAverages->count(),
     ]);
 }
-    
+   
+
+// GET /student/active-quiz — poll for a quiz that has just opened for my category
+public function activeQuiz(Request $request): JsonResponse
+{
+    $userId = $request->user()->id;
+    $categoryId = \App\Models\Student::where('user_id', $userId)->value('CategoryID');
+
+    if (! $categoryId) {
+        return response()->json(['active' => false]);
+    }
+
+    $quiz = Quiz::where('status', 'published')
+        ->where('category_id', $categoryId)
+        ->whereNotNull('start_time')
+        ->where('start_time', '<=', now())
+        ->whereRaw('DATE_ADD(start_time, INTERVAL duration_minutes MINUTE) >= ?', [now()])
+        ->whereDoesntHave('attempts', function ($q) use ($userId) {
+            $q->where('user_id', $userId)->whereNotNull('submitted_at');
+        })
+        ->latest('start_time')
+        ->first(['id', 'title', 'duration_minutes', 'start_time']);
+
+    if (! $quiz) {
+        return response()->json(['active' => false]);
+    }
+
+    return response()->json([
+        'active' => true,
+        'id' => $quiz->id,
+        'title' => $quiz->title,
+        'duration_minutes' => $quiz->duration_minutes,
+        'start_time' => $quiz->start_time,
+    ]);
+}
 }

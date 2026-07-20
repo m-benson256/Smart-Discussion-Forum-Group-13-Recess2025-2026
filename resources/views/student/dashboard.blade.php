@@ -162,7 +162,13 @@
 </div>
 <div class="flex items-center space-x-4">
 <span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
-<div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</div>
+@if (auth()->user()?->avatar_path)
+    <a href="{{ route('profile.edit') }}">
+        <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
+    </a>
+@else
+    <a href="{{ route('profile.edit') }}" class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-bold cursor-pointer hover:bg-blue-700 transition-colors">{{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}</a>
+@endif
 </div>
 </header>
 <main class="p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
@@ -223,6 +229,23 @@
 <div class="p-6 bg-slate-50 flex justify-end space-x-3">
 <button class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium" onclick="toggleTopicModal(false)">Cancel</button>
 <button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors" id="save-topic">Post Topic</button>
+</div>
+</div>
+</div>
+
+<div class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[200] px-4" id="quiz-popup-modal">
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+<div class="p-6 border-b bg-blue-600 text-white">
+<h3 class="text-xl font-bold flex items-center"><i class="fa-solid fa-clipboard-question mr-3"></i> Quiz Now Open</h3>
+</div>
+<div class="p-6 space-y-3">
+<p class="text-lg font-semibold" id="quiz-popup-title">—</p>
+<p class="text-sm text-slate-500">Duration: <span id="quiz-popup-duration">—</span> minutes</p>
+<p class="text-sm text-slate-500">Time remaining: <span class="font-bold text-blue-600" id="quiz-popup-countdown">--:--</span></p>
+<p class="text-xs text-slate-400">This quiz is open now. Late joiners will not receive extra time.</p>
+</div>
+<div class="p-6 bg-slate-50 flex justify-end">
+<button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors" id="quiz-popup-start-btn">Start Quiz Now</button>
 </div>
 </div>
 </div>
@@ -432,10 +455,13 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         fetchRecommendedTopics();
         fetchAnnouncements();
 
-        window.Echo.channel('forum-notifications')
+       window.Echo.channel('forum-notifications')
         .listen('MessageSent', (data) => {
             alert(`New message from ${data.sender}: "${data.message}"`);
         });
+
+        checkForActiveQuiz();
+        setInterval(checkForActiveQuiz, 15000);
     });
 
     function showNotification() {
@@ -444,6 +470,50 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         setTimeout(() => toast?.classList.remove('show'), 3000);
     }
 
+    let lastPoppedQuizId = null;
+    let quizPopupTimer = null;
+
+    function checkForActiveQuiz() {
+        fetch('/student/active-quiz', { cache: 'no-store' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.active && data.id !== lastPoppedQuizId) {
+                    lastPoppedQuizId = data.id;
+                    openQuizPopup(data);
+                }
+            })
+            .catch(error => console.error('Failed to check active quiz:', error));
+    }
+
+    function openQuizPopup(data) {
+        document.getElementById('quiz-popup-title').textContent = data.title;
+        document.getElementById('quiz-popup-duration').textContent = data.duration_minutes;
+
+        const modal = document.getElementById('quiz-popup-modal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        document.getElementById('quiz-popup-start-btn').onclick = () => {
+            window.location.href = `/student/quizzes/${data.id}/attempt`;
+        };
+
+        const deadline = new Date(new Date(data.start_time).getTime() + data.duration_minutes * 60000);
+
+        if (quizPopupTimer) clearInterval(quizPopupTimer);
+        quizPopupTimer = setInterval(() => {
+            const secondsLeft = Math.max(0, Math.floor((deadline - new Date()) / 1000));
+            const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+            const secs = String(secondsLeft % 60).padStart(2, '0');
+            document.getElementById('quiz-popup-countdown').textContent = `${mins}:${secs}`;
+
+            if (secondsLeft <= 0) {
+                clearInterval(quizPopupTimer);
+                window.location.href = `/student/quizzes/${data.id}/attempt`;
+            }
+        }, 1000);
+    }
+
+    
     function updateView(viewName) {
         state.activeView = viewName;
         
@@ -554,21 +624,21 @@ async function recordTopicView(topicId) {
 
 
                case 'pending-requests':
-    html = `
-        <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
-        <div id="all-pending-requests-container" class="space-y-3">
-            <div class="text-slate-400">Loading...</div>
-        </div>
-    `;
-    break;
+                          html = `
+                              <h2 class="text-2xl font-bold mb-6">Pending Join Requests</h2>
+                              <div id="all-pending-requests-container" class="space-y-3">
+                                  <div class="text-slate-400">Loading...</div>
+                             </div>
+                     `;
+                        break;
     
 
-             // NEW:
+           
 case 'group_details':
     const group = state.groups.find(g => g.id === state.selectedGroupId);
     const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
 
-    // Replace with:
+    
 let membershipButton = '';
 if (group.isCreator) {
     membershipButton = `<span class="text-xs font-medium text-slate-400 px-3 py-2">You created this group</span>`;
@@ -577,7 +647,7 @@ if (group.isCreator) {
 } else if (group.hasPendingRequest) {
     membershipButton = `<span class="text-xs font-medium text-amber-600 px-3 py-2">Request pending approval</span>`;
 } else if (group.visibility === 'private') {
-    membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
+    membershipButton = `<button onclick="requestToJoinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Request to Join</button>`;
 } else {
     membershipButton = `<button onclick="joinGroup(${group.id})" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">Join Group</button>`;
 }
@@ -641,33 +711,59 @@ case 'my-topics':
         </div>
     `;
     break;
-
-            case 'quizzes':
-                const incoming = state.quizzes.filter(q => q.status === 'incoming');
-                const submitted = state.quizzes.filter(q => q.status === 'submitted');
-                html = `
-                    <h2 class="text-2xl font-bold mb-6">Quizzes</h2>
-                    <div class="mb-10">
-                        <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
-                            <i class="fa-solid fa-hourglass-half mr-2 text-blue-500"></i> Incoming Quizzes
-                        </h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            ${incoming.map(q => `
-                                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
-                                    <div>
-                                        <div class="flex justify-between items-start mb-2">
-                                            <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${q.category}</span>
-                                            <span class="text-xs text-slate-400">Due: ${q.dueDate}</span>
-                                        </div>
-                                        <h4 class="font-bold text-slate-800 text-lg mb-1">${q.title}</h4>
-                                        <p class="text-sm text-slate-500 mb-4"><i class="fa-regular fa-clock mr-1"></i> ${q.duration}</p>
-                                    </div>
-                                   <button onclick="window.location.href = '/student/quizzes/${q.id}/attempt'" class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"> Start Quiz </button>
-                                </div>
-                                   `).join('')}
+            // after
+case 'quizzes':
+    const incoming = state.quizzes.filter(q => q.status === 'incoming');
+    const missed = state.quizzes.filter(q => q.status === 'missed');
+    const submitted = state.quizzes.filter(q => q.status === 'submitted');
+    html = `
+        <h2 class="text-2xl font-bold mb-6">Quizzes</h2>
+        <div class="mb-10">
+            <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
+                <i class="fa-solid fa-hourglass-half mr-2 text-blue-500"></i> Incoming Quizzes
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                ${incoming.map(q => `
+                    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">${q.category}</span>
+                                <span class="text-xs text-slate-400">Due: ${q.dueDate}</span>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-lg mb-1">${q.title}</h4>
+                            <p class="text-sm text-slate-500 mb-4"><i class="fa-regular fa-clock mr-1"></i> ${q.duration}</p>
                         </div>
+                       <button onclick="window.location.href = '/student/quizzes/${q.id}/attempt'" class="w-full py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-colors"> Start Quiz </button>
                     </div>
-                    <div>
+                       `).join('')}
+            </div>
+        </div>
+        <div class="mb-10">
+            <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
+                <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i> Due Quizzes
+            </h3>
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <table class="w-full text-left text-sm">
+                    <thead class="bg-slate-50 text-slate-600">
+                        <tr>
+                            <th class="px-6 py-4 font-semibold">Quiz Title</th>
+                            <th class="px-6 py-4 font-semibold">Category</th>
+                            <th class="px-6 py-4 font-semibold">Was Due</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        ${missed.length ? missed.map(q => `
+                            <tr>
+                                <td class="px-6 py-4 font-bold text-slate-800">${q.title}</td>
+                                <td class="px-6 py-4">${q.category}</td>
+                                <td class="px-6 py-4 text-red-500">${q.dueDate}</td>
+                            </tr>
+                        `).join('') : `<tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">No due quizzes.</td></tr>`}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div>
                         <h3 class="text-lg font-semibold text-slate-700 mb-4 flex items-center">
                             <i class="fa-solid fa-circle-check mr-2 text-green-500"></i> Submitted Quizzes
                         </h3>
@@ -807,9 +903,10 @@ case 'my-topics':
                             <div class="max-w-4xl mx-auto space-y-6">
                                 ${topicMessages.map(msg => `
                                     <div data-message-id="${msg.id}" class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
-                                        <div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">
-                                            ${msg.author.charAt(0)}
-                                        </div>
+                                        ${msg.authorAvatar
+                                            ? `<img src="${msg.authorAvatar}" alt="${msg.author}" class="w-8 h-8 rounded-full mt-1 flex-shrink-0 object-cover">`
+                                            : `<div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">${msg.author.charAt(0)}</div>`
+                                        }
                                         <div class="max-w-[70%] group">
                                             <div class="flex items-center mb-1 ${msg.isMe ? 'justify-end' : ''}">
                                                 <span class="text-xs font-bold text-slate-700 mr-2">${msg.author}</span>
@@ -1050,6 +1147,7 @@ async function fetchMessages(topicId) {
         state.messages[topicId] = data.map(msg => ({
             id: msg.id,
             author: msg.user ? msg.user.name : 'Unknown',
+            authorAvatar: msg.user ? msg.user.avatar_url : null,
             text: msg.body,
             time: new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             isMe: msg.user_id === currentUserId,
@@ -1097,6 +1195,25 @@ async function fetchMessages(topicId) {
     } catch (err) {
         console.error(err);
         alert('Could not join group. Please try again.');
+    }
+}
+
+// new function, near joinGroup()
+async function requestToJoinGroup(groupId) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    try {
+        const response = await fetch(`/groups/${groupId}/request-join`, {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+        if (!response.ok) throw new Error('Failed to send request');
+
+        await fetchGroups();
+        renderView();
+        showToast('Join request sent'); // or whatever your toast helper is
+    } catch (err) {
+        console.error(err);
+        alert('Could not send join request. Please try again.');
     }
 }
 

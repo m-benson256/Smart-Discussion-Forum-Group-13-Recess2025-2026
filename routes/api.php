@@ -12,6 +12,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\QuizAttemptController;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
+use App\Http\Controllers\RecommendationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,7 @@ Route::post('/desktop/login', function (LoginRequest $request) {
         'token' => $token,
         'user' => [
             'name' => $user->name,
+             'id' => $user->id,
             'email' => $user->email,
             'role' => str_ends_with($user->email, '@lecturers.ed') ? 'lecturer' : 'student'
         ]
@@ -90,10 +92,16 @@ Route::post('/desktop/register', function (Request $request) {
     $token = $user->createToken('javafx-desktop-token')->plainTextToken;
 
     return response()->json([
-        'status' => 'success',
-        'token' => $token,
-        'message' => 'Account registered successfully!'
-    ], 201);
+    'status' => 'success',
+    'token' => $token,
+    'user' => [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'role' => $role,
+    ],
+    'message' => 'Account registered successfully!'
+], 201);
 });
 
 
@@ -132,7 +140,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json([
             'status' => 'success',
             'message' => 'Interests updated successfully.',
-            'next_destination' => str_ends_with($user->email, '@lecturers.ed') ? 'lecturer_dashboard' : 'student_dashboard'
+            'next_destination' => 'login'
         ]);
     });
 
@@ -145,8 +153,18 @@ Route::middleware('auth:sanctum')->group(function () {
     // Groups
     Route::get('/desktop/groups', [GroupController::class, 'index']);
     Route::post('/desktop/groups/{group}/join', [GroupController::class, 'join']);
+    Route::get('/desktop/groups/{group}', [GroupController::class, 'show']);
+    Route::post('/desktop/groups/{group}/leave', [GroupController::class, 'leave']);
+    Route::get('/desktop/topics', [TopicController::class, 'index']);
+    Route::post('/desktop/topics', [TopicController::class, 'store']);
 
     // Quizzes (Student Side)
     Route::get('/desktop/student/quizzes', [QuizAttemptController::class, 'index']);
     Route::post('/desktop/quizzes/{quiz}/start', [QuizAttemptController::class, 'start']);
+
+    Route::post('/desktop/messages/{message}/like', [MessageController::class, 'toggleLike']);
+Route::post('/desktop/messages/{message}/react', [MessageController::class, 'toggleReaction']);
+Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
+
+Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
 });

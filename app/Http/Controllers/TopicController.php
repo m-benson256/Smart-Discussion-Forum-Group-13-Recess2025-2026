@@ -34,19 +34,26 @@ class TopicController extends Controller
         }
     });
 
-    // NEW: filter out private-group topics the current user can't access
-    $topics = $topics->filter(function ($topic) use ($userId) {
-        if (!$topic->group) {
-            return true; // general discussion, always visible
-        }
+    // Lecturers see everything; students only see public topics or private
+// groups they belong to.
+$isLecturer = $request->user()->role === 'lecturer';
 
-        if ($topic->group->visibility === 'public') {
-            return true;
-        }
+$topics = $topics->filter(function ($topic) use ($userId, $isLecturer) {
+    if ($isLecturer) {
+        return true;
+    }
 
-        // Private group — only visible to the creator or an approved member
-        return $topic->group->created_by === $userId || $topic->group->is_member;
-    })->values();
+    if (!$topic->group) {
+        return true; // general discussion, always visible
+    }
+
+    if ($topic->group->visibility === 'public') {
+        return true;
+    }
+
+    // Private group — only visible to the creator or an approved member
+    return $topic->group->created_by === $userId || $topic->group->is_member;
+})->values();
 
     return response()->json($topics);
 }
@@ -88,7 +95,7 @@ if (!empty($validated['group_id'])) {
 {
     $topic->load(['user:id,name', 'group:id,visibility,created_by']);
 
-    if ($topic->group && $topic->group->visibility === 'private') {
+    if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $userId = $request->user()->id;
         $isMember = $topic->group->created_by === $userId
             || $topic->group->members()->where('user_id', $userId)->exists();

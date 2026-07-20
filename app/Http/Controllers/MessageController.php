@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use App\Events\MessageSent;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class MessageController extends Controller
 {
@@ -16,10 +17,9 @@ class MessageController extends Controller
 public function index(Request $request, Topic $topic): JsonResponse
 {
     $userId = $request->user()->id;
-   $topic->load('group:id,visibility,created_by');
+    $topic->load('group:id,visibility,created_by');
 
-    if ($topic->group && $topic->group->visibility === 'private') {
-        $userId = $request->user()->id;
+    if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $isMember = $topic->group->created_by === $userId
             || $topic->group->members()->where('user_id', $userId)->exists();
 
@@ -29,7 +29,7 @@ public function index(Request $request, Topic $topic): JsonResponse
     }
 
     $messages = $topic->messages()
-        ->with(['user:id,name', 'reactions'])
+        ->with(['user:id,name,avatar_path', 'reactions']) 
         ->withCount(['flaggedBy', 'likedBy'])
         ->oldest()
         ->get();
@@ -37,6 +37,12 @@ public function index(Request $request, Topic $topic): JsonResponse
     $messages->each(function ($message) use ($userId) {
         $message->liked_by_me = $message->likedBy->contains('id', $userId);
         $message->flagged_by_me = $message->flaggedBy->contains('id', $userId);
+         
+         if ($message->user) {
+            $message->user->avatar_url = $message->user->avatar_path
+                ? Storage::disk('public')->url($message->user->avatar_path)
+                : null;
+        }
 
         $message->grouped_reactions = $message->reactions
             ->groupBy('emoji')
@@ -172,7 +178,7 @@ public function exportPdf(Request $request, Topic $topic)
     $userId = $request->user()->id;
     $topic->load('group:id,visibility,created_by', 'user:id,name');
 
-    if ($topic->group && $topic->group->visibility === 'private') {
+    if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $isMember = $topic->group->created_by === $userId
             || $topic->group->members()->where('user_id', $userId)->exists();
 
