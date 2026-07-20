@@ -232,6 +232,23 @@
 </div>
 </div>
 </div>
+
+<div class="hidden fixed inset-0 bg-slate-900/60 flex items-center justify-center z-[200] px-4" id="quiz-popup-modal">
+<div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+<div class="p-6 border-b bg-blue-600 text-white">
+<h3 class="text-xl font-bold flex items-center"><i class="fa-solid fa-clipboard-question mr-3"></i> Quiz Now Open</h3>
+</div>
+<div class="p-6 space-y-3">
+<p class="text-lg font-semibold" id="quiz-popup-title">—</p>
+<p class="text-sm text-slate-500">Duration: <span id="quiz-popup-duration">—</span> minutes</p>
+<p class="text-sm text-slate-500">Time remaining: <span class="font-bold text-blue-600" id="quiz-popup-countdown">--:--</span></p>
+<p class="text-xs text-slate-400">This quiz is open now. Late joiners will not receive extra time.</p>
+</div>
+<div class="p-6 bg-slate-50 flex justify-end">
+<button class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors" id="quiz-popup-start-btn">Start Quiz Now</button>
+</div>
+</div>
+</div>
 <div class="hidden fixed bg-white border border-slate-200 rounded-lg shadow-xl py-2 w-56 z-[100]" id="custom-context-menu">
 <button class="w-full text-left px-4 py-2 text-sm text-slate-700 context-menu-item flex items-center" onclick="toggleEmojiPicker(event, true)">
 <i class="fa-regular fa-face-smile mr-3 text-slate-400"></i> React with Emoji
@@ -438,10 +455,13 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         fetchRecommendedTopics();
         fetchAnnouncements();
 
-        window.Echo.channel('forum-notifications')
+       window.Echo.channel('forum-notifications')
         .listen('MessageSent', (data) => {
             alert(`New message from ${data.sender}: "${data.message}"`);
         });
+
+        checkForActiveQuiz();
+        setInterval(checkForActiveQuiz, 15000);
     });
 
     function showNotification() {
@@ -450,6 +470,50 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         setTimeout(() => toast?.classList.remove('show'), 3000);
     }
 
+    let lastPoppedQuizId = null;
+    let quizPopupTimer = null;
+
+    function checkForActiveQuiz() {
+        fetch('/student/active-quiz', { cache: 'no-store' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.active && data.id !== lastPoppedQuizId) {
+                    lastPoppedQuizId = data.id;
+                    openQuizPopup(data);
+                }
+            })
+            .catch(error => console.error('Failed to check active quiz:', error));
+    }
+
+    function openQuizPopup(data) {
+        document.getElementById('quiz-popup-title').textContent = data.title;
+        document.getElementById('quiz-popup-duration').textContent = data.duration_minutes;
+
+        const modal = document.getElementById('quiz-popup-modal');
+        modal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+
+        document.getElementById('quiz-popup-start-btn').onclick = () => {
+            window.location.href = `/student/quizzes/${data.id}/attempt`;
+        };
+
+        const deadline = new Date(new Date(data.start_time).getTime() + data.duration_minutes * 60000);
+
+        if (quizPopupTimer) clearInterval(quizPopupTimer);
+        quizPopupTimer = setInterval(() => {
+            const secondsLeft = Math.max(0, Math.floor((deadline - new Date()) / 1000));
+            const mins = String(Math.floor(secondsLeft / 60)).padStart(2, '0');
+            const secs = String(secondsLeft % 60).padStart(2, '0');
+            document.getElementById('quiz-popup-countdown').textContent = `${mins}:${secs}`;
+
+            if (secondsLeft <= 0) {
+                clearInterval(quizPopupTimer);
+                window.location.href = `/student/quizzes/${data.id}/attempt`;
+            }
+        }, 1000);
+    }
+
+    
     function updateView(viewName) {
         state.activeView = viewName;
         

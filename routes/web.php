@@ -102,8 +102,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
 
     Route::get('/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
-   
-    Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
+   Route::get('/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
+    
+   Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
 Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
 Route::post('/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
 });
