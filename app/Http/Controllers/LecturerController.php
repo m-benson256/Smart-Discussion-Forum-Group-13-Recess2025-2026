@@ -14,23 +14,36 @@ class LecturerController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-        $lecturerName = auth()->user()?->name ?? 'Lecturer';
-        $totalStudents = User::where('role', 'student')->count();
-        $activeDiscussions = Topic::count();
+{
+    $user = auth()->user();
 
-       $announcements = Announcements::where('user_id', auth()->id())
+    if ($user->verification_status === 'rejected') {
+        auth()->logout();
+        return redirect()->route('login')->withErrors([
+            'email' => 'Your lecturer account was not approved. Please contact the administrator.',
+        ]);
+    }
+
+    if ($user->verification_status !== 'approved') {
+        return redirect()->route('pending-approval');
+    }
+
+    $lecturerName = $user->name ?? 'Lecturer';
+    $totalStudents = User::where('role', 'student')->count();
+    $activeDiscussions = Topic::count();
+
+    $announcements = Announcements::where('user_id', auth()->id())
         ->with('user', 'quiz')
         ->latest()
         ->get();
-        return view('lecturer.dashboard', [
-            'lecturerName' => $lecturerName,
-            'announcements' => $announcements,
-            'totalStudents' => $totalStudents,
-            'activeDiscussions' => $activeDiscussions,
-        ]); // Loads resources/views/lecturer/dashboard.blade.php
-    }
 
+    return view('lecturer.dashboard', [
+        'lecturerName' => $lecturerName,
+        'announcements' => $announcements,
+        'totalStudents' => $totalStudents,
+        'activeDiscussions' => $activeDiscussions,
+    ]);
+}
     /**
      * Show the form for creating a new resource.
      */
