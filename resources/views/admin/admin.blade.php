@@ -498,7 +498,7 @@
         <div class="page-panel" id="page-groups">
             <div class="placeholder-content">
                 <h2><i class="fas fa-layer-group" style="color:#2563eb;"></i> Group Management</h2>
-                <p>View all groups created by students. Groups show member counts and activity.</p>
+                
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="groupSearch" placeholder="Search groups..." oninput="filterGroups()">
@@ -519,10 +519,9 @@
         <div class="page-panel" id="page-warnings">
             <div class="placeholder-content">
                 <h2><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Warning Management</h2>
-                <p>Track issued warnings (maximum 3 per user), manage escalation rules, and handle appeals.</p>
+                
                 <div class="actions">
                     <button class="btn btn-warning" onclick="openModal('warning')"><i class="fas fa-plus"></i> Issue Warning</button>
-                    <button class="btn"><i class="fas fa-history"></i> View History</button>
                 </div>
 
                 <div class="table-wrap">
