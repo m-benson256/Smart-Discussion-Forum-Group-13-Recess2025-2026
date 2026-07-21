@@ -5,26 +5,46 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox alignment="CENTER" spacing="16" styleClass="root-container"
-      xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.LoginController">
+<StackPane prefHeight="700.0" prefWidth="900.0" styleClass="root-pane" stylesheets="@style.css"
+           xmlns="http://javafx.com/javafx/21" xmlns:fx="http://github.com/fxml/1"
+           fx:controller="org.example.LoginController">
+    <children>
 
-    <padding>
-        <Insets top="60" right="60" bottom="60" left="60"/>
-    </padding>
+        <VBox alignment="CENTER" fillWidth="false" prefWidth="420.0" spacing="15.0"
+              styleClass="glass-card" stylesheets="@style.css" StackPane.alignment="CENTER">
+            <padding>
+                <Insets bottom="40.0" left="40.0" right="40.0" top="40.0"/>
+            </padding>
+            <children>
+                <Label style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: white;" text="Sign In"/>
 
-    <Label text="Sign In" styleClass="title-label"/>
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Email Address"/>
+                        <TextField fx:id="emailField" promptText="Email address"/>
+                    </children>
+                </VBox>
 
-    <TextField fx:id="emailField" promptText="Email address" maxWidth="320"/>
-    <PasswordField fx:id="passwordField" promptText="Password" maxWidth="320"/>
+                <VBox prefWidth="320.0" spacing="5.0">
+                    <children>
+                        <Label style="-fx-text-fill: white;" text="Password"/>
+                        <PasswordField fx:id="passwordField" promptText="Password"/>
+                    </children>
+                </VBox>
 
-    <Label fx:id="statusLabel" wrapText="true" maxWidth="320"/>
+                <Label fx:id="statusLabel" alignment="CENTER" prefWidth="320.0"
+                       style="-fx-text-fill: #ff3333; -fx-font-weight: bold;"
+                       textAlignment="CENTER" wrapText="true"/>
 
-    <Button text="Log In" onAction="#handleLoginSubmit" styleClass="button-primary" maxWidth="320"/>
+                <Button fx:id="loginButton" onAction="#handleLoginSubmit" prefWidth="320.0"
+                        styleClass="button-primary" text="Log In"/>
 
-    <Label text="Don't have an account? Register" onMouseClicked="#goToRegister" styleClass="link-label"/>
-
-</VBox>
+                <Label onMouseClicked="#goToRegister" styleClass="link-label"
+                       text="Don't have an account? Register"/>
+            </children>
+        </VBox>
+    </children>
+</StackPane>

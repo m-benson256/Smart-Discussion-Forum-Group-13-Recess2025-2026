@@ -21,6 +21,15 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import javafx.scene.layout.StackPane;
+import javafx.scene.Cursor;
+
+import javafx.scene.control.Separator;
+import javafx.scene.layout.GridPane;
+import javafx.stage.Popup;
+
+import javafx.scene.Node;
+import javafx.scene.image.ImageView; // not strictly needed here since EmojiImages handles it, but harmless if left out
 
 // NEW: lets StudentDashboardController stop our polling before swapping views away
 public class TopicChatController implements PollingView {
@@ -33,6 +42,7 @@ public class TopicChatController implements PollingView {
     private final ObjectMapper mapper = new ObjectMapper();
     private Timeline pollingTimeline;
     private Long topicId;
+    private String lastMessagesJson;
 
     @FXML
     public void initialize() {
@@ -56,8 +66,11 @@ public class TopicChatController implements PollingView {
     }
 
 
-
     private void fetchMessages() {
+        fetchMessages(true); // polling / initial load: jump to bottom only if you were already caught up
+    }
+
+    private void fetchMessages(boolean allowAutoScroll) {
         if (topicId == null) return;
 
         try {
@@ -68,34 +81,45 @@ public class TopicChatController implements PollingView {
 
             java.net.http.HttpClient.newHttpClient()
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(this::renderMessages);
+                .thenAccept(response -> renderMessages(response, allowAutoScroll));
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void renderMessages(HttpResponse<String> response) {
+    private void renderMessages(HttpResponse<String> response, boolean allowAutoScroll) {
         Platform.runLater(() -> {
             try {
-                JsonNode messages = mapper.readTree(response.body());
+                String body = response.body();
 
-                // Preserve whatever's currently typed, same as the web preserves the draft
+                if (body.equals(lastMessagesJson)) {
+                    return;
+                }
+                lastMessagesJson = body;
 
+                JsonNode messages = mapper.readTree(body);
+
+                double currentVvalue = scrollPane.getVvalue();
+                boolean wasNearBottom = currentVvalue >= 0.98;
 
                 messagesContainer.getChildren().clear();
-
                 for (JsonNode msg : messages) {
                     messagesContainer.getChildren().add(buildMessageBubble(msg));
                 }
-                // Auto-scroll to bottom, mirrors chatBox.scrollTop = chatBox.scrollHeight
-                Platform.runLater(() -> scrollPane.setVvalue(1.0));
+
+                if (allowAutoScroll && wasNearBottom) {
+                    Platform.runLater(() -> scrollPane.setVvalue(1.0));
+                } else if (!allowAutoScroll) {
+                    Platform.runLater(() -> scrollPane.setVvalue(currentVvalue));
+                }
 
             } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
+
 
     private VBox buildMessageBubble(JsonNode msg) {
         long messageId = msg.get("id").asLong();
@@ -105,66 +129,141 @@ public class TopicChatController implements PollingView {
         String text = msg.get("body").asText();
         String time = formatTime(msg.has("created_at") ? msg.get("created_at").asText() : null);
 
-        Label meta = new Label(author + "  •  " + time);
-        meta.getStyleClass().add("muted-label");
+        // NEW: avatar circle with the sender's first initial
+        Label initial = new Label(author.isEmpty() ? "?" : author.substring(0, 1).toUpperCase());
+        StackPane avatar = new StackPane(initial);
+        avatar.getStyleClass().add("avatar-circle");
+
+        // NEW: bold name + grey timestamp, side by side
+        Label nameLabel = new Label(author);
+        nameLabel.getStyleClass().add("message-name");
+        Label timeLabel = new Label(time);
+        timeLabel.getStyleClass().add("message-time");
+        HBox headerRow = new HBox(6, nameLabel, timeLabel);
 
         Label bubble = new Label(text);
         bubble.setWrapText(true);
         bubble.setPadding(new Insets(10, 14, 10, 14));
         bubble.getStyleClass().add(isMe ? "bubble-me" : "bubble-them");
 
-        // NEW: like button
+        // CHANGED: like control is now a Label, not a Button
         int likeCount = msg.has("liked_by_count") ? msg.get("liked_by_count").asInt() : 0;
         boolean myLike = msg.has("liked_by_me") && msg.get("liked_by_me").asBoolean();
-        Button likeBtn = new Button((myLike ? "♥ " : "♡ ") + likeCount);
-        likeBtn.getStyleClass().add("link-label");
-        likeBtn.setOnAction(e -> toggleLike(messageId));
 
-        // NEW: reaction badges — clicking an existing one toggles it off (same as the web)
+        Node likeIcon = EmojiImages.buildNode(myLike ? "❤️" : "🤍", 14);
+        Label likeCountLabel = new Label(String.valueOf(likeCount));
+        likeCountLabel.getStyleClass().add("like-control");
+
+        HBox likeControl = new HBox(4, likeIcon, likeCountLabel);
+        likeControl.setAlignment(Pos.CENTER_LEFT);
+        likeControl.setCursor(Cursor.HAND);
+        likeControl.setOnMouseClicked(e -> toggleLike(messageId));
+
+        // CHANGED: reaction badges are now Labels
         HBox reactionsRow = new HBox(4);
         if (msg.has("grouped_reactions")) {
             for (JsonNode r : msg.get("grouped_reactions")) {
                 String emoji = r.get("emoji").asText();
                 int count = r.get("count").asInt();
-                Button badge = new Button(emoji + " " + count);
+
+                Node icon = EmojiImages.buildNode(emoji, 14);
+                Label countLabel = new Label(String.valueOf(count));
+
+                HBox badge = new HBox(3, icon, countLabel);
+                badge.setAlignment(Pos.CENTER);
                 badge.getStyleClass().add(r.has("me") && r.get("me").asBoolean() ? "reaction-badge-active" : "reaction-badge");
-                badge.setOnAction(e -> toggleReaction(messageId, emoji));
+                badge.setCursor(Cursor.HAND);
+                badge.setOnMouseClicked(e -> toggleReaction(messageId, emoji));
                 reactionsRow.getChildren().add(badge);
             }
         }
 
-        // NEW: flag indicator — visual only, matches the web (flagging itself happens via right-click menu)
         boolean myFlag = msg.has("flagged_by_me") && msg.get("flagged_by_me").asBoolean();
-        HBox actionsRow = new HBox(10, likeBtn, reactionsRow);
+        HBox actionsRow = new HBox(10, likeControl, reactionsRow);
         actionsRow.setAlignment(Pos.CENTER_LEFT);
         if (myFlag) {
-            Label flagIcon = new Label("⚑ flagged");
-            flagIcon.getStyleClass().add("muted-label");
+            Label flagIcon = new Label("⚠️");
+
             actionsRow.getChildren().add(flagIcon);
         }
 
-        VBox column = new VBox(4, meta, bubble, actionsRow);
+        VBox column = new VBox(4, headerRow, bubble, actionsRow);
         column.setMaxWidth(420);
 
-        HBox row = new HBox(column);
-        row.setAlignment(isMe ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
-
-        // NEW: right-click menu — replaces the web's contextmenu + floating emoji picker
-        ContextMenu contextMenu = new ContextMenu();
-        String[] quickEmojis = { "👍", "❤️", "😂", "😮", "😢" };
-        for (String emoji : quickEmojis) {
-            MenuItem item = new MenuItem(emoji);
-            item.setOnAction(e -> toggleReaction(messageId, emoji));
-            contextMenu.getItems().add(item);
+        // NEW: mirror alignment onto the header/actions rows too, so text hugs the right edge for my own messages
+        if (isMe) {
+            headerRow.setAlignment(Pos.CENTER_RIGHT);
+            actionsRow.setAlignment(Pos.CENTER_RIGHT);
         }
-        contextMenu.getItems().add(new SeparatorMenuItem());
-        MenuItem flagItem = new MenuItem(myFlag ? "Unflag Message" : "Flag Message");
-        flagItem.setOnAction(e -> toggleFlag(messageId));
-        contextMenu.getItems().add(flagItem);
 
-        bubble.setOnContextMenuRequested(e -> contextMenu.show(bubble, e.getScreenX(), e.getScreenY()));
+        HBox row = new HBox(10);
+        row.setAlignment(isMe ? Pos.TOP_RIGHT : Pos.TOP_LEFT);
+        if (isMe) {
+            row.getChildren().add(column); // no avatar for your own messages — matches most chat apps' convention
+        } else {
+            row.getChildren().addAll(avatar, column);
+        }
+
+        // Context menu (right-click) — unchanged from before
+
+
+
+        bubble.setOnContextMenuRequested(e -> showReactionPopup(bubble, messageId, myFlag, e.getScreenX(), e.getScreenY()));
 
         return new VBox(row);
+    }
+
+    // NEW: replaces the old ContextMenu — gives a proper grid layout for quick emoji, like the web version
+    private void showReactionPopup(Label bubble, long messageId, boolean myFlag, double screenX, double screenY) {
+        Popup popup = new Popup();
+        popup.setAutoHide(true);
+
+        VBox container = new VBox(8);
+        container.setPadding(new Insets(12));
+        container.getStyleClass().add("emoji-popup");
+
+        Label header = new Label("QUICK EMOJI");
+        header.getStyleClass().add("emoji-popup-header");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(6);
+        grid.setVgap(6);
+
+        String[] emojis = { "😀","😃","😄","😁","😆",
+            "😂","🤣","😊","😍","😘",
+            "🙂","😉","😎","🤔","😐",
+            "👍","❤️","😢","😮","😡" };
+        int columns = 5;
+        for (int i = 0; i < emojis.length; i++) {
+            String emoji = emojis[i];
+            Node emojiNode = EmojiImages.buildNode(emoji, 22);
+            StackPane cell = new StackPane(emojiNode);
+            cell.getStyleClass().add("emoji-option");
+            cell.setOnMouseClicked(e -> {
+                toggleReaction(messageId, emoji);
+                popup.hide();
+            });
+            grid.add(cell, i % columns, i / columns);
+        }
+
+        Separator separator = new Separator();
+
+        Node flagIcon = EmojiImages.buildNode("⚠️", 14);
+        Label flagText = new Label(myFlag ? "Unflag Message" : "Flag Message");
+        flagText.getStyleClass().add("flag-option");
+
+        HBox flagOption = new HBox(6, flagIcon, flagText);
+        flagOption.setAlignment(Pos.CENTER_LEFT);
+        flagOption.setCursor(Cursor.HAND);
+        flagOption.setOnMouseClicked(e -> {
+            toggleFlag(messageId);
+            popup.hide();
+        });
+
+
+        container.getChildren().addAll(header, grid, separator, flagOption);
+        popup.getContent().add(container);
+        popup.show(bubble, screenX, screenY);
     }
 
     // NEW
@@ -198,7 +297,7 @@ public class TopicChatController implements PollingView {
 
             java.net.http.HttpClient.newHttpClient()
                 .sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> Platform.runLater(this::fetchMessages));
+                .thenAccept(response -> Platform.runLater(() -> fetchMessages(false)));
 
         } catch (Exception e) {
             e.printStackTrace();

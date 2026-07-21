@@ -1,6 +1,6 @@
 /* Glassmorphic Background matching guest.blade.php */
 .root-pane {
-    -fx-background-image: url('discussion.jpg'); /* Place discussion.jpg in resources folder! */
+    -fx-background-image: url('Gemini_Image_2.png'); /* Place discussion.jpg in resources folder! */
     -fx-background-repeat: no-repeat;
     -fx-background-size: cover;
     -fx-background-position: center;
@@ -8,8 +8,9 @@
 
 /* Glassmorphic Card container */
 .glass-card {
-    -fx-background-color: rgba(255, 255, 255, 0.12); /* bg-white/10 */
-    -fx-border-color: rgba(255, 255, 255, 0.2);     /* border-white/20 */
+    -fx-background-color: rgba(15, 23, 42, 0.75); /* bg-white/10 */
+    -fx-border-color: rgba(255, 255, 255, 0.25);     /* border-white/20 */
+    -fx-opacity:1;
     -fx-border-width: 1.5px;
     -fx-background-radius: 16px;                     /* rounded-2xl */
     -fx-border-radius: 16px;
@@ -206,6 +207,8 @@
       -fx-background-color: #1d4ed8; /* blue-700 */
  }
 
+ -fx-background-image: url("Gemini_Image_2.png");
+
  /* ============================================================
     Cards (group cards, topic cards)
     ============================================================ */
@@ -256,6 +259,53 @@
  }
 
  /* ============================================================
+    Emoji rendering — forces the OS's color emoji font
+    ============================================================ */
+ .like-control, .reaction-badge, .reaction-badge-active, .bubble-me, .bubble-them, .emoji-option {
+     -fx-font-family: "Segoe UI Emoji", "Segoe UI", sans-serif;
+ }
+
+ /* ============================================================
+    Quick-emoji reaction popup (grid layout)
+    ============================================================ */
+ .emoji-popup {
+     -fx-background-color: white;
+     -fx-background-radius: 10;
+     -fx-border-color: #e2e8f0; /* slate-200 */
+     -fx-border-radius: 10;
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 14, 0, 0, 4);
+ }
+
+ .emoji-popup-header {
+     -fx-font-size: 10px;
+     -fx-font-weight: bold;
+     -fx-text-fill: #94a3b8; /* slate-400 */
+ }
+
+ .emoji-option {
+     -fx-font-size: 20px;
+     -fx-padding: 4 6 4 6;
+     -fx-background-radius: 6;
+     -fx-cursor: hand;
+ }
+
+ .emoji-option:hover {
+     -fx-background-color: #f1f5f9; /* slate-100 */
+ }
+
+ .flag-option {
+     -fx-font-size: 12px;
+     -fx-text-fill: #ef4444; /* red-500 */
+     -fx-cursor: hand;
+     -fx-padding: 4 2 2 2;
+ }
+
+ .flag-option:hover {
+     -fx-underline: true;
+ }
+
+
+ /* ============================================================
     ScrollPane — makes it blend into the page instead of showing
     its own white/grey box (topics list, chat message list)
     ============================================================ */
@@ -284,35 +334,182 @@
      -fx-border-radius: 16 16 16 4;
  }
 
- /* ============================================================
-    Reaction badges
-    ============================================================ */
- .reaction-badge, .reaction-badge-active {
-     -fx-font-size: 11px;
-     -fx-background-radius: 12;
-     -fx-padding: 2 8 2 8;
-     -fx-cursor: hand;
-     -fx-border-radius: 12;
- }
 
- .reaction-badge {
-     -fx-background-color: #f1f5f9; /* slate-100 */
-     -fx-text-fill: #475569; /* slate-600 */
-     -fx-border-color: #e2e8f0; /* slate-200 */
- }
 
- .reaction-badge:hover {
-     -fx-background-color: #e2e8f0; /* slate-200 */
- }
 
- .reaction-badge-active {
-     -fx-background-color: #dbeafe; /* blue-100 */
-     -fx-text-fill: #2563eb; /* blue-600 */
-     -fx-border-color: #93c5fd; /* blue-300 */
- }
+
+
+
+
 
 .section-title {
     -fx-font-size: 15px;
     -fx-font-weight: bold;
     -fx-text-fill: #334155; /* slate-700 */
+}
+
+/* ============================================================
+   Avatar
+   ============================================================ */
+.avatar-circle {
+    -fx-background-color: #64748b; /* slate-500 */
+    -fx-background-radius: 100;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+}
+
+.avatar-circle .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* ============================================================
+   Message header (name + timestamp)
+   ============================================================ */
+.message-name {
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+    -fx-text-fill: #1e293b; /* slate-800 */
+}
+
+.message-time {
+    -fx-font-size: 11px;
+    -fx-text-fill: #94a3b8; /* slate-400 */
+}
+
+/* ============================================================
+   Like control — a Label, never a Button, so it can't pick up
+   stray default button styling
+   ============================================================ */
+.like-control {
+    -fx-text-fill: #64748b; /* slate-500 */
+    -fx-font-size: 12px;
+    -fx-cursor: hand;
+}
+
+.like-control:hover {
+    -fx-text-fill: #334155; /* slate-700 */
+}
+
+.like-control-active {
+    -fx-text-fill: #ef4444; /* red-500 */
+    -fx-font-weight: bold;
+}
+
+/* ============================================================
+   Reaction badges — also Labels now, same reasoning
+   ============================================================ */
+.reaction-badge, .reaction-badge-active {
+    -fx-font-size: 11px;
+    -fx-background-radius: 12;
+    -fx-padding: 2 8 2 8;
+    -fx-cursor: hand;
+    -fx-border-radius: 12;
+}
+
+.reaction-badge {
+    -fx-background-color: #f1f5f9; /* slate-100 */
+    -fx-text-fill: #475569; /* slate-600 */
+    -fx-border-color: #e2e8f0; /* slate-200 */
+}
+
+.reaction-badge:hover {
+    -fx-background-color: #e2e8f0; /* slate-200 */
+}
+
+.reaction-badge-active {
+    -fx-background-color: #dbeafe; /* blue-100 */
+    -fx-text-fill: #2563eb; /* blue-600 */
+    -fx-border-color: #93c5fd; /* blue-300 */
+}
+
+
+/*
+   Quiz tables
+ */
+.quiz-table {
+    -fx-background-color: transparent;
+    -fx-border-color: #e2e8f0; /* slate-200 */
+    -fx-border-radius: 12;
+    -fx-background-radius: 12;
+}
+
+.quiz-table .column-header-background {
+    -fx-background-color: #f8fafc; /* slate-50 */
+    -fx-background-radius: 12 12 0 0;
+}
+
+.quiz-table .column-header, .quiz-table .filler {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e2e8f0 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.quiz-table .column-header .label {
+    -fx-text-fill: #475569; /* slate-600 */
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.quiz-table .table-row-cell {
+    -fx-background-color: #ffffff;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
+    -fx-table-cell-border-color: transparent;
+}
+
+.quiz-table .table-row-cell:hover {
+    -fx-background-color: #f8fafc;
+}
+
+.quiz-table .table-row-cell:selected {
+    -fx-background-color: #eff6ff; /* blue-50 */
+}
+
+.quiz-table .table-cell {
+    -fx-text-fill: #334155; /* slate-700 */
+    -fx-font-size: 13px;
+    -fx-padding: 10 16 10 16;
+    -fx-border-color: transparent;
+}
+
+.quiz-table .placeholder .label {
+    -fx-text-fill: #94a3b8; /* slate-400 */
+    -fx-font-size: 13px;
+}
+
+/* Category pill on incoming-quiz cards */
+.category-badge {
+    -fx-background-color: #eff6ff; /* blue-50 */
+    -fx-text-fill: #2563eb; /* blue-600 */
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6;
+    -fx-padding: 3 8 3 8;
+}
+
+.text-danger {
+    -fx-text-fill: #ef4444; /* red-500 */
+}
+
+.text-success {
+    -fx-text-fill: #16a34a; /* green-600 */
+    -fx-font-weight: bold;
+}
+
+/* Empty-state box (e.g. "No incoming quizzes") */
+.empty-state {
+    -fx-background-color: #f8fafc; /* slate-50 */
+    -fx-background-radius: 12;
+    -fx-padding: 30;
+    -fx-alignment: center;
+}
+
+
+.history-row {
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+    -fx-border-width: 0 0 1 0;
 }
