@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.LecturerAnnouncementsController"
+      spacing="16">
+
+    <Label text="Announcements" styleClass="title-label"/>
+    <Label text="A history of announcements you've sent to students." styleClass="muted-label"/>
+
+    <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+        <VBox fx:id="announcementListContainer" spacing="10">
+            <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>
+        </VBox>
+    </ScrollPane>
+</VBox>

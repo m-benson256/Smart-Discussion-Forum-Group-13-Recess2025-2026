@@ -13,6 +13,11 @@ use App\Http\Controllers\QuizAttemptController;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuizQuestionController;
+use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AnnouncementsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -167,4 +172,22 @@ Route::post('/desktop/messages/{message}/react', [MessageController::class, 'tog
 Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
+
+// Quizzes (Lecturer Side)
+Route::get('/desktop/lecturer/dashboard-stats', [LecturerController::class, 'dashboardStats']);
+Route::get('/desktop/lecturer/quizzes', [QuizController::class, 'index']);
+Route::post('/desktop/quizzes', [QuizController::class, 'store']);
+Route::get('/desktop/quizzes/{quiz}', [QuizController::class, 'show']);
+Route::put('/desktop/quizzes/{quiz}', [QuizController::class, 'update']);
+Route::post('/desktop/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
+
+Route::post('/desktop/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
+Route::put('/desktop/questions/{question}', [QuizQuestionController::class, 'update']);
+Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, 'destroy']);
+
+Route::get('/desktop/categories', [CategoryController::class, 'index']);
+
+//Announcements
+Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
+Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
 });
