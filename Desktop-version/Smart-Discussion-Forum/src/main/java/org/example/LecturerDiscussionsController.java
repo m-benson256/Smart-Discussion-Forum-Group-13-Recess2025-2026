@@ -83,7 +83,7 @@ public class LecturerDiscussionsController {
 
     @FXML
     void handleNewTopic() {
-        Dialog<Void> dialog = new Dialog<>();
+        Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("New Topic");
 
         TextField titleField = new TextField();
