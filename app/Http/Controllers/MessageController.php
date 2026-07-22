@@ -17,10 +17,9 @@ class MessageController extends Controller
 public function index(Request $request, Topic $topic): JsonResponse
 {
     $userId = $request->user()->id;
-   $topic->load('group:id,visibility,created_by');
+    $topic->load('group:id,visibility,created_by');
 
-    if ($topic->group && $topic->group->visibility === 'private') {
-        $userId = $request->user()->id;
+    if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $isMember = $topic->group->created_by === $userId
             || $topic->group->members()->where('user_id', $userId)->exists();
 
@@ -179,7 +178,7 @@ public function exportPdf(Request $request, Topic $topic)
     $userId = $request->user()->id;
     $topic->load('group:id,visibility,created_by', 'user:id,name');
 
-    if ($topic->group && $topic->group->visibility === 'private') {
+    if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $isMember = $topic->group->created_by === $userId
             || $topic->group->members()->where('user_id', $userId)->exists();
 

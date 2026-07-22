@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.QuizBuilderController">
+
+    <left>
+        <VBox styleClass="sidebar" spacing="4" prefWidth="200">
+            <padding><Insets top="24" right="12" bottom="24" left="12"/></padding>
+            <Button fx:id="navConfigure" text="Configure Quiz" onAction="#showConfigureTab" styleClass="nav-button, nav-button-active" maxWidth="Infinity"/>
+            <Button fx:id="navQuestions" text="Add Questions" onAction="#showQuestionsTab" styleClass="nav-button" maxWidth="Infinity"/>
+            <Button fx:id="navReview" text="Review &amp; Summary" onAction="#showReviewTab" styleClass="nav-button" maxWidth="Infinity"/>
+            <VBox VBox.vgrow="ALWAYS"/>
+            <Button fx:id="finishButton" text="Finish &amp; Save" onAction="#handleFinishAndSave" styleClass="button-primary" maxWidth="Infinity"/>
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane>
+            <padding><Insets top="20" right="24" bottom="20" left="24"/></padding>
+
+            <!-- Configure Quiz -->
+            <VBox fx:id="configurePane" spacing="16">
+                <Label text="Quiz Settings" styleClass="title-label"/>
+                <TextField fx:id="titleField" promptText="Quiz Title" styleClass="text-input"/>
+                <TextArea fx:id="descField" promptText="Description" prefRowCount="3"/>
+                <ComboBox fx:id="categoryCombo" promptText="Select a category" styleClass="combo-box" maxWidth="Infinity"/>
+                <TextField fx:id="startTimeField" promptText="Start Time (YYYY-MM-DD HH:MM)" styleClass="text-input"/>
+                <TextField fx:id="timeLimitField" promptText="Time Limit (minutes)" text="60" styleClass="text-input"/>
+                <TextField fx:id="totalMarksField" promptText="Total Marks" text="100" styleClass="text-input"/>
+                <TextField fx:id="passingScoreField" promptText="Passing Score (%)" text="70" styleClass="text-input"/>
+                <CheckBox fx:id="shuffleCheckBox" text="Shuffle Questions"/>
+            </VBox>
+
+            <!-- Add Questions -->
+            <HBox fx:id="questionsPane" spacing="16" visible="false" managed="false">
+                <VBox spacing="8" prefWidth="260" styleClass="card">
+                    <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+                    <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+                        <VBox fx:id="questionListContainer" spacing="8"/>
+                    </ScrollPane>
+                    <Button text="+ Add New Question" onAction="#resetEditor" styleClass="button-secondary" maxWidth="Infinity"/>
+                </VBox>
+
+                <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="card">
+                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                    <Label fx:id="editorTitleLabel" text="Adding New Question" styleClass="card-title"/>
+                    <ComboBox fx:id="questionTypeCombo" styleClass="combo-box"/>
+                    <TextArea fx:id="questionPromptArea" promptText="Enter the question here..." prefRowCount="3"/>
+
+                    <VBox fx:id="mcqBox" spacing="8">
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <RadioButton fx:id="mcqRadioA" userData="A"/>
+                            <TextField fx:id="mcqTextA" promptText="Option A" styleClass="text-input" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <RadioButton fx:id="mcqRadioB" userData="B"/>
+                            <TextField fx:id="mcqTextB" promptText="Option B" styleClass="text-input" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <RadioButton fx:id="mcqRadioC" userData="C"/>
+                            <TextField fx:id="mcqTextC" promptText="Option C" styleClass="text-input" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                        <HBox spacing="8" alignment="CENTER_LEFT">
+                            <RadioButton fx:id="mcqRadioD" userData="D"/>
+                            <TextField fx:id="mcqTextD" promptText="Option D" styleClass="text-input" HBox.hgrow="ALWAYS"/>
+                        </HBox>
+                    </VBox>
+
+                    <HBox fx:id="tfBox" spacing="16" visible="false" managed="false">
+                        <RadioButton fx:id="tfTrueRadio" text="True"/>
+                        <RadioButton fx:id="tfFalseRadio" text="False"/>
+                    </HBox>
+
+                    <VBox fx:id="saBox" spacing="8" visible="false" managed="false">
+                        <Label text="Students must match this exact keyword (case-insensitive)." styleClass="muted-label"/>
+                        <TextField fx:id="saAnswerField" promptText="Correct keyword" styleClass="text-input"/>
+                    </VBox>
+
+                    <Button text="Save Question to List" onAction="#saveQuestion" styleClass="button-primary"/>
+                </VBox>
+            </HBox>
+
+            <!-- Review & Summary -->
+            <VBox fx:id="reviewPane" spacing="16" visible="false" managed="false">
+                <Label text="Final Review" styleClass="title-label"/>
+                <VBox styleClass="card" spacing="8">
+                    <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+                    <Label fx:id="summaryTitleLabel" styleClass="card-title"/>
+                    <Label fx:id="summaryDescLabel" styleClass="muted-label" wrapText="true"/>
+                    <Label fx:id="summaryCountLabel" styleClass="muted-label"/>
+                </VBox>
+                <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+                    <VBox fx:id="reviewQuestionsContainer" spacing="8"/>
+                </ScrollPane>
+            </VBox>
+        </StackPane>
+    </center>
+</BorderPane>

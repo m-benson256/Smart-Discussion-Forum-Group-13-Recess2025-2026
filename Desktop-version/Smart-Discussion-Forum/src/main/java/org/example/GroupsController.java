@@ -12,6 +12,12 @@ import javafx.scene.layout.VBox;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
+
 public class GroupsController {
 
     @FXML private FlowPane groupsContainer;
@@ -51,6 +57,28 @@ public class GroupsController {
                 e.printStackTrace();
             }
         });
+    }
+
+    @FXML
+    void handleCreateGroup(javafx.event.ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("create_group_dialog.fxml"));
+            Parent root = loader.load();
+
+            CreateGroupController controller = loader.getController();
+            controller.setOnGroupCreated(this::fetchGroups); // refresh list once created
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Create Group");
+            dialogStage.initModality(Modality.APPLICATION_MODAL);
+            Scene scene = new Scene(root, 400, 400);
+            scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
+            dialogStage.setScene(scene);
+            dialogStage.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private VBox buildGroupCard(JsonNode group) {
