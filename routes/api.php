@@ -167,4 +167,6 @@ Route::post('/desktop/messages/{message}/react', [MessageController::class, 'tog
 Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'toggleFlag']);
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
+
+Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 });

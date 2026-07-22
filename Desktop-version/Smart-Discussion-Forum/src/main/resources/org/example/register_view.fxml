@@ -23,21 +23,21 @@
 
                 <VBox prefWidth="320.0" spacing="5.0">
                     <children>
-                        <Label style="-fx-text-fill: black;" text="Name" />
+                        <Label style="-fx-text-fill: white;" text="Name" />
                         <TextField fx:id="nameField" promptText="Full Name" />
                     </children>
                 </VBox>
 
                 <VBox prefWidth="320.0" spacing="5.0">
                     <children>
-                        <Label style="-fx-text-fill: black;" text="Email Address" />
+                        <Label style="-fx-text-fill: white;" text="Email Address" />
                         <TextField fx:id="emailField" onKeyReleased="#handleEmailKeyReleased" promptText="Email (@students.ed or @lecturers.ed)" />
                     </children>
                 </VBox>
 
                 <VBox fx:id="studentFieldsContainer" managed="false" prefWidth="320.0" spacing="5.0" visible="false">
                     <children>
-                        <Label style="-fx-text-fill: black;" text="Academic Category" />
+                        <Label style="-fx-text-fill: white;" text="Academic Category" />
                         <ComboBox fx:id="studentCategoryDropdown" prefWidth="320.0" promptText="Select your specialization...">
                             <items>
                                 <FXCollections fx:factory="observableArrayList">
@@ -55,7 +55,7 @@
                     <children>
                         <VBox spacing="5.0">
                             <children>
-                                <Label style="-fx-text-fill: black;" text="Highest Degree Level" />
+                                <Label style="-fx-text-fill: white;" text="Highest Degree Level" />
                                 <ComboBox fx:id="degreeTypeDropdown" prefWidth="320.0" promptText="Select degree level...">
                                     <items>
                                         <FXCollections fx:factory="observableArrayList">
@@ -69,7 +69,7 @@
                         </VBox>
                         <VBox spacing="5.0">
                             <children>
-                                <Label style="-fx-text-fill: black;" text="Desk / Office Phone Contact" />
+                                <Label style="-fx-text-fill: white;" text="Desk / Office Phone Contact" />
                                 <TextField fx:id="deskContactField" promptText="+1 (555) 019-2834" />
                             </children>
                         </VBox>
@@ -78,14 +78,14 @@
 
                 <VBox prefWidth="320.0" spacing="5.0">
                     <children>
-                        <Label style="-fx-text-fill: black;" text="Password" />
+                        <Label style="-fx-text-fill: white;" text="Password" />
                         <PasswordField fx:id="passwordField" promptText="Password" />
                     </children>
                 </VBox>
 
                 <VBox prefWidth="320.0" spacing="5.0">
                     <children>
-                        <Label style="-fx-text-fill: black;" text="Confirm Password" />
+                        <Label style="-fx-text-fill: white;" text="Confirm Password" />
                         <PasswordField fx:id="confirmPasswordField" promptText="Confirm Password" />
                     </children>
                 </VBox>
@@ -96,7 +96,7 @@
 
                 <Label fx:id="statusLabel" alignment="CENTER" prefWidth="320.0" style="-fx-text-fill: #ff3333; -fx-font-weight: bold;" textAlignment="CENTER" wrapText="true" />
 
-                <Label text="Already have an account? Log in" onMouseClicked="#goToLogin" styleClass="primary-button"/>
+                <Label text="Already have an account? Log in" onMouseClicked="#goToLogin" styleClass="link-label"/>
             </children>
         </VBox>
     </children>
