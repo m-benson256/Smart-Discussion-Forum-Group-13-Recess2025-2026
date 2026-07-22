@@ -3,12 +3,14 @@ package org.example;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Question {
     private Long id;
-    private String type;            // "mcq" | "tf" | "sa"
+    private String type;
     private String prompt;
+    @JsonProperty("correct_answer")
     private String correct_answer;
     private List<QuestionOption> options;
 

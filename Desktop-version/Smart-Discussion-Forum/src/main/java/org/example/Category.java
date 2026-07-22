@@ -1,10 +1,13 @@
 package org.example;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Category {
+    @JsonProperty("CategoryID")
     private Long CategoryID;
+    @JsonProperty("CategoryName")
     private String CategoryName;
 
     public Long getCategoryId() { return CategoryID; }
@@ -12,6 +15,6 @@ public class Category {
 
     @Override
     public String toString() {
-        return CategoryName; // so it displays nicely in the ComboBox
+        return CategoryName;
     }
 }

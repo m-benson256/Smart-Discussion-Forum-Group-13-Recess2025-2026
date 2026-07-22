@@ -1,7 +1,13 @@
 package org.example;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class QuestionOption {
+    @JsonProperty("option_key")
     private String option_key;
+    @JsonProperty("option_text")
     private String option_text;
 
     public QuestionOption() {}

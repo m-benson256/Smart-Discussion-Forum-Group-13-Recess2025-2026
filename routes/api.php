@@ -192,6 +192,7 @@ Route::post('/desktop/quizzes/{quiz}/publish', [QuizController::class, 'publish'
 Route::post('/desktop/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
 Route::put('/desktop/questions/{question}', [QuizQuestionController::class, 'update']);
 Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, 'destroy']);
+Route::get('/desktop/lecturer/reports', [QuizAttemptController::class, 'report']);
 
 Route::get('/desktop/categories', [CategoryController::class, 'index']);
 
