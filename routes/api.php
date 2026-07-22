@@ -155,6 +155,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/desktop/groups/{group}/join', [GroupController::class, 'join']);
     Route::get('/desktop/groups/{group}', [GroupController::class, 'show']);
     Route::post('/desktop/groups/{group}/leave', [GroupController::class, 'leave']);
+
+    Route::post('/desktop/groups', [GroupController::class, 'store']);
+    Route::get('/desktop/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
+    Route::post('/desktop/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
+    Route::post('/desktop/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
+    Route::get('/desktop/my-pending-requests', [GroupController::class, 'myPendingRequests']);
+
     Route::get('/desktop/topics', [TopicController::class, 'index']);
     Route::post('/desktop/topics', [TopicController::class, 'store']);
 
