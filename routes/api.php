@@ -18,6 +18,7 @@ use App\Http\Controllers\QuizQuestionController;
 use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnnouncementsController;
+use App\Http\Controllers\ParticipationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -190,4 +191,10 @@ Route::get('/desktop/categories', [CategoryController::class, 'index']);
 //Announcements
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
+
+//Participation
+Route::get('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
+Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
+Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+
 });

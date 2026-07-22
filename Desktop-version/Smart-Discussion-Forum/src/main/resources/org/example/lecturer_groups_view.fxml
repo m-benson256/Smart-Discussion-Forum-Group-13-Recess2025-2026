@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Groups — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.LecturerGroupsController"
+      spacing="16">
+
+    <VBox styleClass="card" spacing="12" VBox.vgrow="ALWAYS">
+        <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+
+        <HBox alignment="CENTER_LEFT">
+            <Label text="All Groups" styleClass="title-label" HBox.hgrow="ALWAYS"/>
+            <Label fx:id="groupCountLabel" text="0 groups" styleClass="muted-label"/>
+        </HBox>
+
+        <TableView fx:id="groupsTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="nameColumn" text="GROUP NAME" prefWidth="300"/>
+                <TableColumn fx:id="creatorColumn" text="CREATED BY" prefWidth="200"/>
+                <TableColumn fx:id="membersColumn" text="MEMBERS" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

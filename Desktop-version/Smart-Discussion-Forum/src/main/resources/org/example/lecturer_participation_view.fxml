@@ -1,7 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Participation — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.LecturerParticipationController"
+      spacing="20">
+
+    <VBox styleClass="card" spacing="12">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+        <Label text="Participation Criteria" styleClass="title-label" style="-fx-font-size: 16px;"/>
+
+        <HBox spacing="16" alignment="CENTER_LEFT">
+            <VBox spacing="4">
+                <Label text="Points per Message" styleClass="muted-label"/>
+                <TextField fx:id="pointsPerMessageField" styleClass="text-input" prefWidth="100"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Points per Reaction Given" styleClass="muted-label"/>
+                <TextField fx:id="pointsPerReactionField" styleClass="text-input" prefWidth="100"/>
+            </VBox>
+            <VBox spacing="4">
+                <Label text="Max Score" styleClass="muted-label"/>
+                <TextField fx:id="maxScoreField" styleClass="text-input" prefWidth="100"/>
+            </VBox>
+            <Button text="Save Criteria" onAction="#handleSaveCriteria" styleClass="button-primary"/>
+        </HBox>
+    </VBox>
+
+    <VBox styleClass="card" spacing="12" VBox.vgrow="ALWAYS">
+        <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+        <Label text="Student Scores" styleClass="title-label" style="-fx-font-size: 16px;"/>
+
+        <TableView fx:id="scoresTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="studentColumn" text="STUDENT" prefWidth="220"/>
+                <TableColumn fx:id="messagesColumn" text="MESSAGES" prefWidth="120"/>
+                <TableColumn fx:id="reactionsColumn" text="REACTIONS GIVEN" prefWidth="160"/>
+                <TableColumn fx:id="scoreColumn" text="SCORE" prefWidth="150"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>

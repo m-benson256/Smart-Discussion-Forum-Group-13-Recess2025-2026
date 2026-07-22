@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Discussions — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.LecturerDiscussionsController"
+      spacing="16">
+
+    <HBox alignment="CENTER_LEFT" spacing="12">
+        <Label text="Discussions" styleClass="title-label" HBox.hgrow="ALWAYS"/>
+        <Button text="+ New Topic" onAction="#handleNewTopic" styleClass="button-primary"/>
+    </HBox>
+
+    <HBox spacing="16" VBox.vgrow="ALWAYS">
+        <VBox spacing="8" prefWidth="280" styleClass="card">
+            <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            <Label text="Topics" styleClass="card-title"/>
+            <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+                <VBox fx:id="topicListContainer" spacing="8"/>
+            </ScrollPane>
+        </VBox>
+
+        <VBox spacing="12" HBox.hgrow="ALWAYS" styleClass="card">
+            <padding><Insets top="16" right="16" bottom="16" left="16"/></padding>
+            <Label fx:id="selectedTopicTitle" text="Select a topic to view the discussion"
+                   styleClass="title-label" style="-fx-font-size: 16px;"/>
+
+            <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
+                <VBox fx:id="messageListContainer" spacing="10"/>
+            </ScrollPane>
+
+            <HBox spacing="8" alignment="CENTER">
+                <TextField fx:id="replyField" promptText="Write a reply..." styleClass="text-input" HBox.hgrow="ALWAYS"/>
+                <Button text="Send" onAction="#handleSendReply" styleClass="button-primary"/>
+            </HBox>
+        </VBox>
+    </HBox>
+</VBox>
