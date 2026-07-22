@@ -6,14 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="49b9a769-c806-41df-a2d2-89f701505849" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/QuizzesController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/QuizzesController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/TopicChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/TopicChatController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/login_view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/login_view.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/performance_view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/performance_view.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/register_view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/register_view.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/register_view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/register_view.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/org/example/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/org/example/style.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/org/example/GroupsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/org/example/GroupsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/org/example/groups_view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/org/example/groups_view.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -47,19 +41,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;Benson-M&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Main.executor": "Run",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "main",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "to.speed.mode.migration.done": "true"
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
