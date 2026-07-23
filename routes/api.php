@@ -19,6 +19,7 @@ use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -204,7 +205,7 @@ Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class,
 Route::get('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
 Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
-
+Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 });
