@@ -13,13 +13,17 @@ class AnnouncementsController extends Controller
      * Display a listing of the resource.
      */
     public function index()
-    {
-         $announcements = Announcements::with('user:id,name', 'quiz:id,title')
+{
+    $announcements = Announcements::with('user:id,name', 'quiz:id,title')
+        ->where(function ($query) {
+            $query->whereNull('recipient_id')
+                  ->orWhere('recipient_id', auth()->id());
+        })
         ->latest()
         ->get();
 
     return response()->json($announcements);
-    }
+}
 
     /**
      * Show the form for creating a new resource.

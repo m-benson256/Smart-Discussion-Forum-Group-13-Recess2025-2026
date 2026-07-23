@@ -5,6 +5,7 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextField?>
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.LecturerDashboardController"
@@ -34,14 +35,23 @@
         </VBox>
     </left>
 
-    <center>
-        <VBox>
-            <Label fx:id="welcomeLabel" styleClass="welcome-label">
-                <padding><Insets top="16" right="24" bottom="8" left="24"/></padding>
-            </Label>
-            <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" styleClass="content-area">
-                <padding><Insets top="8" right="24" bottom="24" left="24"/></padding>
-            </StackPane>
+<center>
+    <VBox>
+        <VBox spacing="4">
+            <padding><Insets top="16" right="24" bottom="8" left="24"/></padding>
+            <TextField fx:id="searchField" promptText="Search for quizzes, students, or reports... (press Enter)"
+                       styleClass="text-input" onAction="#handleSearch"/>
+            <VBox fx:id="searchResultsPanel" styleClass="card" spacing="8" visible="false" managed="false">
+                <padding><Insets top="12" right="12" bottom="12" left="12"/></padding>
+            </VBox>
         </VBox>
-    </center>
+
+        <Label fx:id="welcomeLabel" styleClass="welcome-label">
+            <padding><Insets top="8" right="24" bottom="8" left="24"/></padding>
+        </Label>
+        <StackPane fx:id="contentArea" VBox.vgrow="ALWAYS" styleClass="content-area">
+            <padding><Insets top="8" right="24" bottom="24" left="24"/></padding>
+        </StackPane>
+    </VBox>
+</center>
 </BorderPane>

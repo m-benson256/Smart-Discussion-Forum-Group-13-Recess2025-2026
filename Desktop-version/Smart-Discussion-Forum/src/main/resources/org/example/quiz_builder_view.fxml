@@ -32,6 +32,7 @@
                 <TextField fx:id="totalMarksField" promptText="Total Marks" text="100" styleClass="text-input"/>
                 <TextField fx:id="passingScoreField" promptText="Passing Score (%)" text="70" styleClass="text-input"/>
                 <CheckBox fx:id="shuffleCheckBox" text="Shuffle Questions"/>
+                <Button text="Save Configuration" onAction="#handleSaveConfiguration" styleClass="button-primary"/> 
             </VBox>
 
             <!-- Add Questions -->

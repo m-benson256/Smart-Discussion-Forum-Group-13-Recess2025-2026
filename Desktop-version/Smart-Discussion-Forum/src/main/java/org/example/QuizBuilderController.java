@@ -74,6 +74,14 @@ public class QuizBuilderController {
 
     private static final String BASE_URL = "http://127.0.0.1:8000/api";
 
+    // Set by LecturerQuizzesController before navigating here to edit an existing quiz
+    public static Long pendingEditQuizId = null;
+
+    public static void openForEdit(Long quizId) {
+        pendingEditQuizId = quizId;
+        LecturerDashboardController.navigateTo("quiz_builder_view.fxml");
+    }
+
     @FXML
     public void initialize() {
         mcqRadioA.setToggleGroup(mcqGroup);
@@ -94,8 +102,7 @@ public class QuizBuilderController {
     private void loadCategories() {
         HttpClient client = HttpClient.newHttpClient();
         var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/categories")
-                .GET()
-                .build();
+                .GET().build();
 
         client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
                 Platform.runLater(() -> {
@@ -110,8 +117,63 @@ public class QuizBuilderController {
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
+
+                    // Once categories are ready, load an existing quiz for editing if one was requested
+                    if (pendingEditQuizId != null) {
+                        Long idToLoad = pendingEditQuizId;
+                        pendingEditQuizId = null;
+                        loadQuizForEdit(idToLoad);
+                    }
                 })
         );
+    }
+
+    // ---------- Loading an existing quiz for editing ----------
+
+    private void loadQuizForEdit(Long id) {
+        HttpClient client = HttpClient.newHttpClient();
+        var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + id)
+                .GET().build();
+
+        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
+                Platform.runLater(() -> {
+                    try {
+                        if (response.statusCode() == 200) {
+                            Quiz quiz = mapper.readValue(response.body(), Quiz.class);
+                            populateFromExistingQuiz(quiz);
+                        } else {
+                            showAlert("Could not load quiz for editing (status " + response.statusCode() + ")");
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                })
+        );
+    }
+
+    private void populateFromExistingQuiz(Quiz quiz) {
+        quizId = quiz.getId();
+
+        titleField.setText(quiz.getTitle() != null ? quiz.getTitle() : "");
+        descField.setText(quiz.getDescription() != null ? quiz.getDescription() : "");
+        startTimeField.setText(quiz.getStartTime() != null ? quiz.getStartTime() : "");
+        timeLimitField.setText(quiz.getDurationMinutes() != null ? String.valueOf(quiz.getDurationMinutes()) : "60");
+        totalMarksField.setText(quiz.getTotalMarks() != null ? String.valueOf(quiz.getTotalMarks()) : "100");
+        passingScoreField.setText(quiz.getPassingScore() != null ? String.valueOf(quiz.getPassingScore()) : "70");
+        shuffleCheckBox.setSelected(quiz.isShuffleQuestions());
+
+        if (quiz.getCategoryId() != null) {
+            categories.stream()
+                    .filter(c -> quiz.getCategoryId().equals(c.getCategoryId()))
+                    .findFirst()
+                    .ifPresent(categoryCombo::setValue);
+        }
+
+        questions.clear();
+        if (quiz.getQuestions() != null) {
+            questions.addAll(quiz.getQuestions());
+        }
+        renderQuestionList();
     }
 
     // ---------- Tab switching ----------
@@ -142,7 +204,56 @@ public class QuizBuilderController {
         reviewPane.setVisible(review != null); reviewPane.setManaged(review != null);
     }
 
-    // ---------- Quiz creation (lazy, mirrors create.blade.php) ----------
+    // ---------- Configure tab: explicit save (create or update) ----------
+
+    @FXML
+    void handleSaveConfiguration() {
+        if (quizId == null) {
+            ensureQuizCreated(() -> showAlert("Quiz configuration saved."));
+        } else {
+            updateExistingQuiz();
+        }
+    }
+
+    private void updateExistingQuiz() {
+        if (categoryCombo.getValue() == null) {
+            showAlert("Please select a category before continuing.");
+            return;
+        }
+
+        try {
+            Category selected = categoryCombo.getValue();
+
+            var payload = mapper.createObjectNode();
+            payload.put("title", titleField.getText().isBlank() ? "Untitled Quiz" : titleField.getText());
+            payload.put("description", descField.getText());
+            payload.put("category_id", selected.getCategoryId());
+            payload.put("start_time", startTimeField.getText().isBlank() ? null : startTimeField.getText());
+            payload.put("duration_minutes", parseIntOrDefault(timeLimitField.getText(), 60));
+            payload.put("total_marks", parseIntOrDefault(totalMarksField.getText(), 100));
+            payload.put("passing_score", parseIntOrDefault(passingScoreField.getText(), 70));
+            payload.put("shuffle_questions", shuffleCheckBox.isSelected());
+
+            HttpClient client = HttpClient.newHttpClient();
+            var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + quizId)
+                    .PUT(java.net.http.HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(payload)))
+                    .build();
+
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
+                    Platform.runLater(() -> {
+                        if (response.statusCode() == 200) {
+                            showAlert("Quiz configuration updated.");
+                        } else {
+                            showAlert("Could not update quiz (status " + response.statusCode() + ")");
+                        }
+                    })
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    // ---------- Quiz creation (lazy, for brand-new quizzes only) ----------
 
     private void ensureQuizCreated(Runnable onDone) {
         if (quizId != null) { onDone.run(); return; }
@@ -385,75 +496,75 @@ public class QuizBuilderController {
     }
 
     private void publishQuiz(String originalButtonText) {
-    try {
-        HttpClient client = HttpClient.newHttpClient();
-        var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + quizId + "/publish")
-                .POST(java.net.http.HttpRequest.BodyPublishers.noBody())
-                .build();
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + quizId + "/publish")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.noBody())
+                    .build();
 
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
-                Platform.runLater(() -> {
-                    finishButton.setDisable(false);
-                    finishButton.setText(originalButtonText);
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
+                    Platform.runLater(() -> {
+                        finishButton.setDisable(false);
+                        finishButton.setText(originalButtonText);
 
-                    if (response.statusCode() == 200) {
-                        promptForAnnouncement();
-                    } else {
-                        try {
-                            JsonNode body = mapper.readTree(response.body());
-                            showAlert(body.has("message") ? body.get("message").asText() : "Could not publish quiz.");
-                        } catch (Exception ex) {
-                            showAlert("Could not publish quiz.");
+                        if (response.statusCode() == 200) {
+                            promptForAnnouncement();
+                        } else {
+                            try {
+                                JsonNode body = mapper.readTree(response.body());
+                                showAlert(body.has("message") ? body.get("message").asText() : "Could not publish quiz.");
+                            } catch (Exception ex) {
+                                showAlert("Could not publish quiz.");
+                            }
                         }
-                    }
-                })
-        );
-    } catch (Exception ex) {
-        ex.printStackTrace();
-    }
-}
-
-private void promptForAnnouncement() {
-    String quizTitle = titleField.getText().isBlank() ? "Untitled Quiz" : titleField.getText();
-    String defaultMessage = "A new quiz \"" + quizTitle + "\" has been posted. Duration: "
-            + timeLimitField.getText() + " minutes.";
-
-    TextInputDialog dialog = new TextInputDialog(defaultMessage);
-    dialog.setTitle("Publish Announcement");
-    dialog.setHeaderText("Quiz \"" + quizTitle + "\" is published! Write an announcement for your students:");
-    dialog.setContentText("Message:");
-
-    dialog.showAndWait().ifPresent(message -> {
-        if (!message.isBlank()) {
-            postAnnouncement(message.trim());
-        } else {
-            LecturerDashboardController.navigateTo("lecturer_overview_view.fxml");
+                    })
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-    });
-}
-
-private void postAnnouncement(String message) {
-    try {
-        var payload = mapper.createObjectNode();
-        payload.put("content", message);
-
-        HttpClient client = HttpClient.newHttpClient();
-        var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + quizId + "/announce")
-                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(payload)))
-                .build();
-
-        client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
-                Platform.runLater(() -> {
-                    if (response.statusCode() != 201) {
-                        showAlert("Quiz published, but the announcement could not be posted.");
-                    }
-                    LecturerDashboardController.navigateTo("lecturer_overview_view.fxml");
-                })
-        );
-    } catch (Exception ex) {
-        ex.printStackTrace();
     }
-}
+
+    private void promptForAnnouncement() {
+        String quizTitle = titleField.getText().isBlank() ? "Untitled Quiz" : titleField.getText();
+        String defaultMessage = "A new quiz \"" + quizTitle + "\" has been posted. Duration: "
+                + timeLimitField.getText() + " minutes.";
+
+        TextInputDialog dialog = new TextInputDialog(defaultMessage);
+        dialog.setTitle("Publish Announcement");
+        dialog.setHeaderText("Quiz \"" + quizTitle + "\" is published! Write an announcement for your students:");
+        dialog.setContentText("Message:");
+
+        dialog.showAndWait().ifPresent(message -> {
+            if (!message.isBlank()) {
+                postAnnouncement(message.trim());
+            } else {
+                LecturerDashboardController.navigateTo("lecturer_overview_view.fxml");
+            }
+        });
+    }
+
+    private void postAnnouncement(String message) {
+        try {
+            var payload = mapper.createObjectNode();
+            payload.put("content", message);
+
+            HttpClient client = HttpClient.newHttpClient();
+            var request = Session.authorizedRequestBuilder(BASE_URL + "/desktop/quizzes/" + quizId + "/announce")
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(payload)))
+                    .build();
+
+            client.sendAsync(request, HttpResponse.BodyHandlers.ofString()).thenAccept(response ->
+                    Platform.runLater(() -> {
+                        if (response.statusCode() != 201) {
+                            showAlert("Quiz published, but the announcement could not be posted.");
+                        }
+                        LecturerDashboardController.navigateTo("lecturer_overview_view.fxml");
+                    })
+            );
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
 
     // ---------- Helpers ----------
 

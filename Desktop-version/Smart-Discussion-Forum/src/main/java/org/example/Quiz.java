@@ -1,7 +1,10 @@
 package org.example;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Quiz {
@@ -23,7 +26,9 @@ public class Quiz {
     @JsonAlias({"submissionsCount", "submissions_count"})
     private Integer submissions_count;
 
-    
+    @JsonProperty("questions")
+    private List<Question> questions;
+
     public Long getId() { return id; }
     public String getTitle() { return title; }
     public String getDescription() { return description; }
@@ -37,4 +42,5 @@ public class Quiz {
     public Long getCreatedBy() { return created_by; }
     public Integer getQuestionsCount() { return questions_count; }
     public Integer getSubmissionsCount() { return submissions_count; }
+    public List<Question> getQuestions() { return questions; }
 }

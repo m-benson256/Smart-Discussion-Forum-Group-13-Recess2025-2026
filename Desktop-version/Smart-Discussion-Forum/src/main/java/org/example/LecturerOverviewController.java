@@ -2,9 +2,11 @@ package org.example;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpResponse;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import javafx.application.Platform;
@@ -21,10 +23,14 @@ public class LecturerOverviewController {
     @FXML private Label topicsLabel;
     @FXML private VBox quizListContainer;
 
-    private final ObjectMapper mapper = new ObjectMapper();
+   private final ObjectMapper mapper = new ObjectMapper()
+        .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY);
     private List<Quiz> allQuizzes = List.of();
     private String currentFilter = "all"; // all | scheduled | pastdue
 
+    private static final java.time.format.DateTimeFormatter DATE_FORMAT =
+        java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy", java.util.Locale.ENGLISH);
+    
     @FXML
 public void initialize() {
     welcomeLabelOverview.setText("Welcome Lecturer, " + Session.getUserName());
@@ -90,20 +96,25 @@ private void handleStatsResponse(HttpResponse<String> response) {
     @FXML void showPastDue(ActionEvent e) { currentFilter = "pastdue"; renderList(); }
 
     private void renderList() {
-        quizListContainer.getChildren().clear();
+    quizListContainer.getChildren().clear();
 
-        List<Quiz> filtered = allQuizzes.stream().filter(q -> {
-            if ("all".equals(currentFilter)) return true;
-            if (q.getStartTime() == null) return "all".equals(currentFilter);
-            LocalDateTime start = LocalDateTime.parse(q.getStartTime().replace(" ", "T"));
-            boolean isFuture = start.isAfter(LocalDateTime.now());
+    List<Quiz> filtered = allQuizzes.stream().filter(q -> {
+        if ("all".equals(currentFilter)) return true;
+        if (q.getStartTime() == null) return false;
+        try {
+            Instant start = Instant.parse(q.getStartTime());
+            boolean isFuture = start.isAfter(Instant.now());
             return "scheduled".equals(currentFilter) ? isFuture : !isFuture;
-        }).toList();
-
-        for (Quiz quiz : filtered) {
-            quizListContainer.getChildren().add(buildQuizCard(quiz));
+        } catch (Exception ex) {
+            System.out.println("PARSE FAILED for quiz '" + q.getTitle() + "' value='" + q.getStartTime() + "'");
+            return false;
         }
+    }).toList();
+
+    for (Quiz quiz : filtered) {
+        quizListContainer.getChildren().add(buildQuizCard(quiz));
     }
+}
 
     private VBox buildQuizCard(Quiz quiz) {
         VBox card = new VBox(4);
@@ -114,10 +125,21 @@ private void handleStatsResponse(HttpResponse<String> response) {
         title.getStyleClass().add("card-title");
         title.setStyle("-fx-font-size: 16px;");
 
-        String statusOrDate = "published".equals(quiz.getStatus())
-                ? (quiz.getStartTime() != null ? quiz.getStartTime() : "published")
-                : "Draft";
-
+        String statusOrDate;
+        if ("published".equals(quiz.getStatus())) {
+             if (quiz.getStartTime() != null) {
+                 try {
+                     Instant instant = Instant.parse(quiz.getStartTime());
+                     statusOrDate = DATE_FORMAT.withZone(java.time.ZoneId.systemDefault()).format(instant);
+                 } catch (Exception ex) {
+                      statusOrDate = "published";
+                 }
+            } else {
+                 statusOrDate = "published";
+             }
+        } else {
+             statusOrDate = "Draft";
+         }
         int questions = quiz.getQuestionsCount() == null ? 0 : quiz.getQuestionsCount();
         int minutes = quiz.getDurationMinutes() == null ? 0 : quiz.getDurationMinutes();
 

@@ -15,6 +15,7 @@ public class Session {
         Session.userRole = role;
     }
 
+
     public static Long getUserId() {   // NEW
         return userId;
     }

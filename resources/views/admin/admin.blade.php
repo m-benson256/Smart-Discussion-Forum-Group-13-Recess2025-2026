@@ -405,10 +405,7 @@
             <span>Warnings</span>
             <span class="badge-nav" id="warningCount">3</span>
         </button>
-        <button class="nav-item" data-page="settings">
-            <i class="fas fa-cog"></i>
-            <span>Settings</span>
-        </button>
+        
         <div class="nav-divider"></div>
         <button class="nav-item logout" data-page="logout">
             <i class="fas fa-sign-out-alt"></i>
@@ -498,7 +495,7 @@
         <div class="page-panel" id="page-groups">
             <div class="placeholder-content">
                 <h2><i class="fas fa-layer-group" style="color:#2563eb;"></i> Group Management</h2>
-                <p>View all groups created by students. Groups show member counts and activity.</p>
+                
                 <div class="actions">
                     <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
                         <input class="search-box" id="groupSearch" placeholder="Search groups..." oninput="filterGroups()">
@@ -519,10 +516,9 @@
         <div class="page-panel" id="page-warnings">
             <div class="placeholder-content">
                 <h2><i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Warning Management</h2>
-                <p>Track issued warnings (maximum 3 per user), manage escalation rules, and handle appeals.</p>
+                
                 <div class="actions">
                     <button class="btn btn-warning" onclick="openModal('warning')"><i class="fas fa-plus"></i> Issue Warning</button>
-                    <button class="btn"><i class="fas fa-history"></i> View History</button>
                 </div>
 
                 <div class="table-wrap">
@@ -534,58 +530,14 @@
                     </table>
                 </div>
 
-                <div style="margin-top:16px; background:#f8fafc; border-radius:12px; padding:16px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px;">
-                    <div>
-                        <label style="font-size:12px; font-weight:500;">Warning → Suspension</label>
-                        <select style="width:100%; padding:6px 12px; border-radius:8px; border:1px solid #d1d9e6;">
-                            <option>After 3 warnings</option>
-                            <option selected>After 5 warnings</option>
-                            <option>After 10 warnings</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:500;">Suspension Duration</label>
-                        <select style="width:100%; padding:6px 12px; border-radius:8px; border:1px solid #d1d9e6;">
-                            <option>7 days</option>
-                            <option selected>14 days</option>
-                            <option>30 days</option>
-                            <option>Permanent</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size:12px; font-weight:500;">Appeal Response Time</label>
-                        <select style="width:100%; padding:6px 12px; border-radius:8px; border:1px solid #d1d9e6;">
-                            <option>24 hours</option>
-                            <option selected>48 hours</option>
-                            <option>72 hours</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-primary" style="margin-top:12px;"><i class="fas fa-save"></i> Save Rules</button>
+                
             </div>
         </div>
 
         <!-- ===== SETTINGS ===== -->
         <div class="page-panel" id="page-settings">
             <div class="placeholder-content">
-                <h2><i class="fas fa-cog" style="color:#2563eb;"></i> Platform Settings</h2>
-                <p>Configure general settings, security, content policies, and backups.</p>
-
-                <div class="settings-grid">
-                    <div class="settings-card">
-                        <h4>General Settings</h4>
-                        <label>Site Name</label>
-                        <input type="text" value="Smart Discussion Forum" id="siteName">
-                        <label>Theme Color</label>
-                        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
-                            <input type="color" id="themeColor" value="#2563eb" onchange="applyThemeColor()">
-                            <span id="colorPreview" class="color-preview" style="background:#2563eb;"></span>
-                        </div>
-                        <label>Default Language</label>
-                        <select><option>English</option><option>French</option><option>Spanish</option></select>
-                        <button class="btn btn-primary" onclick="saveSettings()"><i class="fas fa-save"></i> Save</button>
-                    </div>
-                </div>
+                <!-- Platform settings content removed -->
             </div>
         </div>
 

@@ -11,10 +11,6 @@
       fx:controller="org.example.LecturerOverviewController"
       spacing="20">
 
-    <!-- Search bar -->
-    <TextField fx:id="searchField" promptText="Search for quizzes, students, or reports... (press Enter)"
-               styleClass="text-input"/>
-
     <!-- Welcome card + stat pills -->
     <HBox spacing="16" alignment="CENTER_LEFT">
         <VBox styleClass="card" spacing="6" HBox.hgrow="ALWAYS">

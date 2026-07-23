@@ -21,6 +21,7 @@ use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
 use App\Http\Controllers\SearchController;
 
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,7 +42,7 @@ Route::post('/desktop/login', function (LoginRequest $request) {
             'name' => $user->name,
              'id' => $user->id,
             'email' => $user->email,
-            'role' => str_ends_with($user->email, '@lecturers.ed') ? 'lecturer' : 'student'
+            'role' => $user->role,
         ]
     ]);
 });
@@ -112,6 +113,11 @@ Route::post('/desktop/register', function (Request $request) {
 ], 201);
 });
 
+
+Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
+    // e.g. Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    // e.g. Route::get('/reports', [AdminController::class, 'reports']);
+});
 
 /*
 |--------------------------------------------------------------------------
@@ -194,6 +200,7 @@ Route::post('/desktop/quizzes/{quiz}/publish', [QuizController::class, 'publish'
 Route::post('/desktop/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
 Route::put('/desktop/questions/{question}', [QuizQuestionController::class, 'update']);
 Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, 'destroy']);
+Route::get('/desktop/lecturer/reports', [QuizAttemptController::class, 'report']);
 
 Route::get('/desktop/categories', [CategoryController::class, 'index']);
 
@@ -207,6 +214,7 @@ Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class,
 Route::get('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
 Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
