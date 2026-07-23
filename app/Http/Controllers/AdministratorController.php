@@ -93,6 +93,10 @@ public function storeWarning(Request $request)
         'issued_at' => now(),
         'status' => 'active',
     ]);
+    \App\Models\Announcements::create([
+        'recipient_id' => $request->user_id,
+        'content' => "You have received warning #{$request->warning_number} for the following reason: {$request->reason}. Please take necessary action to avoid further warnings.",
+    ]);
 
     return response()->json(['success' => true, 'warning' => $warnings]);
 }

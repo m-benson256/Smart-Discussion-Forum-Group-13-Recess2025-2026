@@ -13,6 +13,13 @@ use App\Http\Controllers\QuizAttemptController;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Controllers\RecommendationController;
+use App\Http\Controllers\QuizController;
+use App\Http\Controllers\QuizQuestionController;
+use App\Http\Controllers\LecturerController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\AnnouncementsController;
+use App\Http\Controllers\ParticipationController;
+use App\Http\Controllers\SearchController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,7 +40,7 @@ Route::post('/desktop/login', function (LoginRequest $request) {
             'name' => $user->name,
              'id' => $user->id,
             'email' => $user->email,
-            'role' => str_ends_with($user->email, '@lecturers.ed') ? 'lecturer' : 'student'
+            'role' => $user->role,
         ]
     ]);
 });
@@ -105,6 +112,11 @@ Route::post('/desktop/register', function (Request $request) {
 });
 
 
+Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
+    // e.g. Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    // e.g. Route::get('/reports', [AdminController::class, 'reports']);
+});
+
 /*
 |--------------------------------------------------------------------------
 | 2. Protected API Routes (JavaFX Must Provide the Sanctum Bearer Token)
@@ -175,9 +187,36 @@ Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'togg
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
 
+<<<<<<< HEAD
 Route::post('/desktop/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
 Route::post('/desktop/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
 
+=======
+// Quizzes (Lecturer Side)
+Route::get('/desktop/lecturer/dashboard-stats', [LecturerController::class, 'dashboardStats']);
+Route::get('/desktop/lecturer/quizzes', [QuizController::class, 'index']);
+Route::post('/desktop/quizzes', [QuizController::class, 'store']);
+Route::get('/desktop/quizzes/{quiz}', [QuizController::class, 'show']);
+Route::put('/desktop/quizzes/{quiz}', [QuizController::class, 'update']);
+Route::post('/desktop/quizzes/{quiz}/publish', [QuizController::class, 'publish']);
+
+Route::post('/desktop/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
+Route::put('/desktop/questions/{question}', [QuizQuestionController::class, 'update']);
+Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, 'destroy']);
+Route::get('/desktop/lecturer/reports', [QuizAttemptController::class, 'report']);
+
+Route::get('/desktop/categories', [CategoryController::class, 'index']);
+
+//Announcements
+Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
+Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
+
+//Participation
+Route::get('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
+Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
+Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
+>>>>>>> main
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
