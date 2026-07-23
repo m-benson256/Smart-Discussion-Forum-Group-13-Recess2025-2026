@@ -108,6 +108,18 @@ public class QuizzesController {
                     String category = quiz.has("description") && !quiz.get("description").isNull()
                         ? quiz.get("description").asText() : "";
 
+                    boolean actuallySubmitted = (quiz.has("submitted_at") && !quiz.get("submitted_at").isNull())
+                        || (quiz.has("score") && !quiz.get("score").isNull());
+
+                    if (actuallySubmitted) {
+                        String submittedDate = formatDate(quiz.has("submitted_at") ? quiz.get("submitted_at").asText() : null, "—");
+                        String score = (quiz.has("score") && !quiz.get("score").isNull())
+                            ? quiz.get("score").asText() + "/" + quiz.get("total_marks").asText()
+                            : "—";
+                        submittedRows.add(new QuizRow(title, category, submittedDate, score));
+                        continue; // NEW — skip the status switch below entirely once we know it's submitted
+                    }
+
                     switch (status) {
                         case "incoming":
                             incomingContainer.getChildren().add(buildIncomingCard(quiz, title, category));
@@ -116,14 +128,17 @@ public class QuizzesController {
                             String due = formatDate(quiz.has("start_time") ? quiz.get("start_time").asText() : null, "Not scheduled");
                             missedRows.add(new QuizRow(title, category, due, null));
                             break;
-                        case "submitted":
-                            String submittedDate = formatDate(quiz.has("submitted_at") ? quiz.get("submitted_at").asText() : null, "—");
-                            String score = (quiz.has("score") && !quiz.get("score").isNull())
-                                ? quiz.get("score").asText() + "/" + quiz.get("total_marks").asText()
-                                : "—";
-                            submittedRows.add(new QuizRow(title, category, submittedDate, score));
-                            break;
+
                     }
+                }
+
+                if (incomingContainer.getChildren().isEmpty()) {
+                    Label empty = new Label("No incoming quizzes.");
+                    empty.getStyleClass().add("muted-label");
+                    VBox emptyBox = new VBox(empty);
+                    emptyBox.getStyleClass().add("empty-state");
+                    emptyBox.setPrefWidth(400);
+                    incomingContainer.getChildren().add(emptyBox);
                 }
 
 
@@ -144,7 +159,7 @@ public class QuizzesController {
         card.setPrefWidth(260);
 
         Label categoryLabel = new Label(category);
-        categoryLabel.getStyleClass().add("muted-label");
+        categoryLabel.getStyleClass().add("category-badge");
 
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("card-title");

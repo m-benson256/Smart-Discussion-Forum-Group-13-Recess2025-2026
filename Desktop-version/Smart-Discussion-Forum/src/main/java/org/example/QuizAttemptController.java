@@ -43,7 +43,7 @@ public class QuizAttemptController {
     private final Map<Long, String> answers = new LinkedHashMap<>();
 
     private Timeline timerTimeline;
-    private int remainingSeconds;
+    private OffsetDateTime deadlineTime;   // NEW: the actual absolute deadline, recomputed each tick
     private boolean quizSubmitted = false;
     private boolean autoSubmitTriggered = false;
 
@@ -96,14 +96,14 @@ public class QuizAttemptController {
                 titleLabel.setText(quizData.get("title").asText());
 
                 if (body.hasNonNull("deadline")) {
-                    OffsetDateTime deadline = OffsetDateTime.parse(body.get("deadline").asText());
-                    long secondsLeft = java.time.Duration.between(OffsetDateTime.now(), deadline).getSeconds();
-                    remainingSeconds = (int) Math.max(secondsLeft, 0);
+                    deadlineTime = OffsetDateTime.parse(body.get("deadline").asText());
                 } else {
-                    remainingSeconds = quizData.get("duration_minutes").asInt() * 60;
+                    // NEW: fallback deadline anchored to the moment we loaded, not a plain countdown int
+                    deadlineTime = OffsetDateTime.now().plusMinutes(quizData.get("duration_minutes").asInt());
                 }
 
-                if (remainingSeconds <= 0) {
+                long secondsLeft = java.time.Duration.between(OffsetDateTime.now(), deadlineTime).getSeconds();
+                if (secondsLeft <= 0) {
                     autoSubmitTriggered = true;
                     submitQuizInternal();
                     return;
@@ -119,35 +119,50 @@ public class QuizAttemptController {
         });
     }
 
+    // ------------------------------------------------------------------
+    // Timer — NEW: recomputes remaining time from the real deadline every
+    // tick (instead of decrementing a counter), so there's no drift, and
+    // it submits IMMEDIATELY at zero instead of waiting on a popup first.
+    // ------------------------------------------------------------------
+
     private void startTimer() {
         updateTimerDisplay();
         timerTimeline = new Timeline(new KeyFrame(Duration.seconds(1), e -> {
-            remainingSeconds--;
+            long secondsLeft = java.time.Duration.between(OffsetDateTime.now(), deadlineTime).getSeconds();
 
-            if (remainingSeconds <= 0) {
-                remainingSeconds = 0;
-                updateTimerDisplay();
+            if (secondsLeft <= 0) {
+                timerBadge.getStyleClass().add("quiz-timer-badge-warning");
+                timerLabel.setText("Time Remaining: 0:00");
                 timerTimeline.stop();
                 autoSubmitTriggered = true;
-                autoSubmitQuiz();
+                submitQuizInternal();   // submit immediately, no blocking popup first
                 return;
             }
-            updateTimerDisplay();
+            updateTimerDisplay((int) secondsLeft);
         }));
         timerTimeline.setCycleCount(Timeline.INDEFINITE);
         timerTimeline.play();
     }
 
     private void updateTimerDisplay() {
-        int minutes = remainingSeconds / 60;
-        int seconds = remainingSeconds % 60;
+        long secondsLeft = java.time.Duration.between(OffsetDateTime.now(), deadlineTime).getSeconds();
+        updateTimerDisplay((int) Math.max(secondsLeft, 0));
+    }
+
+    private void updateTimerDisplay(int secondsLeft) {
+        int minutes = secondsLeft / 60;
+        int seconds = secondsLeft % 60;
         timerLabel.setText(String.format("Time Remaining: %d:%02d", minutes, seconds));
 
         timerBadge.getStyleClass().remove("quiz-timer-badge-warning");
-        if (remainingSeconds <= 60) {
+        if (secondsLeft <= 60) {
             timerBadge.getStyleClass().add("quiz-timer-badge-warning");
         }
     }
+
+    // ------------------------------------------------------------------
+    // Rendering questions
+    // ------------------------------------------------------------------
 
     private void renderQuestions() {
         questionsContainer.getChildren().clear();
@@ -268,16 +283,12 @@ public class QuizAttemptController {
         }
     }
 
+    // ------------------------------------------------------------------
+    // Submission
+    // ------------------------------------------------------------------
+
     @FXML
     void handleSubmitQuiz(ActionEvent event) {
-        submitQuizInternal();
-    }
-
-    private void autoSubmitQuiz() {
-        if (quizSubmitted) return;
-        Alert alert = new Alert(Alert.AlertType.INFORMATION,
-            "Time's up! Your quiz is being submitted automatically.", ButtonType.OK);
-        alert.showAndWait();
         submitQuizInternal();
     }
 
