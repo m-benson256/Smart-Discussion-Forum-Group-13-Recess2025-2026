@@ -16,6 +16,11 @@ class GroupMember extends Model
     'blacklisted_until',
 ];
 
+protected $casts = [
+    'blacklisted_until' => 'datetime',
+    'last_warned_at' => 'datetime',
+];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
