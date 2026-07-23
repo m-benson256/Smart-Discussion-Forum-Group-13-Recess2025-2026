@@ -33,7 +33,7 @@ Route::post('/desktop/login', function (LoginRequest $request) {
             'name' => $user->name,
              'id' => $user->id,
             'email' => $user->email,
-            'role' => str_ends_with($user->email, '@lecturers.ed') ? 'lecturer' : 'student'
+            'role' => $user->role,
         ]
     ]);
 });
@@ -104,6 +104,11 @@ Route::post('/desktop/register', function (Request $request) {
 ], 201);
 });
 
+
+Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
+    // e.g. Route::get('/dashboard', [AdminController::class, 'dashboard']);
+    // e.g. Route::get('/reports', [AdminController::class, 'reports']);
+});
 
 /*
 |--------------------------------------------------------------------------

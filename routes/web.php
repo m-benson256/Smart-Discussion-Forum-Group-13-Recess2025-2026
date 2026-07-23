@@ -161,6 +161,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Student Dashboard
     Route::get('/student/dashboard', [StudentController::class, 'index'])->name('student.dashboard');
+    Route::get('/student/dashboard', [StudentController::class, 'index'])
+    ->middleware(['auth', 'blacklisted'])
+    ->name('student.dashboard');
 
     // Lecturer Dashboard
     Route::get('/lecturer/dashboard', [LecturerController::class, 'index'])->name('lecturer.dashboard');

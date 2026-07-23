@@ -13,10 +13,10 @@ class CheckInactiveMembers extends Command
     protected $signature = 'members:check-inactivity';
     protected $description = 'Warn and blacklist group members who have not communicated within the configured window';
 
-    protected int $hoursForFirstWarning = 48;
-    protected int $hoursForSecondWarning = 48;
-    protected int $hoursToComplyAfterSecondWarning = 24;
-    protected int $blacklistDurationDays = 7;
+    protected int $hoursForFirstWarning = 1;
+    protected int $hoursForSecondWarning = 1;
+    protected int $hoursToComplyAfterSecondWarning = 1;
+    protected int $blacklistDurationDays = 1;
 
     public function handle(): void
     {
@@ -40,17 +40,17 @@ class CheckInactiveMembers extends Command
             }
 
             $lastActive = $lastMessageAt ?? $member->created_at;
-            $hoursInactive = now()->diffInHours($lastActive);
+            $hoursInactive = now()->diffInHours($lastActive, true);
 
             if ($member->inactivity_warning_count === 0 && $hoursInactive >= $this->hoursForFirstWarning) {
                 $this->issueWarning($member, 1);
             } elseif ($member->inactivity_warning_count === 1
                 && $member->last_warned_at
-                && now()->diffInHours($member->last_warned_at) >= $this->hoursForSecondWarning) {
+                && now()->diffInHours($member->last_warned_at, true) >= $this->hoursForSecondWarning) {
                 $this->issueWarning($member, 2);
             } elseif ($member->inactivity_warning_count >= 2
                 && $member->last_warned_at
-                && now()->diffInHours($member->last_warned_at) >= $this->hoursToComplyAfterSecondWarning) {
+                && now()->diffInHours($member->last_warned_at, true) >= $this->hoursToComplyAfterSecondWarning) {
                 $this->blacklist($member);
             }
         }
@@ -67,7 +67,7 @@ class CheckInactiveMembers extends Command
         ]);
 
         Announcements::create([
-            'user_id' => $member->user_id,
+            'recipient_id' => $member->user_id,
             'content' => "Warning #{$warningNumber}: You have received warning #{$warningNumber} for inactivity in your group. Please participate to avoid suspension.",
         ]);
 
@@ -87,7 +87,7 @@ class CheckInactiveMembers extends Command
         ]);
 
         Announcements::create([
-            'user_id' => $member->user_id,
+            'recipient_id' => $member->user_id,
             'content' => "Blacklisted: You have been blacklisted from your group for {$this->blacklistDurationDays} days due to inactivity.",
         ]);
 
