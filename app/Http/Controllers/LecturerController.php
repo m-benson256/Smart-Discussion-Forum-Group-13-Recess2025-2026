@@ -91,4 +91,14 @@ class LecturerController extends Controller
     {
         //
     }
+    public function dashboardStats()
+{
+    $totalStudents = User::where('role', 'student')->count();
+    $activeDiscussions = Topic::count();
+
+    return response()->json([
+        'total_students' => $totalStudents,
+        'topics' => $activeDiscussions,
+    ]);
+}
 }

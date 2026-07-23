@@ -788,18 +788,18 @@ async function loadQuizManagement() {
                 : 'No due date set';
 
             return `
-                <div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
-                    <div class="flex justify-between mb-4">
-                        <span class="px-3 py-1 ${badgeClass} text-xs font-bold rounded-full">${badgeText}</span>
-                    </div>
-                    <h4 class="font-bold text-lg mb-2">${q.title}</h4>
-                    <p class="text-sm text-gray-500 mb-4">Due ${dueDate} &bull; ${q.total_marks} Marks</p>
-                    <div class="flex justify-between items-center text-sm font-medium">
-                        <span class="${q.submissions_count > 0 ? 'text-brand' : 'text-gray-400'}">${q.submissions_count} Submission${q.submissions_count === 1 ? '' : 's'}</span>
-                        <a href="/lecturer/quizzes/${q.id}/edit" class="text-brand hover:underline">Edit Quiz</a>
-                    </div>
-                </div>
-            `;
+    <div class="bg-white p-6 rounded-[1.5rem] border border-gray-100 shadow-sm">
+        <div class="flex justify-between mb-4">
+            <span class="px-3 py-1 ${badgeClass} text-xs font-bold rounded-full">${badgeText}</span>
+        </div>
+        <h4 class="font-bold text-lg mb-2">${q.title}</h4>
+        <p class="text-sm text-gray-500 mb-4">Due ${dueDate} &bull; ${q.total_marks} Marks</p>
+        <div class="flex justify-between items-center text-sm font-medium">
+            <span class="${q.submissions_count > 0 ? 'text-brand' : 'text-gray-400'}">${q.submissions_count} Submission${q.submissions_count === 1 ? '' : 's'}</span>
+            <a href="/lecturer/quizzes/${q.id}/edit" class="text-brand hover:underline">Edit Quiz</a>
+        </div>
+    </div>
+`;
         }).join('');
     } catch (err) {
         console.error(err);

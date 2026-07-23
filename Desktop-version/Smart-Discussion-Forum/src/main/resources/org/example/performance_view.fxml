@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="performance — coming soon"/>
-</StackPane>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<ScrollPane fitToWidth="true" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.PerformanceController" styleClass="edge-to-edge">
+    <VBox spacing="20">
+        <padding>
+            <Insets top="4" right="4" bottom="20" left="4"/>
+        </padding>
+
+        <Label text="Performance Overview" styleClass="title-label"/>
+
+        <HBox fx:id="statsRow" spacing="16"/>
+
+        <Label text="Quiz Score History" styleClass="section-title">
+            <VBox.margin><Insets top="12"/></VBox.margin>
+        </Label>
+        <VBox fx:id="historyContainer" spacing="0" styleClass="card"/>
+    </VBox>
+</ScrollPane>
