@@ -24,9 +24,19 @@ import java.time.format.DateTimeFormatter;
 import javafx.scene.layout.StackPane;
 import javafx.scene.Cursor;
 
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+
 import javafx.scene.control.Separator;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Popup;
+
+import javafx.scene.layout.Region;
+import javafx.scene.text.TextFlow;
+
+import javafx.stage.FileChooser;
+import java.io.File;
+import java.nio.file.Path;
 
 import javafx.scene.Node;
 import javafx.scene.image.ImageView; // not strictly needed here since EmojiImages handles it, but harmless if left out
@@ -44,11 +54,24 @@ public class TopicChatController implements PollingView {
     private Long topicId;
     private String lastMessagesJson;
 
+    @FXML private Button attachButton; // NEW
+    @FXML private Button emojiButton;  // NEW
+
+    private static final String[] QUICK_EMOJIS = { // NEW — shared list, used by both popups below
+        "😀","😃","😄","😁","😆",
+        "😂","🤣","😊","😍","😘",
+        "🙂","😉","😎","🤔","😐",
+        "👍","❤️","😢","😮","😡"
+    };
+
     @FXML
     public void initialize() {
         topicId = AppState.getSelectedTopicId();
         String title = AppState.getSelectedTopicTitle();
         topicTitleLabel.setText(title != null ? title : "Discussion");
+
+        attachButton.setGraphic(EmojiImages.buildNode("📎", 18)); // NEW
+        emojiButton.setGraphic(EmojiImages.buildNode("😊", 18));  // NEW
 
         fetchMessages();
 
@@ -100,6 +123,8 @@ public class TopicChatController implements PollingView {
 
                 JsonNode messages = mapper.readTree(body);
 
+                System.out.println(body);
+
                 double currentVvalue = scrollPane.getVvalue();
                 boolean wasNearBottom = currentVvalue >= 0.98;
 
@@ -141,10 +166,22 @@ public class TopicChatController implements PollingView {
         timeLabel.getStyleClass().add("message-time");
         HBox headerRow = new HBox(6, nameLabel, timeLabel);
 
-        Label bubble = new Label(text);
-        bubble.setWrapText(true);
-        bubble.setPadding(new Insets(10, 14, 10, 14));
-        bubble.getStyleClass().add(isMe ? "bubble-me" : "bubble-them");
+        boolean hasAttachment = msg.has("attachment_url") && !msg.get("attachment_url").isNull();
+
+        VBox contentBox = new VBox(6);
+        contentBox.getStyleClass().add(isMe ? "bubble-me" : "bubble-them");
+        contentBox.setPadding(new Insets(10, 14, 10, 14));
+        contentBox.setMaxWidth(400);
+
+        if (!text.isEmpty()) {
+            TextFlow textFlow = EmojiImages.buildRichText(text, 16);
+            textFlow.setMaxWidth(370);
+            contentBox.getChildren().add(textFlow);
+        }
+
+        if (hasAttachment) {
+            contentBox.getChildren().add(buildAttachmentNode(msg, isMe));
+        }
 
         // CHANGED: like control is now a Label, not a Button
         int likeCount = msg.has("liked_by_count") ? msg.get("liked_by_count").asInt() : 0;
@@ -182,12 +219,17 @@ public class TopicChatController implements PollingView {
         HBox actionsRow = new HBox(10, likeControl, reactionsRow);
         actionsRow.setAlignment(Pos.CENTER_LEFT);
         if (myFlag) {
-            Label flagIcon = new Label("⚠️");
+            Node flagIcon = EmojiImages.buildNode("⚠️", 14); // CHANGED — was a plain Label
+            Label flagText = new Label("flagged");
+            flagText.getStyleClass().add("muted-label");
 
-            actionsRow.getChildren().add(flagIcon);
+            HBox flagBadge = new HBox(4, flagIcon, flagText);
+            flagBadge.setAlignment(Pos.CENTER_LEFT);
+
+            actionsRow.getChildren().add(flagBadge);
         }
 
-        VBox column = new VBox(4, headerRow, bubble, actionsRow);
+        VBox column = new VBox(4, headerRow, contentBox, actionsRow);
         column.setMaxWidth(420);
 
         // NEW: mirror alignment onto the header/actions rows too, so text hugs the right edge for my own messages
@@ -208,13 +250,13 @@ public class TopicChatController implements PollingView {
 
 
 
-        bubble.setOnContextMenuRequested(e -> showReactionPopup(bubble, messageId, myFlag, e.getScreenX(), e.getScreenY()));
+        contentBox.setOnContextMenuRequested(e -> showReactionPopup(contentBox, messageId, myFlag, e.getScreenX(), e.getScreenY()));
 
         return new VBox(row);
     }
 
     // NEW: replaces the old ContextMenu — gives a proper grid layout for quick emoji, like the web version
-    private void showReactionPopup(Label bubble, long messageId, boolean myFlag, double screenX, double screenY) {
+     private void showReactionPopup(Region bubble, long messageId, boolean myFlag, double screenX, double screenY) {
         Popup popup = new Popup();
         popup.setAutoHide(true);
 
@@ -225,26 +267,10 @@ public class TopicChatController implements PollingView {
         Label header = new Label("QUICK EMOJI");
         header.getStyleClass().add("emoji-popup-header");
 
-        GridPane grid = new GridPane();
-        grid.setHgap(6);
-        grid.setVgap(6);
-
-        String[] emojis = { "😀","😃","😄","😁","😆",
-            "😂","🤣","😊","😍","😘",
-            "🙂","😉","😎","🤔","😐",
-            "👍","❤️","😢","😮","😡" };
-        int columns = 5;
-        for (int i = 0; i < emojis.length; i++) {
-            String emoji = emojis[i];
-            Node emojiNode = EmojiImages.buildNode(emoji, 22);
-            StackPane cell = new StackPane(emojiNode);
-            cell.getStyleClass().add("emoji-option");
-            cell.setOnMouseClicked(e -> {
-                toggleReaction(messageId, emoji);
-                popup.hide();
-            });
-            grid.add(cell, i % columns, i / columns);
-        }
+        GridPane grid = buildEmojiGrid(emoji -> {
+            toggleReaction(messageId, emoji);
+            popup.hide();
+        });
 
         Separator separator = new Separator();
 
@@ -264,6 +290,55 @@ public class TopicChatController implements PollingView {
         container.getChildren().addAll(header, grid, separator, flagOption);
         popup.getContent().add(container);
         popup.show(bubble, screenX, screenY);
+    }
+
+    // NEW: shared by the reaction popup and the input-bar emoji picker
+    private GridPane buildEmojiGrid(java.util.function.Consumer<String> onPick) {
+        GridPane grid = new GridPane();
+        grid.setHgap(6);
+        grid.setVgap(6);
+        int columns = 5;
+        for (int i = 0; i < QUICK_EMOJIS.length; i++) {
+            String emoji = QUICK_EMOJIS[i];
+            Node emojiNode = EmojiImages.buildNode(emoji, 22);
+            StackPane cell = new StackPane(emojiNode);
+            cell.getStyleClass().add("emoji-option");
+            cell.setOnMouseClicked(e -> onPick.accept(emoji));
+            grid.add(cell, i % columns, i / columns);
+        }
+        return grid;
+    }
+
+    @FXML
+    void handleEmojiButton(ActionEvent event) {
+        Popup popup = new Popup();
+        popup.setAutoHide(true);
+
+        VBox container = new VBox(8);
+        container.setPadding(new Insets(12));
+        container.getStyleClass().add("emoji-popup");
+
+        Label header = new Label("QUICK EMOJI");
+        header.getStyleClass().add("emoji-popup-header");
+
+        GridPane grid = buildEmojiGrid(emoji -> {
+            insertEmojiIntoInput(emoji);
+            popup.hide();
+        });
+
+        container.getChildren().addAll(header, grid);
+        popup.getContent().add(container);
+
+        var bounds = emojiButton.localToScreen(emojiButton.getBoundsInLocal());
+        popup.show(emojiButton, bounds.getMinX(), bounds.getMinY() - 210); // shows above the input bar, not below
+    }
+
+    private void insertEmojiIntoInput(String emoji) {
+        int caret = messageInput.getCaretPosition();
+        String text = messageInput.getText();
+        messageInput.setText(text.substring(0, caret) + emoji + text.substring(caret));
+        messageInput.positionCaret(caret + emoji.length());
+        messageInput.requestFocus();
     }
 
     // NEW
@@ -344,10 +419,89 @@ public class TopicChatController implements PollingView {
     }
 
     @FXML
+    void handleAttach(ActionEvent event) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select a file to send");
+        File file = fileChooser.showOpenDialog(attachButton.getScene().getWindow());
+        if (file == null) return;
+
+        uploadAttachment(file.toPath());
+    }
+
+    private void uploadAttachment(Path filePath) {
+        if (topicId == null) return;
+
+        try {
+            MultipartBodyBuilder multipart = new MultipartBodyBuilder();
+            multipart.addFile("attachment", filePath);
+
+            HttpRequest request = Session.authorizedRequestBuilder(
+                    "http://127.0.0.1:8000/api/desktop/topics/" + topicId + "/messages")
+                .setHeader("Content-Type", "multipart/form-data; boundary=" + multipart.getBoundary()) // CHANGED — was .header(...)
+                .POST(multipart.build())
+                .build();
+
+            java.net.http.HttpClient.newHttpClient()
+                .sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenAccept(response -> Platform.runLater(this::fetchMessages));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+    @FXML
     void handleBack(ActionEvent event) {
         stopPolling();
         String returnView = AppState.getReturnView();
         StudentDashboardController.navigateTo(returnView != null ? returnView : "discussions_view.fxml");
+    }
+
+
+    private Node buildAttachmentNode(JsonNode msg, boolean isMe) {
+        String url = resolveAttachmentUrl(msg.get("attachment_url").asText());
+        String name = msg.has("attachment_name") && !msg.get("attachment_name").isNull()
+            ? msg.get("attachment_name").asText() : "file";
+        String mime = msg.has("attachment_mime") && !msg.get("attachment_mime").isNull()
+            ? msg.get("attachment_mime").asText() : "";
+
+        if (mime.startsWith("image/")) {
+            ImageView preview = new ImageView(new Image(url, 220, 220, true, true, true));
+            preview.setPreserveRatio(true);
+            preview.setFitWidth(220);
+            preview.getStyleClass().add("attachment-preview");
+            preview.setCursor(Cursor.HAND);
+            preview.setOnMouseClicked(e -> openAttachment(url));
+            return preview;
+        }
+
+        Node icon = EmojiImages.buildNode("📄", 18);
+        Label nameLabel = new Label(name);
+        nameLabel.setWrapText(true);
+        nameLabel.getStyleClass().add(isMe ? "attachment-name-me" : "attachment-name-them");
+
+        HBox chip = new HBox(8, icon, nameLabel);
+        chip.setAlignment(Pos.CENTER_LEFT);
+        chip.getStyleClass().add("attachment-chip");
+        chip.setCursor(Cursor.HAND);
+        chip.setOnMouseClicked(e -> openAttachment(url));
+        return chip;
+    }
+
+    private String resolveAttachmentUrl(String raw) {
+        return raw.startsWith("http") ? raw : "http://127.0.0.1:8000" + raw;
+    }
+
+    // Opens images/PDFs/docs in whatever the user's OS has set as the default handler —
+// same idea as clicking a download link in a browser
+    private void openAttachment(String url) {
+        try {
+            java.awt.Desktop.getDesktop().browse(new java.net.URI(url));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

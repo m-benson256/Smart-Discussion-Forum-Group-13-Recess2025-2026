@@ -13,7 +13,7 @@
             fx:controller="org.example.TopicChatController">
 
     <top>
-        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar">
+        <HBox spacing="12" alignment="CENTER_LEFT" styleClass="top-bar"  maxWidth="Infinity">
             <padding>
                 <Insets top="12" right="24" bottom="12" left="24"/>
             </padding>
@@ -33,13 +33,18 @@
     </center>
 
     <bottom>
-        <HBox spacing="10" alignment="CENTER" styleClass="top-bar">
+        <HBox spacing="8" alignment="CENTER" styleClass="chat-input-bar">
             <padding>
-                <Insets top="12" right="24" bottom="12" left="24"/>
+                <Insets top="14" right="24" bottom="14" left="24"/>
             </padding>
+
+            <Button fx:id="attachButton" onAction="#handleAttach" styleClass="icon-button"/>
+            <Button fx:id="emojiButton" onAction="#handleEmojiButton" styleClass="icon-button"/>
+
             <TextField fx:id="messageInput" promptText="Type your message here..." HBox.hgrow="ALWAYS"
-                       onAction="#handleSend"/>
-            <Button text="Send" onAction="#handleSend" styleClass="button-primary"/>
+                       onAction="#handleSend" styleClass="chat-input-field"/>
+
+            <Button fx:id="sendButton" text="➤" onAction="#handleSend" styleClass="send-button-round"/>
         </HBox>
     </bottom>
 

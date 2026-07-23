@@ -75,23 +75,7 @@ $groups->each(function ($group) use ($request) {
     }
 
     // POST /groups/{group}/join — current user joins a group
-    public function join(Request $request, Group $group): JsonResponse
-    {
-        $alreadyMember = $group->members()
-            ->where('user_id', $request->user()->id)
-            ->exists();
-
-        if ($alreadyMember) {
-            return response()->json(['message' => 'Already a member'], 409);
-        }
-
-        $group->members()->attach($request->user()->id);
-
-        $group->loadCount('members');
-
-        return response()->json($group);
-    }
-
+   
 
   public function requestToJoin(Request $request, Group $group): JsonResponse
 {
@@ -125,14 +109,20 @@ $groups->each(function ($group) use ($request) {
 }
 
     // GET /groups/{group} — view a single group (used for group_details screen)
-    public function show(Request $request, Group $group): JsonResponse
-    {
-        $group->loadCount('members');
-        $group->load('creator:id,name');
-        $group->is_member = $group->members()->where('user_id', $request->user()->id)->exists();
+   public function show(Request $request, Group $group): JsonResponse
+{
+    $group->loadCount('members');
+    $group->load('creator:id,name');
 
-        return response()->json($group);
-    }
+    $userId = $request->user()->id;
+    $group->is_member = $group->members()->where('user_id', $userId)->exists();
+    $group->has_pending_request = $group->joinRequests()
+        ->where('user_id', $userId)
+        ->where('status', 'pending')
+        ->exists();
+
+    return response()->json($group);
+}
 
     // GET /groups/{group}/requests — list pending requests (admin only)
 public function pendingRequests(Request $request, Group $group): JsonResponse

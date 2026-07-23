@@ -19,6 +19,8 @@ use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
+use App\Http\Controllers\SearchController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -158,7 +160,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Groups
     Route::get('/desktop/groups', [GroupController::class, 'index']);
-    Route::post('/desktop/groups/{group}/join', [GroupController::class, 'join']);
+    Route::post('/desktop/groups/{group}/join', [GroupController::class, 'requestToJoin']);
     Route::get('/desktop/groups/{group}', [GroupController::class, 'show']);
     Route::post('/desktop/groups/{group}/leave', [GroupController::class, 'leave']);
 
@@ -195,6 +197,8 @@ Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, '
 
 Route::get('/desktop/categories', [CategoryController::class, 'index']);
 
+Route::get('/desktop/student/search', [SearchController::class, 'studentSearch']);
+
 //Announcements
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class, 'store']);
@@ -204,6 +208,7 @@ Route::get('/desktop/lecturer/participation/criteria', [ParticipationController:
 Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
 
+Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 });

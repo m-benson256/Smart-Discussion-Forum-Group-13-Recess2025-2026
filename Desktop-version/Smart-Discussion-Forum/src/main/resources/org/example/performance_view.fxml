@@ -17,6 +17,10 @@
 
         <HBox fx:id="statsRow" spacing="16"/>
 
+        <padding>
+            <Insets top="20" right="24" bottom="20" left="24"/>
+        </padding>
+
         <Label text="Quiz Score History" styleClass="section-title">
             <VBox.margin><Insets top="12"/></VBox.margin>
         </Label>
