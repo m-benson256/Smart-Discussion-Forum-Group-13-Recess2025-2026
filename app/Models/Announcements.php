@@ -9,7 +9,7 @@ class Announcements extends Model
 {
     protected $table = 'announcements'; // explicit, avoids any pluralization guessing issues
 
-    protected $fillable = ['user_id', 'quiz_id', 'content'];
+    protected $fillable = ['user_id', 'quiz_id', 'content','recipient_id'];
 
     public function quiz(): BelongsTo
     {

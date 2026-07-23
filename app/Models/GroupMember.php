@@ -8,9 +8,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class GroupMember extends Model
 {
     protected $fillable = [
-        'user_id',
-        'group_id',
-    ];
+    'user_id',
+    'group_id',
+    'inactivity_warning_count',
+    'last_warned_at',
+    'status',
+    'blacklisted_until',
+];
+
+protected $casts = [
+    'blacklisted_until' => 'datetime',
+    'last_warned_at' => 'datetime',
+];
 
     public function user(): BelongsTo
     {

@@ -36,12 +36,27 @@
     "kotlin-language-version-configured": "true"
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+<<<<<<< HEAD
     "git-widget-placeholder": "main",
+=======
+    "git-widget-placeholder": "feature/jemimah",
+>>>>>>> feature/jemimah
     "junie.onboarding.icon.badge.shown": "true",
     "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/USER/SmartDiscussionForumGroup13/Smart-Discussion-Forum-Group-13-Recess2025-2026/Desktop-version/Smart-Discussion-Forum",
     "to.speed.mode.migration.done": "true"
   }
 }]]></component>
+<<<<<<< HEAD
+=======
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
+  </component>
+>>>>>>> feature/jemimah
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="3078483e-5a79-41b6-8f1a-0b0900423c44" name="Changes" comment="" />
