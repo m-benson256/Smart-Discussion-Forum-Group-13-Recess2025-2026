@@ -19,10 +19,11 @@ public class TopicCardFactory {
         card.setPadding(new Insets(14));
         card.setCursor(Cursor.HAND);
 
-        String title = topic.get("title").asText();
-        String author = topic.has("user") && !topic.get("user").isNull()
+        String title = topic.hasNonNull("title") ? topic.get("title").asText() : "Untitled topic"; // CHANGED
+        String author = (topic.hasNonNull("user") && topic.get("user").hasNonNull("name"))          // CHANGED
             ? topic.get("user").get("name").asText() : "Unknown";
         int replies = topic.has("messages_count") ? topic.get("messages_count").asInt() : 0;
+
 
         Label titleLabel = new Label(title);
         titleLabel.getStyleClass().add("card-title");

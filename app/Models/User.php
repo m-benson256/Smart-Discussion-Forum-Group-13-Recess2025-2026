@@ -97,6 +97,11 @@ public function reactionsGiven()
     return $this->hasMany(MessageReaction::class);
 }
 
+public function groupMemberships()
+{
+    return $this->hasMany(GroupMember::class);
+}
+
 public function avatarUrl(): ?string
     {
         return $this->avatar_path

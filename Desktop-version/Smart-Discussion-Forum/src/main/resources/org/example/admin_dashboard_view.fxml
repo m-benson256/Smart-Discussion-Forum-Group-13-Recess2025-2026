@@ -1,7 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="admin Dashboard — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+            fx:controller="org.example.AdminDashboardController"
+            prefWidth="1100" prefHeight="750">
+
+    <left>
+        <VBox spacing="4" style="-fx-background-color: #0f172a; -fx-padding: 20 12 20 12;" prefWidth="220">
+            <Label text="Smart Discussion Forum" wrapText="true"
+                   style="-fx-text-fill: white; -fx-font-size: 15px; -fx-font-weight: bold; -fx-padding: 0 0 24 4;" />
+            <Button fx:id="navDashboard" text="Dashboard" maxWidth="Infinity" onAction="#showOverview" styleClass="admin-nav-item" />
+            <Button fx:id="navUsers" text="Users" maxWidth="Infinity" onAction="#showUsers" styleClass="admin-nav-item" />
+            <Button fx:id="navGroups" text="Groups" maxWidth="Infinity" onAction="#showGroups" styleClass="admin-nav-item" />
+            <Button fx:id="navWarnings" text="Warnings" maxWidth="Infinity" onAction="#showWarnings" styleClass="admin-nav-item" />
+            <VBox VBox.vgrow="ALWAYS" />
+            <Button text="Log Out" maxWidth="Infinity" onAction="#handleLogout"
+                    style="-fx-background-color: transparent; -fx-text-fill: #f87171; -fx-alignment: baseline-left; -fx-padding: 10 12;" />
+        </VBox>
+    </left>
+
+    <center>
+        <StackPane fx:id="contentArea">
+            <padding>
+                <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
+        </StackPane>
+    </center>
+</BorderPane>

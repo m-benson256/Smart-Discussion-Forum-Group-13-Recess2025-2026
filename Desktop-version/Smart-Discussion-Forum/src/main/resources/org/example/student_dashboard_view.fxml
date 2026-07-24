@@ -30,6 +30,8 @@
                 <Button fx:id="navMyTopics" text="My Topics" onAction="#handleNavMyTopics" styleClass="nav-button"/>
                 <Button fx:id="navQuizzes" text="Quizzes" onAction="#handleNavQuizzes" styleClass="nav-button"/>
                 <Button fx:id="navPerformance" text="Performance" onAction="#handleNavPerformance" styleClass="nav-button"/>
+                <Button fx:id="navPendingRequests" text="Pending Requests" onAction="#handleNavPendingRequests" styleClass="nav-button"/>
+                <Button fx:id="navAnnouncements" text="Announcements" onAction="#handleNavAnnouncements" styleClass="nav-button"/>
             </VBox>
 
             <Button text="Logout" onAction="#handleLogout" styleClass="link-label"/>
@@ -41,16 +43,14 @@
             <padding>
                 <Insets top="12" right="24" bottom="12" left="24"/>
             </padding>
-            <TextField promptText="Search groups, topics, quizzes..." HBox.hgrow="ALWAYS"/>
+            <TextField fx:id="searchField" promptText="Search groups, topics, quizzes..." HBox.hgrow="ALWAYS"/>
             <Label fx:id="welcomeLabel" text="Welcome back"/>
         </HBox>
     </top>
 
     <center>
         <StackPane fx:id="contentArea">
-            <padding>
-                <Insets top="20" right="24" bottom="20" left="24"/>
-            </padding>
+
         </StackPane>
     </center>
 
