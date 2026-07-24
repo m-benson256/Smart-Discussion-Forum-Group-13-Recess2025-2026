@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="20" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.AdminOverviewController">
+
+    <Label text="Dashboard Overview" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+
+    <HBox spacing="16">
+        <VBox style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 8;" prefWidth="180">
+            <Label text="Total Users" style="-fx-text-fill: #64748b; -fx-font-size: 12px;" />
+            <Label fx:id="totalUsersLabel" text="--" style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+        </VBox>
+        <VBox style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 8;" prefWidth="180">
+            <Label text="Active Users" style="-fx-text-fill: #64748b; -fx-font-size: 12px;" />
+            <Label fx:id="activeUsersLabel" text="--" style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+        </VBox>
+        <VBox style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 8;" prefWidth="180">
+            <Label text="Inactive Users" style="-fx-text-fill: #64748b; -fx-font-size: 12px;" />
+            <Label fx:id="inactiveUsersLabel" text="--" style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+        </VBox>
+        <VBox style="-fx-background-color: #f8fafc; -fx-padding: 16; -fx-background-radius: 8;" prefWidth="180">
+            <Label text="Blocked Users" style="-fx-text-fill: #64748b; -fx-font-size: 12px;" />
+            <Label fx:id="blockedUsersLabel" text="--" style="-fx-font-size: 26px; -fx-font-weight: bold;" />
+        </VBox>
+    </HBox>
+
+</VBox>

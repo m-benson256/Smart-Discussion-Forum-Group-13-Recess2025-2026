@@ -220,6 +220,88 @@ Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
+});
+Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
+
+    // GET /desktop/admin/users — list every user with their group status
+    Route::get('/users', function () {
+        $users = \App\Models\User::query()
+            ->select('id', 'name', 'email', 'role')
+            ->with(['groupMemberships:id,user_id,group_id,status,blacklisted_until'])
+            ->get();
+
+        return response()->json($users);
+    });
+
+    // POST /desktop/admin/users/{groupMember}/blacklist
+    Route::post('/users/{groupMember}/blacklist', function (\App\Models\GroupMember $groupMember) {
+        $groupMember->update([
+            'status' => 'blacklisted',
+            'blacklisted_until' => now()->addDays(1),
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'User blacklisted.']);
+    });
+
+    // POST /desktop/admin/users/{groupMember}/unblacklist
+    Route::post('/users/{groupMember}/unblacklist', function (\App\Models\GroupMember $groupMember) {
+        $groupMember->update([
+            'status' => 'active',
+            'blacklisted_until' => null,
+            'inactivity_warning_count' => 0,
+            'last_warned_at' => null,
+        ]);
+
+        return response()->json(['status' => 'success', 'message' => 'User reinstated.']);
+    });
+
+    // GET /desktop/admin/stats — KPI counts for the Overview tab
+    Route::get('/stats', function () {
+        $totalUsers = \App\Models\User::count();
+
+        $activeUsers = \App\Models\GroupMember::where('status', 'active')
+            ->where('inactivity_warning_count', 0)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $inactiveUsers = \App\Models\GroupMember::where('status', 'active')
+            ->where('inactivity_warning_count', '>', 0)
+            ->distinct('user_id')
+            ->count('user_id');
+
+        $blockedUsers = \App\Models\GroupMember::where('status', 'blacklisted')
+            ->distinct('user_id')
+            ->count('user_id');
+
+        return response()->json([
+            'total_users' => $totalUsers,
+            'active_users' => $activeUsers,
+            'inactive_users' => $inactiveUsers,
+            'blocked_users' => $blockedUsers,
+        ]);
+    });
+
+    // GET /desktop/admin/groups — list all groups with member counts
+    Route::get('/groups', function () {
+        $groups = \App\Models\Group::query()
+            ->select('id', 'name', 'description', 'visibility', 'created_by')
+            ->with('creator:id,name')
+            ->withCount('members')
+            ->get();
+
+        return response()->json($groups);
+    });
+    // GET /desktop/admin/warnings — list all warnings with user info
+Route::get('/warnings', function () {
+    $warnings = \App\Models\Warnings::query()
+        ->select('id', 'user_id', 'warning_number', 'reason', 'issued_at', 'expires_at', 'status')
+        ->with('user:id,name,email')
+        ->orderByDesc('issued_at')
+        ->get();
+
+    return response()->json($warnings);
+});
+
 Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
 
 Route::get('/desktop/topics/{topic}/export-pdf', [MessageController::class, 'exportPdf']);

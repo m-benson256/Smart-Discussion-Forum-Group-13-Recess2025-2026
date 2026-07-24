@@ -81,10 +81,10 @@ public class LoginController {
 
                     if ("lecturer".equals(user.get("role").asText())) {
                         App.switchScene("lecturer_dashboard_view.fxml", 1100, 750);
-                    } 
+                    }
                      else if ("admin".equals(user.get("role").asText())) {
                       App.switchScene("admin_dashboard_view.fxml", 1100, 750);
-                    } 
+                    }
                     else {
                         App.switchScene("student_dashboard_view.fxml", 1100, 750);
                     }
