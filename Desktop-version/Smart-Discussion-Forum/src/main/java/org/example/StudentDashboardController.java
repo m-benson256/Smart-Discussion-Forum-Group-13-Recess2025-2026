@@ -54,7 +54,7 @@ public class StudentDashboardController {
     private Long lastPoppedQuizId = null;
     @FXML private TextField searchField;
 
-    private final ObjectMapper mapper = new ObjectMapper(); // NEW
+
     private final Popup searchPopup = new Popup(); // NEW
     private PauseTransition searchDebounce;
 
@@ -190,9 +190,8 @@ public class StudentDashboardController {
     // ------------------------------------------------------------------
     // Existing view-switching logic (unchanged)
     // ------------------------------------------------------------------
-        loadView("groups_view.fxml");
-        setupSearch(); // NEW
-    }
+
+
 
     // NEW
     private void setupSearch() {
@@ -210,6 +209,8 @@ public class StudentDashboardController {
             searchDebounce.playFromStart();
         });
     }
+
+
 
     // NEW
     private void performSearch(String query) {
