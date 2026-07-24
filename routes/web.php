@@ -109,6 +109,8 @@ Route::middleware('auth')->group(function () {
    Route::get('/groups/{group}/requests', [GroupController::class, 'pendingRequests']);
 Route::post('/group-requests/{groupJoinRequest}/approve', [GroupController::class, 'approveRequest']);
 Route::post('/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
+
+
 });
 
 // 2. Main Auth Traffic Controller (Handles redirecting /dashboard based on email domain)

@@ -17,7 +17,18 @@ class Message extends Model
         'topic_id',
         'user_id',
         'body',
+         'attachment_path',   // NEW
+         'attachment_name',   // NEW
+         'attachment_mime',   // NEW
+         'attachment_size',
     ];
+
+    protected $appends = ['attachment_url'];
+
+public function getAttachmentUrlAttribute(): ?string
+{
+    return $this->attachment_path ? \Storage::url($this->attachment_path) : null;
+}
 
     public function topic(): BelongsTo
     {

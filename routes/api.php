@@ -19,7 +19,7 @@ use App\Http\Controllers\LecturerController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
-
+use App\Http\Controllers\SearchController;
 /*
 |--------------------------------------------------------------------------
 | 1. Public API Routes (No Token Needed)
@@ -163,7 +163,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Groups
     Route::get('/desktop/groups', [GroupController::class, 'index']);
-    Route::post('/desktop/groups/{group}/join', [GroupController::class, 'join']);
+    Route::post('/desktop/groups/{group}/join', [GroupController::class, 'requestToJoin']);
     Route::get('/desktop/groups/{group}', [GroupController::class, 'show']);
     Route::post('/desktop/groups/{group}/leave', [GroupController::class, 'leave']);
 
@@ -186,6 +186,10 @@ Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'togg
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
 
+Route::post('/desktop/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+Route::post('/desktop/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
+
+
 // Quizzes (Lecturer Side)
 Route::get('/desktop/lecturer/dashboard-stats', [LecturerController::class, 'dashboardStats']);
 Route::get('/desktop/lecturer/quizzes', [QuizController::class, 'index']);
@@ -197,8 +201,11 @@ Route::post('/desktop/quizzes/{quiz}/publish', [QuizController::class, 'publish'
 Route::post('/desktop/quizzes/{quiz}/questions', [QuizQuestionController::class, 'store']);
 Route::put('/desktop/questions/{question}', [QuizQuestionController::class, 'update']);
 Route::delete('/desktop/questions/{question}', [QuizQuestionController::class, 'destroy']);
+Route::get('/desktop/lecturer/reports', [QuizAttemptController::class, 'report']);
 
 Route::get('/desktop/categories', [CategoryController::class, 'index']);
+
+Route::get('/desktop/student/search', [SearchController::class, 'studentSearch']);
 
 //Announcements
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
@@ -208,7 +215,9 @@ Route::post('/desktop/quizzes/{quiz}/announce', [AnnouncementsController::class,
 Route::get('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'getCriteria']);
 Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
+Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 
+Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 });
@@ -293,4 +302,7 @@ Route::get('/warnings', function () {
     return response()->json($warnings);
 });
 
+Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
+
+Route::get('/desktop/topics/{topic}/export-pdf', [MessageController::class, 'exportPdf']);
 });

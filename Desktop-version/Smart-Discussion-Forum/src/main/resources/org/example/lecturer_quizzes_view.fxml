@@ -19,12 +19,6 @@
         <Button text="+ Create New Assessment" onAction="#handleCreateQuiz" styleClass="button-primary"/>
     </HBox>
 
-    <HBox spacing="24">
-        <Button fx:id="tabAllQuizzes" text="All Quizzes" onAction="#showAllQuizzes" styleClass="link-label"/>
-        <Button fx:id="tabScheduled" text="Scheduled" onAction="#showScheduled" styleClass="nav-button"/>
-        <Button fx:id="tabPastDue" text="Past Due" onAction="#showPastDue" styleClass="nav-button"/>
-    </HBox>
-
     <ScrollPane fitToWidth="true" styleClass="edge-to-edge" VBox.vgrow="ALWAYS">
         <FlowPane fx:id="quizListContainer" hgap="16" vgap="16">
             <padding><Insets top="4" right="4" bottom="4" left="4"/></padding>

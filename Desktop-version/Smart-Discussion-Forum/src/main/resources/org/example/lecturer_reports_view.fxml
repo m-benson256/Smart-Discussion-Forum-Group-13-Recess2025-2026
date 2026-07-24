@@ -1,7 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-    <Label text="Reports — coming soon" style="-fx-font-size: 20px;"/>
-</StackPane>
+<VBox xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.LecturerReportsController"
+      spacing="16">
+
+    <VBox styleClass="card" spacing="12" VBox.vgrow="ALWAYS">
+        <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+        <Label text="Performance Analytics" styleClass="title-label"/>
+
+        <TableView fx:id="reportsTable" VBox.vgrow="ALWAYS">
+            <columns>
+                <TableColumn fx:id="studentColumn" text="STUDENT NAME" prefWidth="220"/>
+                <TableColumn fx:id="quizColumn" text="QUIZ TITLE" prefWidth="260"/>
+                <TableColumn fx:id="scoreColumn" text="SCORE" prefWidth="140"/>
+                <TableColumn fx:id="statusColumn" text="STATUS" prefWidth="140"/>
+            </columns>
+        </TableView>
+    </VBox>
+</VBox>
