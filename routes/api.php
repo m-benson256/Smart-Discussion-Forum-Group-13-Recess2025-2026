@@ -20,9 +20,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
 use App\Http\Controllers\SearchController;
-
-
-
 /*
 |--------------------------------------------------------------------------
 | 1. Public API Routes (No Token Needed)
