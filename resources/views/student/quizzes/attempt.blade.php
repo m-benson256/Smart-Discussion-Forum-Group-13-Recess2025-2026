@@ -132,7 +132,6 @@
 <div class="flex items-center gap-4">
 <h1 class="font-headline-md text-headline-md text-primary">Quiz Portal</h1>
 <div class="h-6 w-px bg-outline-variant mx-2 hidden md:block"></div>
-<span class="font-body-md text-on-surface-variant hidden md:block">Calculus II: Final Exam</span>
 </div>
 <div class="flex items-center gap-6">
 <div class="flex items-center gap-2 px-3 py-1 bg-error-container text-on-error-container rounded-lg">
