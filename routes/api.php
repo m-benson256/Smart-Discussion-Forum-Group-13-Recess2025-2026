@@ -112,8 +112,7 @@ Route::post('/desktop/register', function (Request $request) {
 
 
 Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
-    // e.g. Route::get('/dashboard', [AdminController::class, 'dashboard']);
-    // e.g. Route::get('/reports', [AdminController::class, 'reports']);
+    
 });
 
 /*
@@ -173,8 +172,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/desktop/group-requests/{groupJoinRequest}/reject', [GroupController::class, 'rejectRequest']);
     Route::get('/desktop/my-pending-requests', [GroupController::class, 'myPendingRequests']);
 
-    Route::get('/desktop/topics', [TopicController::class, 'index']);
-    Route::post('/desktop/topics', [TopicController::class, 'store']);
+    
 
     // Quizzes (Student Side)
     Route::get('/desktop/student/quizzes', [QuizAttemptController::class, 'index']);
@@ -217,9 +215,11 @@ Route::post('/desktop/lecturer/participation/criteria', [ParticipationController
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
 Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 
-Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
+
+Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
+
 });
 Route::middleware(['auth:sanctum', 'admin'])->prefix('desktop/admin')->group(function () {
 
@@ -302,7 +302,7 @@ Route::get('/warnings', function () {
     return response()->json($warnings);
 });
 
-Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
 
 Route::get('/desktop/topics/{topic}/export-pdf', [MessageController::class, 'exportPdf']);
+
 });
