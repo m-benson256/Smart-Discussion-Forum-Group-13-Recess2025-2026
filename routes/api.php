@@ -187,11 +187,9 @@ Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'togg
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
 
-<<<<<<< HEAD
 Route::post('/desktop/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
 Route::post('/desktop/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
 
-=======
 // Quizzes (Lecturer Side)
 Route::get('/desktop/lecturer/dashboard-stats', [LecturerController::class, 'dashboardStats']);
 Route::get('/desktop/lecturer/quizzes', [QuizController::class, 'index']);
@@ -216,7 +214,6 @@ Route::get('/desktop/lecturer/participation/criteria', [ParticipationController:
 Route::post('/desktop/lecturer/participation/criteria', [ParticipationController::class, 'saveCriteria']);
 Route::get('/desktop/lecturer/participation/scores', [ParticipationController::class, 'scores']);
 Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
->>>>>>> main
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
 Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
