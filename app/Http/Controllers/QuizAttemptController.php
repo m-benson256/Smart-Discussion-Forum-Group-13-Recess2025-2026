@@ -292,7 +292,8 @@ public function activeQuiz(Request $request): JsonResponse
         'id' => $quiz->id,
         'title' => $quiz->title,
         'duration_minutes' => $quiz->duration_minutes,
-        'start_time' => $quiz->start_time,
+       'start_time' => \Illuminate\Support\Carbon::parse($quiz->start_time)->toIso8601String(), 
+        //'start_time' => $quiz->start_time,
     ]);
 }
 }

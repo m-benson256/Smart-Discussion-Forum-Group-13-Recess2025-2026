@@ -189,6 +189,10 @@ Route::post('/desktop/messages/{message}/flag', [MessageController::class, 'togg
 
 Route::get('/desktop/recommended-topics', [RecommendationController::class, 'index']);
 
+Route::post('/desktop/attempts/{attempt}/answer', [QuizAttemptController::class, 'saveAnswer']);
+Route::post('/desktop/attempts/{attempt}/submit', [QuizAttemptController::class, 'submit']);
+
+
 // Quizzes (Lecturer Side)
 Route::get('/desktop/lecturer/dashboard-stats', [LecturerController::class, 'dashboardStats']);
 Route::get('/desktop/lecturer/quizzes', [QuizController::class, 'index']);
@@ -219,6 +223,7 @@ Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
+Route::get('/desktop/student/active-quiz', [QuizAttemptController::class, 'activeQuiz']);
 
 Route::get('/desktop/topics/{topic}/export-pdf', [MessageController::class, 'exportPdf']);
 });

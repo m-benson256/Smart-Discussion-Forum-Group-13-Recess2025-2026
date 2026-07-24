@@ -521,6 +521,67 @@
 }
 
 
+.quiz-timer-badge {
+    -fx-background-color: #ffdad6;
+    -fx-text-fill: #ba1a1a;
+    -fx-background-radius: 8;
+    -fx-padding: 6 12 6 12;
+    -fx-font-weight: bold;
+}
+.quiz-timer-badge .label { -fx-text-fill: #ba1a1a; }
+.quiz-timer-badge-warning { -fx-background-color: #f87171; }
+.quiz-timer-badge-warning .label { -fx-text-fill: #ffffff; }
+
+.quiz-progress-bar > .bar { -fx-background-color: #2563eb; -fx-background-radius: 6; }
+.quiz-progress-bar > .track { -fx-background-color: #e2e8f0; -fx-background-radius: 6; }
+
+.quiz-question-card {
+    -fx-background-color: #ffffff;
+    -fx-background-radius: 12;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 12;
+    -fx-border-width: 1;
+    -fx-effect: dropshadow(gaussian, rgba(15,23,42,0.05), 12, 0, 0, 4);
+}
+
+.quiz-prompt-text { -fx-font-size: 20px; -fx-font-weight: 600; -fx-fill: #191c1e; }
+
+.quiz-option-label {
+    -fx-padding: 12 16 12 16;
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+    -fx-cursor: hand;
+    -fx-font-size: 14px;
+}
+.quiz-option-label:hover { -fx-background-color: #f8fafc; }
+.quiz-option-label:selected { -fx-border-color: #2563eb; -fx-background-color: #eff6ff; }
+
+.quiz-tf-button {
+    -fx-background-color: #ffffff;
+    -fx-text-fill: #191c1e;
+    -fx-border-color: #e2e8f0;
+    -fx-border-width: 2;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 16 24 16 24;
+    -fx-font-size: 15px;
+    -fx-cursor: hand;
+}
+.quiz-tf-button:hover { -fx-background-color: #f8fafc; }
+.quiz-tf-button:selected { -fx-background-color: #2563eb; -fx-text-fill: #ffffff; -fx-border-color: #2563eb; }
+
+.quiz-textarea { -fx-background-color: #f8fafc; -fx-border-color: #e2e8f0; -fx-border-radius: 12; -fx-background-radius: 12; -fx-font-size: 14px; }
+.quiz-textarea .content { -fx-background-color: #f8fafc; -fx-background-radius: 12; }
+
+.quiz-submit-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+}
+
+
 .history-row {
     -fx-border-color: transparent transparent #f1f5f9 transparent;
     -fx-border-width: 0 0 1 0;

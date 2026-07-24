@@ -1,6 +1,7 @@
 /* Glassmorphic Background matching guest.blade.php */
 .root-pane {
     -fx-background-image: url('Gemini_Image_2.png'); /* Place discussion.jpg in resources folder! */
+    -fx-background-image: url('Gemini_Image_2.png'); /* Place discussion.jpg in resources folder! */
     -fx-background-repeat: no-repeat;
     -fx-background-size: cover;
     -fx-background-position: center;
@@ -8,6 +9,9 @@
 
 /* Glassmorphic Card container */
 .glass-card {
+    -fx-background-color: rgba(15, 23, 42, 0.75); /* bg-white/10 */
+    -fx-border-color: rgba(255, 255, 255, 0.25);     /* border-white/20 */
+    -fx-opacity:1;
     -fx-background-color: rgba(15, 23, 42, 0.75); /* bg-white/10 */
     -fx-border-color: rgba(255, 255, 255, 0.25);     /* border-white/20 */
     -fx-opacity:1;
@@ -213,6 +217,8 @@
 
  -fx-background-image: url("Gemini_Image_2.png");
 
+ -fx-background-image: url("Gemini_Image_2.png");
+
  /* ============================================================
     Cards (group cards, topic cards)
     ============================================================ */
@@ -261,6 +267,53 @@
      -fx-background-color: #94a3b8; /* slate-400 */
      -fx-opacity: 0.7;
  }
+
+ /* ============================================================
+    Emoji rendering — forces the OS's color emoji font
+    ============================================================ */
+ .like-control, .reaction-badge, .reaction-badge-active, .bubble-me, .bubble-them, .emoji-option {
+     -fx-font-family: "Segoe UI Emoji", "Segoe UI", sans-serif;
+ }
+
+ /* ============================================================
+    Quick-emoji reaction popup (grid layout)
+    ============================================================ */
+ .emoji-popup {
+     -fx-background-color: white;
+     -fx-background-radius: 10;
+     -fx-border-color: #e2e8f0; /* slate-200 */
+     -fx-border-radius: 10;
+     -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 14, 0, 0, 4);
+ }
+
+ .emoji-popup-header {
+     -fx-font-size: 10px;
+     -fx-font-weight: bold;
+     -fx-text-fill: #94a3b8; /* slate-400 */
+ }
+
+ .emoji-option {
+     -fx-font-size: 20px;
+     -fx-padding: 4 6 4 6;
+     -fx-background-radius: 6;
+     -fx-cursor: hand;
+ }
+
+ .emoji-option:hover {
+     -fx-background-color: #f1f5f9; /* slate-100 */
+ }
+
+ .flag-option {
+     -fx-font-size: 12px;
+     -fx-text-fill: #ef4444; /* red-500 */
+     -fx-cursor: hand;
+     -fx-padding: 4 2 2 2;
+ }
+
+ .flag-option:hover {
+     -fx-underline: true;
+ }
+
 
  /* ============================================================
     Emoji rendering — forces the OS's color emoji font
@@ -421,7 +474,22 @@
     -fx-cursor: hand;
     -fx-border-radius: 12;
 }
+/* ============================================================
+   Reaction badges — also Labels now, same reasoning
+   ============================================================ */
+.reaction-badge, .reaction-badge-active {
+    -fx-font-size: 11px;
+    -fx-background-radius: 12;
+    -fx-padding: 2 8 2 8;
+    -fx-cursor: hand;
+    -fx-border-radius: 12;
+}
 
+.reaction-badge {
+    -fx-background-color: #f1f5f9; /* slate-100 */
+    -fx-text-fill: #475569; /* slate-600 */
+    -fx-border-color: #e2e8f0; /* slate-200 */
+}
 .reaction-badge {
     -fx-background-color: #f1f5f9; /* slate-100 */
     -fx-text-fill: #475569; /* slate-600 */
@@ -431,7 +499,15 @@
 .reaction-badge:hover {
     -fx-background-color: #e2e8f0; /* slate-200 */
 }
+.reaction-badge:hover {
+    -fx-background-color: #e2e8f0; /* slate-200 */
+}
 
+.reaction-badge-active {
+    -fx-background-color: #dbeafe; /* blue-100 */
+    -fx-text-fill: #2563eb; /* blue-600 */
+    -fx-border-color: #93c5fd; /* blue-300 */
+}
 .reaction-badge-active {
     -fx-background-color: #dbeafe; /* blue-100 */
     -fx-text-fill: #2563eb; /* blue-600 */
