@@ -42,5 +42,9 @@
                 <TableColumn fx:id="submittedScoreCol" text="Score" prefWidth="100"/>
             </columns>
         </TableView>
+
+        <padding>
+            <Insets top="20" right="24" bottom="20" left="24"/>
+        </padding>
     </VBox>
 </ScrollPane>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.AdminGroupsController"
+      spacing="12">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Groups" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <TableView fx:id="groupsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="nameColumn" text="Name" prefWidth="150"/>
+            <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
+            <TableColumn fx:id="visibilityColumn" text="Visibility" prefWidth="100"/>
+            <TableColumn fx:id="creatorColumn" text="Created By" prefWidth="150"/>
+            <TableColumn fx:id="memberCountColumn" text="Members" prefWidth="100"/>
+        </columns>
+    </TableView>
+
+</VBox>

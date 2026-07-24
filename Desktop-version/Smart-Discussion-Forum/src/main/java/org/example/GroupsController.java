@@ -85,7 +85,6 @@ public class GroupsController {
         VBox card = new VBox(8);
         card.getStyleClass().add("card");
         card.setPrefWidth(260);
-        card.setCursor(javafx.scene.Cursor.HAND);
         long groupId = group.get("id").asLong();
 
         String name = group.get("name").asText();
@@ -93,6 +92,7 @@ public class GroupsController {
             ? group.get("description").asText() : "";
         int memberCount = group.get("members_count").asInt();
         String visibility = group.get("visibility").asText();
+        boolean isBlocked = group.has("is_blocked") && group.get("is_blocked").asBoolean(); // NEW
 
         Label nameLabel = new Label(name + ("private".equals(visibility) ? "  \uD83D\uDD12" : ""));
         nameLabel.getStyleClass().add("title-label");
@@ -108,12 +108,22 @@ public class GroupsController {
         card.getChildren().addAll(nameLabel, descLabel, countLabel);
         card.setPadding(new Insets(16));
 
-        // NEW: clicking the card navigates to details
-        card.setOnMouseClicked(e -> {
-            AppState.setSelectedGroupId(groupId);
-            StudentDashboardController.navigateTo("group_details_view.fxml");
-        });
+        if (isBlocked) {
+            // NEW: blocked groups are visible but inert — no click handler, dimmed, badge shown
+            Label blockedBadge = new Label("BLOCKED");
+            blockedBadge.getStyleClass().add("blocked-badge");
+            card.getChildren().add(blockedBadge);
+            card.setOpacity(0.5);
+            card.setCursor(javafx.scene.Cursor.DEFAULT);
+        } else {
+            card.setCursor(javafx.scene.Cursor.HAND);
+            card.setOnMouseClicked(e -> {
+                AppState.setSelectedGroupId(groupId);
+                StudentDashboardController.navigateTo("group_details_view.fxml");
+            });
+        }
 
         return card;
     }
+
 }

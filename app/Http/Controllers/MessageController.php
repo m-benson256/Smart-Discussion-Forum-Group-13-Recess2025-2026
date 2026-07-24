@@ -63,15 +63,38 @@ public function index(Request $request, Topic $topic): JsonResponse
     // POST /topics/{topic}/messages — post a reply
     public function store(Request $request, Topic $topic): JsonResponse
     {
+
+       
+
         $validated = $request->validate([
-            'body' => 'required|string',
+            'body' => 'nullable|string',
+            'attachment' => 'nullable|file|max:10240',
         ]);
+          
+          $attachmentPath = $attachmentName = $attachmentMime = null;
+    $attachmentSize = null;
 
-        $message = $topic->messages()->create([
-            ...$validated,
-            'user_id' => $request->user()->id,
-        ]);
+    if ($request->hasFile('attachment')) {
+        $file = $request->file('attachment');
+        $attachmentPath = $file->store('attachments', 'public');
+        $attachmentName = $file->getClientOriginalName();
+        $attachmentMime = $file->getMimeType();
+        $attachmentSize = $file->getSize();
+    }
 
+    if (empty($validated['body']) && !$attachmentPath) {
+        return response()->json(['message' => 'Message cannot be empty'], 422);
+    }
+
+    $message = $topic->messages()->create([
+        'user_id' => $request->user()->id,
+        'body' => $validated['body'] ?? '',
+        'attachment_path' => $attachmentPath,
+        'attachment_name' => $attachmentName,
+        'attachment_mime' => $attachmentMime,
+        'attachment_size' => $attachmentSize,
+    ]);
+       
         $message->load('user:id,name');
 
         // 2. Fire the real-time broadcast alert!

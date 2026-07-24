@@ -94,6 +94,7 @@
      -fx-background-color: white;
      -fx-border-color: transparent transparent #e2e8f0 transparent;
      -fx-border-width: 0 0 1 0;
+     -fx-max-width: infinity;
  }
 
  /* Cards */
@@ -185,9 +186,12 @@
     Top bar (dashboard header + chat header/footer reuse this)
     ============================================================ */
  .top-bar {
-     -fx-background-color: #ffffff;
-     -fx-border-color: transparent transparent #e2e8f0 transparent; /* slate-200 */
-     -fx-border-width: 0 0 1 0;
+      -fx-background-color: #ffffff;
+         -fx-border-color: #e2e8f0 transparent transparent transparent; /* slate-200 */
+         -fx-border-width: 1 0 0 0;
+         -fx-max-width: infinity;
+
+
  }
 
  /* ============================================================
@@ -322,7 +326,7 @@
     ============================================================ */
  .bubble-me {
      -fx-background-color: #2563eb; /* blue-600 */
-     -fx-text-fill: #ffffff;
+
      -fx-background-radius: 16 16 4 16;
  }
 
@@ -333,6 +337,14 @@
      -fx-border-color: #e2e8f0; /* slate-200 */
      -fx-border-radius: 16 16 16 4;
  }
+
+ .bubble-me .text {
+    -fx-fill: white;
+}
+
+.bubble-them .text {
+    -fx-fill: #334155; /* slate-700 */
+}
 
 
 
@@ -573,4 +585,127 @@
 .history-row {
     -fx-border-color: transparent transparent #f1f5f9 transparent;
     -fx-border-width: 0 0 1 0;
+}
+
+.search-popup {
+    -fx-background-color: white;
+    -fx-background-radius: 10;
+    -fx-border-color: blue;
+    -fx-border-radius: 10;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.15), 14, 0, 0, 4);
+}
+
+.search-section-header {
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #94a3b8; /* slate-400 */
+    -fx-padding: 8 8 2 8;
+}
+
+.search-result-row {
+    -fx-font-size: 13px;
+    -fx-text-fill: #334155; /* slate-700 */
+    -fx-padding: 8;
+    -fx-background-radius: 6;
+}
+
+.search-result-row:hover {
+    -fx-background-color: #f1f5f9; /* slate-100 */
+}
+
+.avatar-circle-large {
+    -fx-background-color: #2563eb; /* blue-600 */
+    -fx-background-radius: 100;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
+}
+
+.avatar-circle-large .label {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 15px;
+}
+
+/* ============================================================
+   Chat input bar
+   ============================================================ */
+.chat-input-bar {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #e2e8f0 transparent transparent transparent; /* slate-200 */
+    -fx-border-width: 1 0 0 0;
+    -fx-max-width: infinity;
+}
+
+.chat-input-field {
+    -fx-background-color: #f1f5f9; /* slate-100 */
+    -fx-background-radius: 24;
+    -fx-padding: 10 18 10 18;
+    -fx-font-size: 13px;
+    -fx-border-color: transparent;
+}
+
+.chat-input-field:focused {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #2563eb; /* blue-600 */
+    -fx-border-radius: 24;
+    -fx-border-width: 1.5;
+}
+
+.icon-button {
+    -fx-background-color: transparent;
+    -fx-cursor: hand;
+    -fx-padding: 6;
+    -fx-background-radius: 100;
+}
+
+.icon-button:hover {
+    -fx-background-color: #f1f5f9; /* slate-100 */
+}
+
+.send-button-round {
+    -fx-background-color: #2563eb; /* blue-600 */
+    -fx-background-radius: 100;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
+    -fx-cursor: hand;
+    -fx-text-fill: white;
+}
+
+.send-button-round:hover {
+    -fx-background-color: #1d4ed8; /* blue-700 */
+}
+
+.attachment-preview {
+    -fx-background-radius: 10;
+}
+
+.attachment-chip {
+    -fx-background-color: rgba(255,255,255,0.15);
+    -fx-background-radius: 8;
+    -fx-padding: 8;
+}
+
+.attachment-name-me {
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-underline: true;
+}
+
+.attachment-name-them {
+    -fx-text-fill: #2563eb; /* blue-600 */
+    -fx-font-size: 12px;
+    -fx-underline: true;
+}
+
+.blocked-badge {
+    -fx-background-color: #fee2e2; /* red-100 */
+    -fx-text-fill: #ef4444; /* red-500 */
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 10;
 }

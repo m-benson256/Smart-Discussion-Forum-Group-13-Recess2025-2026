@@ -8,7 +8,7 @@ public class Session {
     private static String userRole;
 
     public static void set( Long id, String token, String name, String email, String role) {
-        userId = id;
+        Session.userId = id;
         Session.token = token;
         Session.userName = name;
         Session.userEmail = email;

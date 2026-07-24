@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox spacing="12" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.AdminUsersController">
+
+    <Label text="Users" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
+    <Label fx:id="statusLabel" text="" style="-fx-text-fill: #64748b;" />
+
+    <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="nameCol" text="Name" prefWidth="140" />
+            <TableColumn fx:id="emailCol" text="Email" prefWidth="200" />
+            <TableColumn fx:id="roleCol" text="Role" prefWidth="80" />
+            <TableColumn fx:id="groupCol" text="Group ID" prefWidth="70" />
+            <TableColumn fx:id="statusCol" text="Status" prefWidth="90" />
+            <TableColumn fx:id="untilCol" text="Blacklisted Until" prefWidth="150" />
+            <TableColumn fx:id="actionCol" text="Action" prefWidth="120" />
+        </columns>
+    </TableView>
+
+</VBox>

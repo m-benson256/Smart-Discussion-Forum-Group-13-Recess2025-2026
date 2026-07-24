@@ -543,10 +543,15 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         }
     }
 
-    function openGroup(groupId) {
-        state.selectedGroupId = groupId;
-        updateView('group_details');
+   function openGroup(groupId) {
+    const group = state.groups.find(g => g.id === groupId);
+    if (group && group.isBlocked) {
+        alert('This group has been blocked by an administrator and is no longer accessible.');
+        return;
     }
+    state.selectedGroupId = groupId;
+    updateView('group_details');
+}
 
      // NEW:
 function openTopic(topicId) {
@@ -602,20 +607,21 @@ async function recordTopicView(topicId) {
                     ${state.groups.length ? `
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             ${state.groups.map(group => `
-                                <div onclick="openGroup(${group.id})" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all hover:shadow-md group flex flex-col h-full">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <i class="fa-solid fa-users text-xl"></i>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-slate-900 mb-2">
-    ${group.name}
-    ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
-</h3>
-                                    <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
-                                    <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
-                                        <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
-                                    </div>
-                                </div>
-                            `).join('')}
+    <div onclick="${group.isBlocked ? '' : `openGroup(${group.id})`}" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all group flex flex-col h-full ${group.isBlocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400 cursor-pointer hover:shadow-md'}">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <i class="fa-solid fa-users text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+            ${group.name}
+            ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
+            ${group.isBlocked ? '<span class="ml-2 text-[10px] font-bold uppercase text-red-500 bg-red-50 px-2 py-0.5 rounded-full align-middle">Blocked</span>' : ''}
+        </h3>
+        <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
+        <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
+            <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
+        </div>
+    </div>
+`).join('')}
                         </div>
                     ` : '<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">No groups found yet.</div>'}
                 `;
@@ -912,9 +918,10 @@ case 'quizzes':
                                                 <span class="text-xs font-bold text-slate-700 mr-2">${msg.author}</span>
                                                 <span class="text-[10px] text-slate-400">${msg.time}</span>
                                             </div>
-                                            <div class="message-bubble relative ${msg.isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-200 rounded-tl-none'} p-4 rounded-2xl shadow-sm text-sm">
-                                                ${msg.text}
-                                            </div>
+                                             <div class="message-bubble relative ${msg.isMe ? 'bg-blue-600 text-white rounded-tr-none' : 'bg-white text-slate-700 border border-slate-200 rounded-tl-none'} p-3 rounded-2xl shadow-sm text-sm space-y-2">
+                                                  ${msg.text ? `<div>${msg.text}</div>` : ''}
+                                                   ${msg.attachmentUrl ? renderAttachment(msg) : ''}
+                                                </div>
                                             <div class="flex items-center space-x-2 mt-1 ${msg.isMe ? 'flex-row-reverse space-x-reverse' : ''}">
                                                <button onclick="handleLike(event, this)" class="like-button ${msg.myLike ? 'active' : ''}">
                                              <i class="fa-regular fa-heart mr-1.5"></i> <span>${msg.likeCount || 0}</span>
@@ -930,18 +937,22 @@ case 'quizzes':
                             </div>
                         </div>
                         <div class="h-24 bg-white border-t px-8 py-4 sticky bottom-0">
-                            <div class="max-w-4xl mx-auto flex space-x-4 items-center h-full">
-                                <div class="flex-1 relative">
-                                    <input id="chat-input" type="text" class="w-full border-slate-200 rounded-full pl-6 pr-12 py-3 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Type your message here...">
-                                    <button onclick="toggleEmojiPicker(event, false)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
-                                        <i class="fa-regular fa-face-smile text-lg"></i>
-                                    </button>
-                                </div>
-                                <button onclick="sendMessage()" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg">
-                                    <i class="fa-solid fa-paper-plane"></i>
-                                </button>
-                            </div>
-                        </div>
+    <div class="max-w-4xl mx-auto flex space-x-4 items-center h-full">
+        <input type="file" id="attachment-input" class="hidden" onchange="sendAttachment(this.files[0])">
+        <button onclick="document.getElementById('attachment-input').click()" class="text-slate-400 hover:text-slate-600" title="Attach a file">
+            <i class="fa-solid fa-paperclip text-lg"></i>
+        </button>
+        <div class="flex-1 relative">
+            <input id="chat-input" type="text" class="w-full border-slate-200 rounded-full pl-6 pr-12 py-3 focus:ring-blue-500 focus:border-blue-500 text-sm" placeholder="Type your message here...">
+            <button onclick="toggleEmojiPicker(event, false)" class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <i class="fa-regular fa-face-smile text-lg"></i>
+            </button>
+        </div>
+        <button onclick="sendMessage()" class="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
                     </div>
                 `;
                 break;
@@ -1093,6 +1104,7 @@ async function handleLike(event, btn) {
     isCreator: group.created_by === currentUserId,
     visibility: group.visibility,
     hasPendingRequest: group.has_pending_request ?? false,
+     isBlocked: group.is_blocked ?? false,
     likes: 0
 }));
    
@@ -1156,7 +1168,10 @@ async function fetchMessages(topicId) {
              likeCount: msg.liked_by_count ?? 0,
              myLike: msg.liked_by_me ?? false,
              reactions: msg.grouped_reactions ?? [],
-            hidden: false
+             attachmentUrl: msg.attachment_url ?? null,    // NEW
+             attachmentName: msg.attachment_name ?? null,  
+             attachmentMime: msg.attachment_mime ?? null,
+             hidden: false
 
         }));
 
@@ -1414,6 +1429,36 @@ function shareTopic(platform) {
     document.getElementById('share-menu')?.classList.add('hidden');
 }
 
+async function sendAttachment(file) {
+    if (!file) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const formData = new FormData();
+    formData.append('attachment', file);
+
+    try {
+        const response = await fetch(`/topics/${state.selectedTopicId}/messages`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrfToken
+                // Deliberately no 'Content-Type' header here — the browser sets the correct
+                // multipart/form-data boundary automatically when the body is a FormData object.
+                // Setting it manually (like the JavaFX desktop version has to) actually breaks
+                // it in the browser, since it strips out the auto-generated boundary string.
+            },
+            body: formData
+        });
+
+        if (!response.ok) throw new Error('Failed to upload attachment');
+
+        document.getElementById('attachment-input').value = ''; // reset so re-selecting the same file still fires 'change'
+        await fetchMessages(state.selectedTopicId);
+    } catch (err) {
+        console.error(err);
+        alert('Could not upload file. Please try again.');
+    }
+}
+
     // NEW:
 async function insertReaction(emoji) {
     if (!currentContextMessageId) return;
@@ -1580,7 +1625,23 @@ async function goToTopicFromSearch(topicId) {
     openTopic(topicId);
 }
 
+function renderAttachment(msg) {
+    if (msg.attachmentMime && msg.attachmentMime.startsWith('image/')) {
+        return `
+            <img src="${msg.attachmentUrl}" alt="${msg.attachmentName || 'attachment'}"
+                 class="rounded-xl max-w-[220px] max-h-[220px] object-cover cursor-pointer"
+                 onclick="window.open('${msg.attachmentUrl}', '_blank')">
+        `;
+    }
 
+    return `
+        <a href="${msg.attachmentUrl}" target="_blank"
+           class="flex items-center space-x-2 ${msg.isMe ? 'bg-blue-700/40' : 'bg-slate-100'} rounded-lg px-3 py-2 hover:opacity-80 transition-opacity">
+            <i class="fa-solid fa-file text-lg"></i>
+            <span class="text-xs underline truncate max-w-[160px]">${msg.attachmentName || 'Download file'}</span>
+        </a>
+    `;
+}
 
     // NEW:
 async function sendMessage() {

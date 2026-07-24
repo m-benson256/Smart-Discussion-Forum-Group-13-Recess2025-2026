@@ -54,6 +54,12 @@ public class GroupDetailsController {
     private void renderDetails(HttpResponse<String> response) {
         Platform.runLater(() -> {
             try {
+                if (response.statusCode() == 403) { // NEW
+                    showBlockedState();
+                    return;
+                }
+
+
                 currentGroup = mapper.readTree(response.body());
 
                 nameLabel.setText(currentGroup.get("name").asText());
@@ -73,10 +79,23 @@ public class GroupDetailsController {
         });
     }
 
+    private void showBlockedState() {
+        nameLabel.setText("Group Blocked");
+        descriptionLabel.setText("This group has been blocked by an administrator and is no longer accessible.");
+        memberCountLabel.setText("");
+        actionButton.setVisible(false);
+        actionButton.setManaged(false);
+        createTopicButton.setVisible(false);
+        createTopicButton.setManaged(false);
+        topicsContainer.getChildren().clear();
+    }
+
     private void updateActionButton() {
         boolean isCreator = currentGroup.has("created_by")
             && currentGroup.get("created_by").asLong() == Session.getUserId();
         boolean isMember = currentGroup.get("is_member").asBoolean();
+        boolean hasPendingRequest = currentGroup.has("has_pending_request")
+            && currentGroup.get("has_pending_request").asBoolean();
         String visibility = currentGroup.get("visibility").asText();
 
         if (isCreator) {
@@ -85,6 +104,9 @@ public class GroupDetailsController {
         } else if (isMember) {
             actionButton.setText("Leave Group");
             actionButton.setDisable(false);
+        } else if (hasPendingRequest) {
+            actionButton.setText("Request Pending");
+            actionButton.setDisable(true);
         } else if ("private".equals(visibility)) {
             actionButton.setText("Request to Join");
             actionButton.setDisable(false);
@@ -93,11 +115,12 @@ public class GroupDetailsController {
             actionButton.setDisable(false);
         }
 
-        // NEW: mirrors the web's `group.isMember || group.isCreator` check for showing "Create Topic"
         boolean canPost = isMember || isCreator;
         createTopicButton.setVisible(canPost);
         createTopicButton.setManaged(canPost);
     }
+
+
 
     // NEW: fetches ALL topics and filters client-side by groupId —
     // same approach the web dashboard uses (fetchTopics() + state.topics.filter(t => t.groupId === ...))
@@ -157,8 +180,6 @@ public class GroupDetailsController {
     }
 
 
-
-
     @FXML
     void handleActionButton(ActionEvent event) {
         Long groupId = AppState.getSelectedGroupId();
@@ -175,12 +196,18 @@ public class GroupDetailsController {
 
             java.net.http.HttpClient.newHttpClient()
                 .sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                .thenAccept(response -> Platform.runLater(this::fetchGroupDetails));
+                .thenAccept(response -> {
+                    System.out.println("STATUS: " + response.statusCode());
+                    System.out.println("BODY: " + response.body());
+                    Platform.runLater(this::fetchGroupDetails);
+                });
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+
 
     @FXML
     void handleBack(ActionEvent event) {

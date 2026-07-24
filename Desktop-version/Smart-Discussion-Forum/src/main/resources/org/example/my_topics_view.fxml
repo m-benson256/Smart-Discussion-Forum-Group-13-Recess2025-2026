@@ -17,6 +17,10 @@
         </VBox.margin>
     </Label>
 
+    <padding>
+        <Insets top="20" right="24" bottom="20" left="24"/>
+    </padding>
+
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="edge-to-edge">
         <VBox fx:id="recommendedContainer" spacing="10"/>
     </ScrollPane>

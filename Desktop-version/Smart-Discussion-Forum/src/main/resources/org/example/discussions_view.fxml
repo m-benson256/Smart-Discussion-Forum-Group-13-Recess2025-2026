@@ -5,17 +5,26 @@
 <?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.geometry.Insets?>
 
 <VBox spacing="12" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
       fx:controller="org.example.DiscussionsController">
+
+    <padding>
+        <Insets top="20" right="24" bottom="20" left="24"/>
+    </padding>
+
 
     <HBox alignment="CENTER_LEFT" spacing="12">
         <Label text="General Discussions" styleClass="title-label"/>
         <Button text="+ Create Topic" onAction="#handleCreateTopic" styleClass="button-primary"/>
     </HBox>
 
+
+
     <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="edge-to-edge">
         <VBox fx:id="topicsContainer" spacing="10"/>
+
     </ScrollPane>
 
 </VBox>
