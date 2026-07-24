@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.AdminWarningsController"
+      spacing="12">
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
+
+    <Label text="Warnings" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <TableView fx:id="warningsTable" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="userNameColumn" text="User" prefWidth="150"/>
+            <TableColumn fx:id="userEmailColumn" text="Email" prefWidth="200"/>
+            <TableColumn fx:id="warningNumberColumn" text="Warning #" prefWidth="90"/>
+            <TableColumn fx:id="reasonColumn" text="Reason" prefWidth="220"/>
+            <TableColumn fx:id="issuedAtColumn" text="Issued At" prefWidth="150"/>
+            <TableColumn fx:id="statusColumn" text="Status" prefWidth="100"/>
+        </columns>
+    </TableView>
+
+</VBox>
