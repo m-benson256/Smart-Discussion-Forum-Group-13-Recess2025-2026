@@ -25,3 +25,6 @@ yarn-error.log
 __pycache__/
 *.pyc
 venv/
+**/target/
+**/.idea/
+*.class
