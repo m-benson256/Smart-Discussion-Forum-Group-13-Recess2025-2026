@@ -38,6 +38,8 @@ import javafx.stage.FileChooser;
 import java.io.File;
 import java.nio.file.Path;
 
+import java.nio.file.Files;
+
 import javafx.scene.Node;
 import javafx.scene.image.ImageView; // not strictly needed here since EmojiImages handles it, but harmless if left out
 
@@ -57,6 +59,8 @@ public class TopicChatController implements PollingView {
     @FXML private Button attachButton; // NEW
     @FXML private Button emojiButton;  // NEW
 
+    @FXML private Button exportPdfButton;
+
     private static final String[] QUICK_EMOJIS = { // NEW — shared list, used by both popups below
         "😀","😃","😄","😁","😆",
         "😂","🤣","😊","😍","😘",
@@ -74,6 +78,7 @@ public class TopicChatController implements PollingView {
         emojiButton.setGraphic(EmojiImages.buildNode("😊", 18));  // NEW
 
         fetchMessages();
+        exportPdfButton.setGraphic(EmojiImages.buildNode("📄", 16));
 
         // NEW: mirrors the web's startMessagePolling — refresh every 4 seconds
         pollingTimeline = new Timeline(new KeyFrame(Duration.seconds(4), e -> fetchMessages()));
@@ -86,6 +91,57 @@ public class TopicChatController implements PollingView {
         if (pollingTimeline != null) {
             pollingTimeline.stop();
         }
+    }
+
+    @FXML
+    void handleExportPdf(ActionEvent event) {
+        if (topicId == null) return;
+
+        exportPdfButton.setDisable(true); // prevent double-clicks while the request is in flight
+
+        try {
+            HttpRequest request = Session.authorizedRequestBuilder(
+                    "http://127.0.0.1:8000/api/desktop/topics/" + topicId + "/export-pdf")
+                .GET()
+                .build();
+
+            java.net.http.HttpClient.newHttpClient()
+                .sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()) // CHANGED: raw bytes, not a String — this is binary PDF data
+                .thenAccept(response -> Platform.runLater(() -> {
+                    exportPdfButton.setDisable(false);
+
+                    if (response.statusCode() != 200) {
+                        System.err.println("Export PDF failed: HTTP " + response.statusCode());
+                        return;
+                    }
+
+                    FileChooser fileChooser = new FileChooser();
+                    fileChooser.setTitle("Save thread as PDF");
+                    fileChooser.setInitialFileName(sanitizeFilename(topicTitleLabel.getText()) + ".pdf");
+                    fileChooser.getExtensionFilters().add(
+                        new FileChooser.ExtensionFilter("PDF files", "*.pdf"));
+
+                    File saveLocation = fileChooser.showSaveDialog(exportPdfButton.getScene().getWindow());
+                    if (saveLocation == null) return; // user cancelled the save dialog
+
+                    try {
+                        Files.write(saveLocation.toPath(), response.body());
+                        java.awt.Desktop.getDesktop().open(saveLocation); // opens in the OS's default PDF viewer, closest desktop equivalent to the web's new-tab download
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            exportPdfButton.setDisable(false);
+        }
+    }
+
+    // Strips characters that aren't safe in filenames on Windows/Mac/Linux
+    private String sanitizeFilename(String name) {
+        if (name == null || name.isBlank()) return "topic-export";
+        return name.replaceAll("[\\\\/:*?\"<>|]", "").trim();
     }
 
 

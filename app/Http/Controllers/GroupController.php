@@ -22,13 +22,14 @@ class GroupController extends Controller
             $group->is_member = $group->members->contains('id', $request->user()->id);
         });
 
-       // In GroupController@index, update the each() block:
+     
 $groups->each(function ($group) use ($request) {
     $group->is_member = $group->members->contains('id', $request->user()->id);
     $group->has_pending_request = $group->joinRequests()
         ->where('user_id', $request->user()->id)
         ->where('status', 'pending')
         ->exists();
+         $group->is_blocked = $group->status === 'blocked';
 });
 
         return response()->json($groups->makeHidden('members'));
@@ -75,10 +76,40 @@ $groups->each(function ($group) use ($request) {
     }
 
     // POST /groups/{group}/join — current user joins a group
-   
+    
+
+    // POST /groups/{group}/join — direct join for PUBLIC groups only
+// (private groups go through requestToJoin instead, which creates a pending request)
+public function join(Request $request, Group $group): JsonResponse
+{
+    if ($group->status === 'blocked') {
+        return response()->json(['message' => 'This group has been blocked by an administrator.'], 403);
+    }
+
+    if ($group->visibility !== 'public') {
+        return response()->json(['message' => 'This group requires an approved request to join.'], 403);
+    }
+
+    $userId = $request->user()->id;
+
+    $alreadyMember = $group->members()->where('user_id', $userId)->exists();
+    if ($alreadyMember) {
+        return response()->json(['message' => 'Already a member'], 409);
+    }
+
+    $group->members()->attach($userId);
+    $group->loadCount('members');
+
+    return response()->json($group);
+}
 
   public function requestToJoin(Request $request, Group $group): JsonResponse
 {
+
+     if ($group->status === 'blocked') {
+        return response()->json(['message' => 'This group has been blocked by an administrator.'], 403);
+    }
+
     $userId = $request->user()->id;
 
     $alreadyMember = $group->members()->where('user_id', $userId)->exists();
@@ -110,9 +141,15 @@ $groups->each(function ($group) use ($request) {
 
     // GET /groups/{group} — view a single group (used for group_details screen)
    public function show(Request $request, Group $group): JsonResponse
-{
+{   
+     if ($group->status === 'blocked') {
+        return response()->json(['message' => 'This group has been blocked by an administrator.'], 403);
+    }
+
     $group->loadCount('members');
     $group->load('creator:id,name');
+
+
 
     $userId = $request->user()->id;
     $group->is_member = $group->members()->where('user_id', $userId)->exists();

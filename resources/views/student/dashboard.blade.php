@@ -543,10 +543,15 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         }
     }
 
-    function openGroup(groupId) {
-        state.selectedGroupId = groupId;
-        updateView('group_details');
+   function openGroup(groupId) {
+    const group = state.groups.find(g => g.id === groupId);
+    if (group && group.isBlocked) {
+        alert('This group has been blocked by an administrator and is no longer accessible.');
+        return;
     }
+    state.selectedGroupId = groupId;
+    updateView('group_details');
+}
 
      // NEW:
 function openTopic(topicId) {
@@ -602,20 +607,21 @@ async function recordTopicView(topicId) {
                     ${state.groups.length ? `
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             ${state.groups.map(group => `
-                                <div onclick="openGroup(${group.id})" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-blue-400 cursor-pointer transition-all hover:shadow-md group flex flex-col h-full">
-                                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                        <i class="fa-solid fa-users text-xl"></i>
-                                    </div>
-                                    <h3 class="text-lg font-bold text-slate-900 mb-2">
-    ${group.name}
-    ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
-</h3>
-                                    <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
-                                    <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
-                                        <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
-                                    </div>
-                                </div>
-                            `).join('')}
+    <div onclick="${group.isBlocked ? '' : `openGroup(${group.id})`}" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all group flex flex-col h-full ${group.isBlocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400 cursor-pointer hover:shadow-md'}">
+        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <i class="fa-solid fa-users text-xl"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900 mb-2">
+            ${group.name}
+            ${group.visibility === 'private' ? '<i class="fa-solid fa-lock text-xs text-slate-400 ml-2"></i>' : ''}
+            ${group.isBlocked ? '<span class="ml-2 text-[10px] font-bold uppercase text-red-500 bg-red-50 px-2 py-0.5 rounded-full align-middle">Blocked</span>' : ''}
+        </h3>
+        <p class="text-slate-500 text-sm mb-4 line-clamp-2">${group.description}</p>
+        <div class="mt-auto flex items-center justify-between text-xs font-medium text-slate-400">
+            <span><i class="fa-regular fa-user mr-1"></i> ${group.memberCount} members</span>
+        </div>
+    </div>
+`).join('')}
                         </div>
                     ` : '<div class="bg-white rounded-xl border border-slate-200 p-8 text-center text-slate-500">No groups found yet.</div>'}
                 `;
@@ -1098,6 +1104,7 @@ async function handleLike(event, btn) {
     isCreator: group.created_by === currentUserId,
     visibility: group.visibility,
     hasPendingRequest: group.has_pending_request ?? false,
+     isBlocked: group.is_blocked ?? false,
     likes: 0
 }));
    
