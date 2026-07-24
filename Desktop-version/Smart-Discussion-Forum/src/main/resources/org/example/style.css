@@ -639,3 +639,12 @@
     -fx-font-size: 12px;
     -fx-underline: true;
 }
+
+.blocked-badge {
+    -fx-background-color: #fee2e2; /* red-100 */
+    -fx-text-fill: #ef4444; /* red-500 */
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 3 8 3 8;
+    -fx-background-radius: 10;
+}

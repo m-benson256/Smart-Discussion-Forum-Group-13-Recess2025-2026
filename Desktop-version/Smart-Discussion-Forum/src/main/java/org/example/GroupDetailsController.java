@@ -54,6 +54,12 @@ public class GroupDetailsController {
     private void renderDetails(HttpResponse<String> response) {
         Platform.runLater(() -> {
             try {
+                if (response.statusCode() == 403) { // NEW
+                    showBlockedState();
+                    return;
+                }
+
+
                 currentGroup = mapper.readTree(response.body());
 
                 nameLabel.setText(currentGroup.get("name").asText());
@@ -71,6 +77,17 @@ public class GroupDetailsController {
                 e.printStackTrace();
             }
         });
+    }
+
+    private void showBlockedState() {
+        nameLabel.setText("Group Blocked");
+        descriptionLabel.setText("This group has been blocked by an administrator and is no longer accessible.");
+        memberCountLabel.setText("");
+        actionButton.setVisible(false);
+        actionButton.setManaged(false);
+        createTopicButton.setVisible(false);
+        createTopicButton.setManaged(false);
+        topicsContainer.getChildren().clear();
     }
 
     private void updateActionButton() {

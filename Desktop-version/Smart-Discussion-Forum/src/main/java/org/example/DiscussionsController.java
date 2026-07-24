@@ -43,6 +43,7 @@ public class DiscussionsController {
         Platform.runLater(() -> {
             try {
                 JsonNode topics = mapper.readTree(response.body());
+
                 topicsContainer.getChildren().clear();
 
                 boolean any = false;

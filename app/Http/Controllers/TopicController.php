@@ -43,9 +43,15 @@ $topics = $topics->filter(function ($topic) use ($userId, $isLecturer) {
         return true;
     }
 
-    if (!$topic->group) {
+     if (!$topic->group) {
         return true; // general discussion, always visible
     }
+
+    if ($topic->group->status === 'blocked') { // NEW
+        return false;
+    }
+
+   
 
     if ($topic->group->visibility === 'public') {
         return true;
@@ -78,6 +84,15 @@ if (!empty($validated['group_id'])) {
     if (!$isMember) {
         return response()->json(['message' => 'You must be a member of this group to post here'], 403);
     }
+
+    if ($group->status === 'blocked') { // NEW
+        return response()->json(['message' => 'This group has been blocked and no longer accepts new topics.'], 403);
+    }
+
+    $isMember = $group->members()->where('user_id', $request->user()->id)->exists();
+    if (!$isMember) {
+        return response()->json(['message' => 'You must be a member of this group to post here'], 403);
+    }
 }
 
         $topic = Topic::create([
@@ -93,7 +108,11 @@ if (!empty($validated['group_id'])) {
     // GET /api/topics/{topic} — view a single topic
    public function show(Request $request, Topic $topic): JsonResponse
 {
-    $topic->load(['user:id,name', 'group:id,visibility,created_by']);
+    $topic->load(['user:id,name', 'group:id,visibility,created_by,status']);
+
+     if ($topic->group && $topic->group->status === 'blocked') { // NEW
+        return response()->json(['message' => 'This topic belongs to a group that has been blocked.'], 403);
+    }
 
     if ($topic->group && $topic->group->visibility === 'private' && $request->user()->role !== 'lecturer') {
         $userId = $request->user()->id;

@@ -21,7 +21,7 @@ use App\Http\Controllers\AnnouncementsController;
 use App\Http\Controllers\ParticipationController;
 use App\Http\Controllers\SearchController;
 
-use App\Http\Controllers\SearchController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -219,4 +219,6 @@ Route::get('/desktop/lecturer/search', [SearchController::class,'search']);
 Route::get('/desktop/announcements', [AnnouncementsController::class, 'index']);
 
 Route::get('/desktop/student/performance-stats', [QuizAttemptController::class, 'performanceStats']);
+
+Route::get('/desktop/topics/{topic}/export-pdf', [MessageController::class, 'exportPdf']);
 });
