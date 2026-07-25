@@ -10,12 +10,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #721206c5; display: flex; min-height: 100vh; color: #0f272a; }
+        body { font-family: 'Inter', sans-serif; background: #99231dc5; display: flex; min-height: 100vh; color: #0f272a; }
 
         .sidebar {
             width: 270px;
-            background: #041e82;
-            color: #062042;
+            background: #0f2663;
+            color: #14336c;
             padding: 24px 16px;
             display: flex;
             flex-direction: column;

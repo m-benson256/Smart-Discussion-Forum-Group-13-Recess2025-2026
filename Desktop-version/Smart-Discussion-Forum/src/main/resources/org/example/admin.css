@@ -1,0 +1,173 @@
+/* ===================================================================
+   admin.css
+   Matches the colors/shapes used in admin_blade.php (the web dashboard)
+   ================================================================= */
+
+.root {
+    -fx-font-family: "Segoe UI", "Inter", sans-serif;
+    /* Matches the web version's body { background: #721206c5; } (translucent brick-red) */
+    -fx-background-color: rgba(114, 18, 6, 0.77);
+}
+
+/* ===== Sidebar ===== */
+.admin-sidebar {
+    -fx-background-color: #0d0b84;
+}
+
+.admin-brand {
+    -fx-text-fill: white;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+/* Buttons already use styleClass="admin-nav-item" in the FXML */
+.admin-nav-item {
+    -fx-background-color: transparent;
+    -fx-text-fill: #94a3b8;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+    -fx-background-radius: 8;
+    -fx-padding: 10 12 10 12;
+    -fx-alignment: baseline-left;
+    -fx-cursor: hand;
+}
+.admin-nav-item:hover {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: #f1f5f9;
+}
+.admin-nav-item-active {
+    -fx-background-color: #1e293b;
+    -fx-text-fill: white;
+}
+.admin-logout-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #f87171;
+    -fx-font-weight: 500;
+    -fx-alignment: baseline-left;
+    -fx-padding: 10 12 10 12;
+    -fx-cursor: hand;
+    -fx-background-radius: 8;
+}
+.admin-logout-btn:hover {
+    -fx-background-color: #1e293b;
+}
+
+/* ===== Page heading ===== */
+.page-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #0f172a;
+}
+.page-subtitle {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 12px;
+}
+
+/* ===== KPI cards (Overview page) ===== */
+.kpi-card {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e9edf2;
+    -fx-border-radius: 12;
+    -fx-padding: 16;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);
+}
+.kpi-label {
+    -fx-text-fill: #64748b;
+    -fx-font-size: 13px;
+    -fx-font-weight: 500;
+}
+.kpi-value {
+    -fx-text-fill: #0f172a;
+    -fx-font-size: 30px;
+    -fx-font-weight: 700;
+}
+
+/* ===== Generic panel wrapper ===== */
+.admin-panel {
+    -fx-background-color: white;
+    -fx-background-radius: 12;
+    -fx-border-color: #e9edf2;
+    -fx-border-radius: 12;
+    -fx-padding: 18;
+}
+
+/* ===== Buttons (e.g. Blacklist / Unblacklist action column) ===== */
+.btn {
+    -fx-background-radius: 30;
+    -fx-border-radius: 30;
+    -fx-border-color: #d1d9e6;
+    -fx-background-color: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+    -fx-cursor: hand;
+    -fx-padding: 4 12 4 12;
+}
+.btn-primary { -fx-background-color: #2563eb; -fx-text-fill: white; -fx-border-color: #2563eb; }
+.btn-danger  { -fx-background-color: #ef4444; -fx-text-fill: white; -fx-border-color: #ef4444; }
+.btn-success { -fx-background-color: #22c55e; -fx-text-fill: white; -fx-border-color: #22c55e; }
+.btn-warning { -fx-background-color: #f59e0b; -fx-text-fill: white; -fx-border-color: #f59e0b; }
+
+/* ===== Status / role / visibility badges =====
+   Used by the custom cell factories in AdminUsersController,
+   AdminGroupsController, AdminWarningsController. */
+.badge {
+    -fx-background-radius: 40;
+    -fx-font-size: 11px;
+    -fx-font-weight: 500;
+    -fx-padding: 3 10 3 10;
+    -fx-alignment: CENTER;
+}
+.status-active      { -fx-background-color: #dcfce7; -fx-text-fill: #15803d; }
+.status-inactive    { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; }
+.status-warned      { -fx-background-color: #fef3c7; -fx-text-fill: #92400e; }
+.status-blocked,
+.status-blacklisted { -fx-background-color: #fecaca; -fx-text-fill: #991b1b; }
+.status-pending      { -fx-background-color: #fef3c7; -fx-text-fill: #92400e; }
+.status-verified     { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; }
+.status-unverified   { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; }
+.status-resolved,
+.status-approved     { -fx-background-color: #dcfce7; -fx-text-fill: #15803d; }
+.status-rejected     { -fx-background-color: #fee2e2; -fx-text-fill: #991b1b; }
+.status-dismissed,
+.status-na           { -fx-background-color: #f1f5f9; -fx-text-fill: #64748b; }
+
+.role-student    { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; }
+.role-lecturer   { -fx-background-color: #fef3c7; -fx-text-fill: #92400e; }
+.role-staff      { -fx-background-color: #d1fae5; -fx-text-fill: #065f46; }
+.role-moderator  { -fx-background-color: #e0e7ff; -fx-text-fill: #3730a3; }
+.role-admin      { -fx-background-color: #fce7f3; -fx-text-fill: #9d174d; }
+
+.visibility-public   { -fx-background-color: #dbeafe; -fx-text-fill: #1e40af; }
+.visibility-private  { -fx-background-color: #fef3c7; -fx-text-fill: #92400e; }
+
+/* ===== Tables ===== */
+.table-view {
+    -fx-background-color: transparent;
+    -fx-border-color: #174b8b;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+.table-view .column-header-background {
+    -fx-background-color: #f8fafc;
+    -fx-background-radius: 10 10 0 0;
+}
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent transparent #e9edf2 transparent;
+}
+.table-view .column-header .label {
+    -fx-text-fill: #475569;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+.table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #f1f5f9 transparent;
+}
+.table-row-cell:hover {
+    -fx-background-color: #f8fafc;
+}
+.table-row-cell:selected {
+    -fx-background-color: #0a3773;
+}
