@@ -110,11 +110,19 @@
         .notification-toast.show {
             transform: translateY(0);
         }
+
+        /* Mobile sidebar overlay */
+        #sidebar-overlay {
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
     </style>
 </head>
 <body class="h-full font-sans text-slate-900">
 <div class="flex h-full">
-<aside class="w-64 bg-sidebar text-white flex flex-col fixed h-full z-30" data-purpose="main-sidebar">
+<aside class="w-64 bg-sidebar text-white flex flex-col fixed h-full z-30 -translate-x-full md:translate-x-0 transition-transform duration-200" data-purpose="main-sidebar" id="main-sidebar">
 <div class="p-6">
 <h1 class="text-xl font-bold leading-tight">Smart Discussion Forum</h1>
 <p class="text-slate-400 text-sm">Student Dashboard</p>
@@ -151,17 +159,21 @@
 </form>
 </div>
 </aside>
-<div class="flex-1 ml-64 flex flex-col min-h-screen">
-<header class="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-20" data-purpose="top-header">
-<div class="relative w-96">
+<div class="hidden fixed inset-0 bg-slate-900/50 z-20 md:hidden" id="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 gap-3" data-purpose="top-header">
+<button class="md:hidden text-slate-600 text-xl flex-shrink-0" id="mobile-sidebar-toggle" onclick="toggleMobileSidebar(true)" aria-label="Open menu">
+<i class="fa-solid fa-bars"></i>
+</button>
+<div class="relative w-full max-w-[10rem] sm:max-w-xs md:w-96 md:max-w-none">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
 <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
 </span>
 <input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md focus:ring-2 focus:ring-blue-500 transition-all text-sm" id="global-search" placeholder="Search groups, topics, quizzes..." type="text" autocomplete="off"/>
 <div id="search-results" class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg z-30 py-2 max-h-96 overflow-y-auto"></div>
 </div>
-<div class="flex items-center space-x-4">
-<span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
+<div class="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+<span class="hidden md:inline text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
 @if (auth()->user()?->avatar_path)
     <a href="{{ route('profile.edit') }}">
         <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
@@ -171,7 +183,7 @@
 @endif
 </div>
 </header>
-<main class="p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
+<main class="p-4 md:p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
 </main>
 </div>
 </div>
@@ -258,7 +270,7 @@
 <i class="fa-solid fa-triangle-exclamation mr-3 text-red-400"></i> Flag as Irrelevant
 </button>
 </div>
-<div class="hidden fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[110] w-64 overflow-hidden flex flex-col" id="emoji-picker">
+<div class="hidden fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[110] w-64 max-w-[90vw] overflow-hidden flex flex-col" id="emoji-picker">
 <div class="p-3 border-b bg-slate-50 text-[10px] font-bold text-slate-500 flex justify-between items-center tracking-wider">
 <span>QUICK EMOJI</span>
 <button class="hover:text-slate-800" onclick="document.getElementById('emoji-picker').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
@@ -312,6 +324,23 @@ const currentUserId = {{ Auth::id() }};
 
     let searchDebounceTimer = null;
 
+    // Show/hide the sidebar on mobile screens
+    function toggleMobileSidebar(show) {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar || !overlay) return;
+
+        if (show) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('show');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('show');
+        }
+    }
+
     // Wait until DOM is completely parsed before bootstrapping views
     document.addEventListener('DOMContentLoaded', () => {
         mainContent = document.getElementById('main-content');
@@ -343,6 +372,7 @@ const currentUserId = {{ Auth::id() }};
             const navBtn = e.target.closest('[data-view]');
             if (navBtn) {
                 updateView(navBtn.getAttribute('data-view'));
+                toggleMobileSidebar(false); // close sidebar on mobile after choosing a view
             }
         });
 
@@ -875,7 +905,7 @@ case 'quizzes':
                     break;
                 }
                 html = `
-                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-8 sticky  ">
+                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-4 md:-m-8 sticky  ">
                             <div class="  flex items-center">
                                 <button onclick="updateView('${state.selectedGroupId ? 'group_details' : 'discussions'}')" class="mr-4 text-slate-400 hover:text-slate-600">
                                     <i class="fa-solid fa-arrow-left"></i>
