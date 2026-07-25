@@ -223,6 +223,11 @@ Route::post('/topics/{topic}/view', [TopicController::class, 'recordView']);
 Route::get('/recommended-topics', [RecommendationController::class, 'index']);
 
 
+Route::get('/debug-messages-table', function () {
+    $columns = \Illuminate\Support\Facades\Schema::getColumnListing('messages');
+    return response()->json($columns);
+});
+
  Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
 
  Route::post('/messages/{message}/like', [MessageController::class, 'toggleLike']);
