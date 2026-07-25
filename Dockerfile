@@ -1,3 +1,17 @@
+# Stage 1: build frontend assets
+FROM node:20-alpine AS frontend
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm install
+
+COPY resources/ resources/
+COPY vite.config.js ./
+
+RUN npm run build
+
+# Stage 2: PHP application
 FROM php:8.4-cli-alpine
 
 RUN apk add --no-cache \
@@ -13,6 +27,8 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /var/www/html
 
 COPY . .
+
+COPY --from=frontend /app/public/build /var/www/html/public/build
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
