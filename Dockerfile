@@ -1,23 +1,26 @@
-FROM richarvey/nginx-php-fpm:3.1.6
+FROM php:8.3-cli-alpine
+
+# Install system dependencies + PHP extensions Laravel needs
+RUN apk add --no-cache \
+    git \
+    unzip \
+    libpng-dev \
+    libzip-dev \
+    postgresql-dev \
+    && docker-php-ext-install pdo pdo_pgsql zip gd
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
 
 COPY . .
 
-# Image config
-ENV SKIP_COMPOSER=1
-ENV WEBROOT=/var/www/html/public
-ENV PHP_ERRORS_STDERR=1
-ENV RUN_SCRIPTS=1
-ENV REAL_IP_HEADER=1
+RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Laravel config
-ENV APP_ENV=production
-ENV APP_DEBUG=false
-ENV LOG_CHANNEL=stderr
+RUN php artisan config:cache \
+    && php artisan route:cache
 
-# Allow composer to run as root
-ENV COMPOSER_ALLOW_SUPERUSER=1
+EXPOSE 10000
 
-# DB conf — pulled from Render's environment variables at runtime, not baked in
-ENV DB_CONNECTION=pgsql
-
-CMD ["/start.sh"]
+CMD php artisan migrate --force && php artisan storage:link --force && php artisan serve --host=0.0.0.0 --port=${PORT:-10000}
