@@ -22,13 +22,10 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Bootstrap any application services.
      */
-    public function boot(): void
-    {
-        $this->configureDefaults();
-    }
-
     public function boot(UrlGenerator $url)
 {
+     $this->configureDefaults();
+
     if (env('APP_ENV') == 'production') {
         $url->forceScheme('https');
     }
