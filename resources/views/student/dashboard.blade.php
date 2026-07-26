@@ -683,7 +683,10 @@ async function recordTopicView(topicId) {
            
 case 'group_details':
     const group = state.groups.find(g => g.id === state.selectedGroupId);
-    const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
+    const gTopics = state.topics
+        .filter(t => t.groupId === state.selectedGroupId)
+        .slice()
+        .sort((a, b) => a.replies - b.replies);
 
     
 let membershipButton = '';
@@ -734,7 +737,7 @@ if (group.isCreator) {
                         </button>
                     </div>
                     <div class="space-y-3">
-                        ${state.topics.map(topic => renderTopicItem(topic)).join('')}
+                        ${state.topics.slice().sort((a, b) => a.replies - b.replies).map(topic => renderTopicItem(topic)).join('')}
                     </div>
                 `;
                 break;
