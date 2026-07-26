@@ -222,7 +222,9 @@ Route::post('/topics/{topic}/view', [TopicController::class, 'recordView']);
 
 Route::get('/recommended-topics', [RecommendationController::class, 'index']);
 
-
+Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
+Route::delete('/groups/{group}', [GroupController::class, 'destroy']);
+Route::delete('/topics/{topic}', [TopicController::class, 'destroy']);
 
 
  Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);

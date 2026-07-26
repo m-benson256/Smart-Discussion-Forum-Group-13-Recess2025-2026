@@ -176,6 +176,17 @@ public function pendingRequests(Request $request, Group $group): JsonResponse
     return response()->json($requests);
 }
 
+public function destroy(Request $request, Group $group): JsonResponse
+{
+    if ($group->created_by !== $request->user()->id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $group->delete();
+
+    return response()->json(['message' => 'Group deleted']);
+}
+
 // POST /group-requests/{groupJoinRequest}/approve
 public function approveRequest(Request $request, GroupJoinRequest $groupJoinRequest): JsonResponse
 {
