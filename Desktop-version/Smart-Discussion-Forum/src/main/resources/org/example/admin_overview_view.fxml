@@ -6,7 +6,9 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="20" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.AdminOverviewController">
+      fx:controller="org.example.AdminOverviewController"
+      stylesheets="@admin.css"  
+      >
 
     <Label text="Dashboard Overview" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
 

@@ -6,7 +6,8 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox spacing="12" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
-      fx:controller="org.example.AdminUsersController">
+      fx:controller="org.example.AdminUsersController"
+      stylesheets="@admin.css">
 
     <Label text="Users" style="-fx-font-size: 20px; -fx-font-weight: bold;" />
     <Label fx:id="statusLabel" text="" style="-fx-text-fill: #64748b;" />

@@ -9,6 +9,7 @@
 
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.AdminDashboardController"
+            stylesheets="@admin.css"
             prefWidth="1100" prefHeight="750">
 
     <left>
