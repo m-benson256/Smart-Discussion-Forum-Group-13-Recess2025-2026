@@ -12,17 +12,19 @@ COPY vite.config.js ./
 RUN npm run build
 
 # Stage 2: PHP application + Python recommendation service
-FROM php:8.4-cli-alpine
+FROM php:8.4-cli-bookworm
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     unzip \
     libpng-dev \
     libzip-dev \
-    postgresql-dev \
+    libpq-dev \
     python3 \
-    py3-pip \
-    && docker-php-ext-install pdo pdo_pgsql zip gd
+    python3-pip \
+    python3-venv \
+    && docker-php-ext-install pdo pdo_pgsql zip gd \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
