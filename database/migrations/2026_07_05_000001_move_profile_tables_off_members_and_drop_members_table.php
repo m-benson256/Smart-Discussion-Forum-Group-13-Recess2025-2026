@@ -2,14 +2,13 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+
+    public $withinTransaction = false;
+
     public function up(): void
     {
         $this->repointForeignKey('students', 'StudentID', 'users', 'id');
@@ -21,9 +20,6 @@ return new class extends Migration
         Schema::dropIfExists('members');
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::create('members', function (Blueprint $table) {
@@ -66,17 +62,17 @@ return new class extends Migration
 
         $constraintName = sprintf('%s_%s_foreign', $tableName, strtolower($columnName));
 
-        $constraintExists = DB::table('information_schema.TABLE_CONSTRAINTS')
-            ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-            ->where('TABLE_NAME', $tableName)
-            ->where('CONSTRAINT_NAME', $constraintName)
-            ->where('CONSTRAINT_TYPE', 'FOREIGN KEY')
-            ->exists();
-
-        if ($constraintExists) {
+        // Try to drop any existing foreign key with this name. Safe to ignore
+        // failure — on a fresh database, the old members-based constraint
+        // never existed in the first place, so there's nothing to drop. This
+        // also avoids the raw information_schema query, which is MySQL-only
+        // syntax and doesn't exist in Postgres or SQLite.
+        try {
             Schema::table($tableName, function (Blueprint $table) use ($constraintName) {
                 $table->dropForeign($constraintName);
             });
+        } catch (\Throwable $e) {
+            // No matching constraint — expected on a fresh database.
         }
 
         Schema::table($tableName, function (Blueprint $table) use ($columnName, $referenceTable, $referenceColumn) {

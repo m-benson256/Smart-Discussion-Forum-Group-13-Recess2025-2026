@@ -106,6 +106,18 @@ public function index(Request $request, Topic $topic): JsonResponse
     ], 201);
     }
 
+
+    public function destroy(Request $request, Message $message): JsonResponse
+{
+    if ($message->user_id !== $request->user()->id) {
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    $message->delete();
+
+    return response()->json(['message' => 'Message deleted']);
+}
+
     // POST /messages/{message}/flag — toggle flag for the current user
    public function toggleFlag(Request $request, Message $message): JsonResponse
 {

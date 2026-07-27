@@ -2,14 +2,12 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
+     public $withinTransaction = false;
+
     public function up(): void
     {
         Schema::table('students', function (Blueprint $table) {
@@ -47,45 +45,31 @@ return new class extends Migration
 
     private function addForeignKeyIfMissing(string $tableName, string $columnName, string $referenceTable, string $referenceColumn): void
     {
-        $constraintName = sprintf('%s_%s_foreign', $tableName, $columnName);
-
-        $constraintExists = DB::table('information_schema.TABLE_CONSTRAINTS')
-            ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-            ->where('TABLE_NAME', $tableName)
-            ->where('CONSTRAINT_NAME', $constraintName)
-            ->where('CONSTRAINT_TYPE', 'FOREIGN KEY')
-            ->exists();
-
-        if ($constraintExists) {
-            return;
-        }
-
         if (! Schema::hasColumn($tableName, $columnName)) {
             return;
         }
 
-        Schema::table($tableName, function (Blueprint $table) use ($columnName, $referenceTable, $referenceColumn) {
-            $table->foreign($columnName)->references($referenceColumn)->on($referenceTable)->cascadeOnDelete();
-        });
+        $constraintName = sprintf('%s_%s_foreign', $tableName, $columnName);
+
+        try {
+            Schema::table($tableName, function (Blueprint $table) use ($columnName, $referenceTable, $referenceColumn) {
+                $table->foreign($columnName)->references($referenceColumn)->on($referenceTable)->cascadeOnDelete();
+            });
+        } catch (\Throwable $e) {
+            // Constraint already exists — safe to ignore.
+        }
     }
 
     private function dropForeignKeyIfExists(string $tableName, string $columnName): void
     {
         $constraintName = sprintf('%s_%s_foreign', $tableName, $columnName);
 
-        $constraintExists = DB::table('information_schema.TABLE_CONSTRAINTS')
-            ->where('CONSTRAINT_SCHEMA', DB::getDatabaseName())
-            ->where('TABLE_NAME', $tableName)
-            ->where('CONSTRAINT_NAME', $constraintName)
-            ->where('CONSTRAINT_TYPE', 'FOREIGN KEY')
-            ->exists();
-
-        if (! $constraintExists) {
-            return;
+        try {
+            Schema::table($tableName, function (Blueprint $table) use ($constraintName) {
+                $table->dropForeign($constraintName);
+            });
+        } catch (\Throwable $e) {
+            // No matching constraint — safe to ignore.
         }
-
-        Schema::table($tableName, function (Blueprint $table) use ($constraintName) {
-            $table->dropForeign($constraintName);
-        });
     }
 };

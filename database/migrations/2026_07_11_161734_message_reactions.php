@@ -12,7 +12,7 @@ return new class extends Migration
     {
         Schema::create('message_reactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('message_id')->constrained('messages')->cascadeOnDelete();
+            $table->foreignId('message_id')->constrained('messages' , 'PostID')->cascadeOnDelete();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->string('emoji', 16);
             $table->timestamps();

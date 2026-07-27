@@ -110,11 +110,19 @@
         .notification-toast.show {
             transform: translateY(0);
         }
+
+        /* Mobile sidebar overlay */
+        #sidebar-overlay {
+            display: none;
+        }
+        #sidebar-overlay.show {
+            display: block;
+        }
     </style>
 </head>
 <body class="h-full font-sans text-slate-900">
 <div class="flex h-full">
-<aside class="w-64 bg-sidebar text-white flex flex-col fixed h-full z-30" data-purpose="main-sidebar">
+<aside class="w-64 bg-sidebar text-white flex flex-col fixed h-full z-30 -translate-x-full md:translate-x-0 transition-transform duration-200" data-purpose="main-sidebar" id="main-sidebar">
 <div class="p-6">
 <h1 class="text-xl font-bold leading-tight">Smart Discussion Forum</h1>
 <p class="text-slate-400 text-sm">Student Dashboard</p>
@@ -151,17 +159,21 @@
 </form>
 </div>
 </aside>
-<div class="flex-1 ml-64 flex flex-col min-h-screen">
-<header class="h-16 bg-white border-b flex items-center justify-between px-8 sticky top-0 z-20" data-purpose="top-header">
-<div class="relative w-96">
+<div class="hidden fixed inset-0 bg-slate-900/50 z-20 md:hidden" id="sidebar-overlay" onclick="toggleMobileSidebar(false)"></div>
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen">
+<header class="h-16 bg-white border-b flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 gap-3" data-purpose="top-header">
+<button class="md:hidden text-slate-600 text-xl flex-shrink-0" id="mobile-sidebar-toggle" onclick="toggleMobileSidebar(true)" aria-label="Open menu">
+<i class="fa-solid fa-bars"></i>
+</button>
+<div class="relative w-full max-w-[10rem] sm:max-w-xs md:w-96 md:max-w-none">
 <span class="absolute inset-y-0 left-0 flex items-center pl-3">
 <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
 </span>
 <input class="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-md focus:ring-2 focus:ring-blue-500 transition-all text-sm" id="global-search" placeholder="Search groups, topics, quizzes..." type="text" autocomplete="off"/>
 <div id="search-results" class="hidden absolute left-0 right-0 mt-2 bg-white border border-slate-200 rounded-lg shadow-lg z-30 py-2 max-h-96 overflow-y-auto"></div>
 </div>
-<div class="flex items-center space-x-4">
-<span class="text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
+<div class="flex items-center space-x-2 md:space-x-4 flex-shrink-0">
+<span class="hidden md:inline text-slate-600 text-sm">Welcome back, <span class="font-bold text-slate-800">{{ auth()->user()?->name ?? 'User' }}</span></span>
 @if (auth()->user()?->avatar_path)
     <a href="{{ route('profile.edit') }}">
         <img src="{{ auth()->user()->avatarUrl() }}" alt="{{ auth()->user()->name }}" class="w-10 h-10 rounded-full object-cover cursor-pointer hover:opacity-80 transition-opacity">
@@ -171,7 +183,7 @@
 @endif
 </div>
 </header>
-<main class="p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
+<main class="p-4 md:p-8 flex-1 flex flex-col" data-purpose="content-display" id="main-content">
 </main>
 </div>
 </div>
@@ -257,8 +269,16 @@
 <button class="w-full text-left px-4 py-2 text-sm text-red-600 context-menu-item flex items-center" onclick="handleContextAction('flag')">
 <i class="fa-solid fa-triangle-exclamation mr-3 text-red-400"></i> Flag as Irrelevant
 </button>
+<button class="hidden w-full text-left px-4 py-2 text-sm text-red-600 context-menu-item items-center" id="delete-message-btn" onclick="handleContextAction('delete')">
+<i class="fa-solid fa-trash mr-3 text-red-400"></i> Delete Message
+</button>
 </div>
-<div class="hidden fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[110] w-64 overflow-hidden flex flex-col" id="emoji-picker">
+<div class="hidden fixed bg-white border border-slate-200 rounded-lg shadow-xl py-2 w-48 z-[100]" id="item-context-menu">
+<button class="w-full text-left px-4 py-2 text-sm text-red-600 context-menu-item flex items-center" onclick="confirmDeleteItem()">
+<i class="fa-solid fa-trash mr-3 text-red-400"></i> <span id="item-context-menu-label">Delete</span>
+</button>
+</div>
+<div class="hidden fixed bg-white border border-slate-200 rounded-xl shadow-2xl z-[110] w-64 max-w-[90vw] overflow-hidden flex flex-col" id="emoji-picker">
 <div class="p-3 border-b bg-slate-50 text-[10px] font-bold text-slate-500 flex justify-between items-center tracking-wider">
 <span>QUICK EMOJI</span>
 <button class="hover:text-slate-800" onclick="document.getElementById('emoji-picker').classList.add('hidden')"><i class="fa-solid fa-xmark"></i></button>
@@ -312,6 +332,23 @@ const currentUserId = {{ Auth::id() }};
 
     let searchDebounceTimer = null;
 
+    // Show/hide the sidebar on mobile screens
+    function toggleMobileSidebar(show) {
+        const sidebar = document.getElementById('main-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        if (!sidebar || !overlay) return;
+
+        if (show) {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            overlay.classList.add('show');
+        } else {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            overlay.classList.remove('show');
+        }
+    }
+
     // Wait until DOM is completely parsed before bootstrapping views
     document.addEventListener('DOMContentLoaded', () => {
         mainContent = document.getElementById('main-content');
@@ -343,6 +380,7 @@ const currentUserId = {{ Auth::id() }};
             const navBtn = e.target.closest('[data-view]');
             if (navBtn) {
                 updateView(navBtn.getAttribute('data-view'));
+                toggleMobileSidebar(false); // close sidebar on mobile after choosing a view
             }
         });
 
@@ -428,6 +466,8 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
       document.addEventListener('click', (e) => {
             if (contextMenu && !contextMenu.contains(e.target)) contextMenu.classList.add('hidden');
             if (emojiPicker && !emojiPicker.contains(e.target)) emojiPicker.classList.add('hidden');
+            const itemContextMenu = document.getElementById('item-context-menu');
+            if (itemContextMenu && !itemContextMenu.contains(e.target)) itemContextMenu.classList.add('hidden');
             const shareMenu = document.getElementById('share-menu');
             if (shareMenu && !e.target.closest('#share-menu') && !e.target.closest('[title="Share this discussion"]')) {
                 shareMenu.classList.add('hidden');
@@ -464,8 +504,9 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
         setInterval(checkForActiveQuiz, 15000);
     });
 
-    function showNotification() {
+    function showNotification(message) {
         const toast = document.getElementById('notification-toast');
+        if (toast && message) toast.textContent = message;
         toast?.classList.add('show');
         setTimeout(() => toast?.classList.remove('show'), 3000);
     }
@@ -607,7 +648,7 @@ async function recordTopicView(topicId) {
                     ${state.groups.length ? `
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             ${state.groups.map(group => `
-    <div onclick="${group.isBlocked ? '' : `openGroup(${group.id})`}" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all group flex flex-col h-full ${group.isBlocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400 cursor-pointer hover:shadow-md'}">
+    <div onclick="${group.isBlocked ? '' : `openGroup(${group.id})`}" oncontextmenu="showItemContextMenu(event, 'group', ${group.id}, ${group.isCreator})" class="post-card bg-white p-6 rounded-xl border border-slate-200 shadow-sm transition-all group flex flex-col h-full ${group.isBlocked ? 'opacity-50 cursor-not-allowed' : 'hover:border-blue-400 cursor-pointer hover:shadow-md'}">
         <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600 mb-4 group-hover:bg-blue-600 group-hover:text-white transition-colors">
             <i class="fa-solid fa-users text-xl"></i>
         </div>
@@ -642,7 +683,10 @@ async function recordTopicView(topicId) {
            
 case 'group_details':
     const group = state.groups.find(g => g.id === state.selectedGroupId);
-    const gTopics = state.topics.filter(t => t.groupId === state.selectedGroupId);
+    const gTopics = state.topics
+        .filter(t => t.groupId === state.selectedGroupId)
+        .slice()
+        .sort((a, b) => a.replies - b.replies);
 
     
 let membershipButton = '';
@@ -693,7 +737,7 @@ if (group.isCreator) {
                         </button>
                     </div>
                     <div class="space-y-3">
-                        ${state.topics.map(topic => renderTopicItem(topic)).join('')}
+                        ${state.topics.slice().sort((a, b) => a.replies - b.replies).map(topic => renderTopicItem(topic)).join('')}
                     </div>
                 `;
                 break;
@@ -875,7 +919,7 @@ case 'quizzes':
                     break;
                 }
                 html = `
-                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-8 sticky  ">
+                       <div class="h-35 bg-white border-b px-4 flex justify-between -m-4 md:-m-8 sticky  ">
                             <div class="  flex items-center">
                                 <button onclick="updateView('${state.selectedGroupId ? 'group_details' : 'discussions'}')" class="mr-4 text-slate-400 hover:text-slate-600">
                                     <i class="fa-solid fa-arrow-left"></i>
@@ -908,7 +952,7 @@ case 'quizzes':
                         <div class="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50" id="chat-messages">
                             <div class="max-w-4xl mx-auto space-y-6">
                                 ${topicMessages.map(msg => `
-                                    <div data-message-id="${msg.id}" class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
+                                    <div data-message-id="${msg.id}" data-is-me="${msg.isMe}" class="flex ${msg.isMe ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 ${msg.isMe ? 'space-x-reverse' : ''}">
                                         ${msg.authorAvatar
                                             ? `<img src="${msg.authorAvatar}" alt="${msg.author}" class="w-8 h-8 rounded-full mt-1 flex-shrink-0 object-cover">`
                                             : `<div class="w-8 h-8 rounded-full mt-1 flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${msg.isMe ? 'bg-blue-600' : 'bg-slate-400'}">${msg.author.charAt(0)}</div>`
@@ -999,7 +1043,7 @@ case 'quizzes':
 
     function renderTopicItem(topic) {
         return `
-            <div onclick="openTopic(${topic.id})" class="post-card bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-blue-300 cursor-pointer transition-colors flex justify-between items-center group">
+            <div onclick="openTopic(${topic.id})" oncontextmenu="showItemContextMenu(event, 'topic', ${topic.id}, ${topic.authorId === currentUserId})" class="post-card bg-white p-4 rounded-lg border border-slate-200 shadow-sm hover:border-blue-300 cursor-pointer transition-colors flex justify-between items-center group">
                 <div class="flex flex-col">
                     <div class="flex items-center space-x-4 mb-2">
                         <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
@@ -1066,6 +1110,7 @@ async function handleLike(event, btn) {
             title: topic.title,
             content: topic.content,
             author: topic.user ? topic.user.name : 'Unknown',
+            authorId: topic.user ? topic.user.id : null,
             date: topic.created_at ? new Date(topic.created_at).toLocaleDateString() : 'Just now',
             replies: topic.messages_count || 0,
             likes: 0
@@ -1345,8 +1390,37 @@ async function handleContextAction(action) {
         case 'flag':
             await toggleMessageFlag(currentContextMessageId);
             break;
+        case 'delete':
+            await deleteMessage(currentContextMessageId);
+            break;
     }
     contextMenu?.classList.add('hidden');
+}
+
+async function deleteMessage(messageId) {
+    if (!confirm('Delete this message? This cannot be undone.')) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    try {
+        const response = await fetch(`/messages/${messageId}`, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete message');
+
+        const wrapper = document.querySelector(`[data-message-id="${messageId}"]`);
+        wrapper?.remove();
+
+        const topicMessages = state.messages[state.selectedTopicId] || [];
+        state.messages[state.selectedTopicId] = topicMessages.filter(m => m.id != messageId);
+
+        showNotification('Message deleted.');
+    } catch (err) {
+        console.error(err);
+        showNotification('Failed to delete message. Please try again.');
+    }
 }
 
 async function toggleMessageFlag(messageId) {
@@ -1528,15 +1602,102 @@ function setupContextListeners() {
 
             const wrapper = el.closest('[data-message-id]');
             currentContextMessageId = wrapper ? wrapper.getAttribute('data-message-id') : null;
-            
+            const isMe = wrapper ? wrapper.getAttribute('data-is-me') === 'true' : false;
+
+            const deleteBtn = document.getElementById('delete-message-btn');
+            if (deleteBtn) deleteBtn.classList.toggle('hidden', !isMe);
+
             if (contextMenu) {
                 contextMenu.style.left = `${e.clientX}px`;
                 contextMenu.style.top = `${e.clientY}px`;
                 contextMenu.classList.remove('hidden');
             }
             emojiPicker?.classList.add('hidden');
+            document.getElementById('item-context-menu')?.classList.add('hidden');
         });
     });
+}
+
+// Right-click handling for groups and topics
+let currentContextType = null;
+let currentContextItemId = null;
+
+function showItemContextMenu(event, type, id, canDelete) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (!canDelete) {
+        showNotification(`Only the ${type} creator can delete this.`);
+        return;
+    }
+
+    currentContextType = type;
+    currentContextItemId = id;
+
+    const menu = document.getElementById('item-context-menu');
+    const label = document.getElementById('item-context-menu-label');
+    if (label) label.textContent = type === 'group' ? 'Delete Group' : 'Delete Topic';
+
+    if (menu) {
+        menu.style.left = `${event.clientX}px`;
+        menu.style.top = `${event.clientY}px`;
+        menu.classList.remove('hidden');
+    }
+
+    contextMenu?.classList.add('hidden');
+    emojiPicker?.classList.add('hidden');
+}
+
+async function confirmDeleteItem() {
+    const menu = document.getElementById('item-context-menu');
+    menu?.classList.add('hidden');
+
+    const type = currentContextType;
+    const id = currentContextItemId;
+    currentContextType = null;
+    currentContextItemId = null;
+
+    if (!type || !id) return;
+
+    const label = type === 'group' ? 'group' : 'topic';
+    if (!confirm(`Delete this ${label}? This cannot be undone and will remove all of its content.`)) return;
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const endpoint = type === 'group' ? `/groups/${id}` : `/topics/${id}`;
+
+    try {
+        const response = await fetch(endpoint, {
+            method: 'DELETE',
+            headers: { 'X-CSRF-TOKEN': csrfToken }
+        });
+
+        if (!response.ok) throw new Error(`Failed to delete ${label}`);
+
+        if (type === 'group') {
+            state.groups = state.groups.filter(g => g.id !== id);
+            state.topics = state.topics.filter(t => t.groupId !== id);
+            if (state.selectedGroupId === id) {
+                updateView('groups');
+            } else {
+                renderView();
+                setupContextListeners();
+            }
+        } else {
+            state.topics = state.topics.filter(t => t.id !== id);
+            delete state.messages[id];
+            if (state.selectedTopicId === id) {
+                updateView(state.selectedGroupId ? 'group_details' : 'discussions');
+            } else {
+                renderView();
+                setupContextListeners();
+            }
+        }
+
+        showNotification(`${label.charAt(0).toUpperCase() + label.slice(1)} deleted.`);
+    } catch (err) {
+        console.error(err);
+        showNotification(`Failed to delete ${label}. Please try again.`);
+    }
 }
 
     function toggleGroupModal(show) {
