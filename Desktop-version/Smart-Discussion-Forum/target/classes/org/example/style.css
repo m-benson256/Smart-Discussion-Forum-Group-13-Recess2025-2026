@@ -338,15 +338,6 @@
      -fx-border-radius: 16 16 16 4;
  }
 
-<<<<<<< HEAD
-
-
-
-
-
-
-
-=======
  .bubble-me .text {
     -fx-fill: white;
 }
@@ -362,7 +353,6 @@
 
 
 
->>>>>>> db071990f9bf5b7cdfc1783d2a44bf5d34c6c8b3
 
 .section-title {
     -fx-font-size: 15px;
@@ -596,8 +586,6 @@
     -fx-border-color: transparent transparent #f1f5f9 transparent;
     -fx-border-width: 0 0 1 0;
 }
-<<<<<<< HEAD
-=======
 
 .search-popup {
     -fx-background-color: white;
@@ -721,4 +709,3 @@
     -fx-padding: 3 8 3 8;
     -fx-background-radius: 10;
 }
->>>>>>> db071990f9bf5b7cdfc1783d2a44bf5d34c6c8b3
