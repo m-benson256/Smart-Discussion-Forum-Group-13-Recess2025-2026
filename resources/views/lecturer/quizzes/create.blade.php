@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html class="light" lang="en"><head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -121,6 +120,21 @@
             border-color: #002045;
             outline: none;
         }
+
+        /* Sidebar: off-canvas below lg, static from lg up */
+        #sideNav {
+            transition: transform 0.25s ease-in-out;
+            transform: translateX(-100%);
+        }
+        #sideNav.nav-open {
+            transform: translateX(0);
+        }
+        @media (min-width: 1024px) {
+            #sideNav {
+                transform: translateX(0) !important;
+                position: sticky;
+            }
+        }
     </style>
 </head>
 <body class="bg-background text-on-surface font-body-md text-body-md overflow-hidden">
@@ -132,11 +146,14 @@
         $lecturerName = $loggedInUser?->name ?? 'Lecturer';
         $lecturerDegree = $loggedInLecturer?->DegreeType ?? 'Lecturer';
     @endphp
-<div class="flex h-screen w-full">
+<div class="flex h-screen w-full relative">
+<!-- Sidebar Overlay (mobile only) -->
+<div class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" id="navOverlay" onclick="closeSideNav()"></div>
 <!-- Sidebar Navigation (SideNavBar) -->
-<aside class="w-sidebar-width h-screen sticky top-0 left-0 bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline flex flex-col py-lg px-base shrink-0">
+<aside class="w-sidebar-width h-screen fixed lg:sticky top-0 left-0 z-40 lg:z-auto bg-surface-container-low dark:bg-surface-container-lowest border-r border-outline-variant dark:border-outline flex flex-col py-lg px-base shrink-0" id="sideNav">
 <!-- Header Brand Section -->
-<div class="mb-lg px-4 flex items-center gap-4">
+<div class="mb-lg px-4 flex items-center justify-between gap-4">
+<div class="flex items-center gap-4">
 <div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container">
 <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">school</span>
 </div>
@@ -145,8 +162,12 @@
 <p class="font-label-md text-label-md text-on-surface-variant">Quiz Management</p>
 </div>
 </div>
+<button class="lg:hidden text-on-surface-variant hover:text-primary" onclick="closeSideNav()" aria-label="Close menu">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
 <!-- Navigation Tabs -->
-<nav class="flex-1 space-y-2">
+<nav class="flex-1 space-y-2 overflow-y-auto">
 <button class="w-full text-left flex items-center gap-4 py-3 px-4 text-primary dark:text-primary-fixed border-l-4 border-primary dark:border-primary-fixed font-bold bg-surface-container-high transition-colors opacity-90" id="btn-configure-quiz" onclick="switchTab('configure-quiz', this)">
 <span class="material-symbols-outlined">settings</span>
 <span class="font-label-md text-label-md">Configure Quiz</span>
@@ -175,7 +196,14 @@
 </div>
 </aside>
 <!-- Main Workspace -->
-<main class="flex-1 overflow-y-auto px-lg py-lg">
+<main class="flex-1 min-w-0 overflow-y-auto px-4 sm:px-lg py-4 sm:py-lg">
+<!-- Mobile top bar with hamburger -->
+<div class="flex items-center gap-3 mb-4 lg:hidden">
+<button class="text-primary" onclick="openSideNav()" aria-label="Open menu">
+<span class="material-symbols-outlined text-3xl">menu</span>
+</button>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">Quiz Management</span>
+</div>
 <div class="max-w-container-max mx-auto">
 <!-- Tab 1: Configure Quiz -->
 <section class="active-tab-content space-y-md" id="tab-configure-quiz">
@@ -248,10 +276,10 @@
 <h2 class="font-headline-md text-headline-md text-primary mb-2">Question Bank</h2>
 <p class="text-on-surface-variant font-body-md">Construct your assessment items using various pedagogic formats.</p>
 </header>
-<div class="flex gap-gutter h-[600px]">
+<div class="flex flex-col lg:flex-row gap-gutter lg:h-[600px]">
 <!-- Left: List View -->
-<div class="w-1/3 flex flex-col gap-4">
-<div class="flex-1 overflow-y-auto space-y-3 bg-surface-container-low p-sm rounded-xl border border-outline-variant">
+<div class="w-full lg:w-1/3 flex flex-col gap-4">
+<div class="lg:flex-1 lg:overflow-y-auto space-y-3 bg-surface-container-low p-sm rounded-xl border border-outline-variant max-h-72 lg:max-h-none overflow-y-auto">
 <div class="space-y-2" id="question-list-container">
 <!-- Questions dynamically rendered here -->
 </div>
@@ -263,9 +291,9 @@
 </div>
 <!-- Right: Editor -->
 <div class="flex-1 bg-white border border-outline-variant rounded-xl shadow-sm flex flex-col overflow-hidden">
-<div class="p-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<div class="p-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center gap-2">
 <h3 class="font-label-md text-label-md text-primary" id="editor-title">Adding New Question</h3>
-<span class="bg-primary text-on-primary text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider">Draft</span>
+<span class="bg-primary text-on-primary text-[10px] px-2 py-1 rounded font-bold uppercase tracking-wider whitespace-nowrap">Draft</span>
 </div>
 <div class="p-md flex-1 overflow-y-auto space-y-6">
 <div class="flex flex-col gap-2">
@@ -303,7 +331,7 @@
 <p class="font-label-md text-primary mt-4 py-2 px-3 bg-primary-fixed rounded-lg hidden" id="grading-key-indicator">System Grading Key: <span class="font-bold" id="selected-key-val">-</span></p>
 </div>
 <!-- T/F Area -->
-<div class="hidden flex gap-md" id="tf-options">
+<div class="hidden flex flex-col sm:flex-row gap-md" id="tf-options">
 <label class="flex-1 flex items-center justify-center gap-2 p-4 border border-outline-variant rounded-lg cursor-pointer hover:bg-surface-container-low transition-colors">
 <input class="text-primary border-outline-variant" name="tf-correct" type="radio" value="True"/>
 <span class="font-label-md text-label-md">True</span>
@@ -321,7 +349,7 @@
 </div>
 </div>
 <div class="p-md bg-surface-container-low border-t border-outline-variant text-right">
-<button class="px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity" onclick="saveQuestion()">
+<button class="w-full sm:w-auto px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:opacity-90 transition-opacity" onclick="saveQuestion()">
                                     Save Question to List
                                 </button>
 </div>
@@ -338,7 +366,7 @@
 <!-- Main Summary Card -->
 <div class="md:col-span-2 space-y-md">
 <div class="bg-surface-container-lowest border border-outline-variant rounded-2xl shadow-sm overflow-hidden">
-<div class="p-lg space-y-8">
+<div class="p-md sm:p-lg space-y-8">
 <div>
 <h3 class="font-caption text-caption text-on-surface-variant uppercase tracking-widest mb-2">Quiz Title</h3>
 <p class="font-headline-sm text-headline-sm text-primary font-bold" id="summary-title">Advanced Quantum Mechanics Midterm</p>
@@ -392,6 +420,16 @@
 </main>
 </div>
 <script>
+        // Mobile sidebar controls
+        function openSideNav() {
+            document.getElementById('sideNav').classList.add('nav-open');
+            document.getElementById('navOverlay').classList.remove('hidden');
+        }
+        function closeSideNav() {
+            document.getElementById('sideNav').classList.remove('nav-open');
+            document.getElementById('navOverlay').classList.add('hidden');
+        }
+
         // Data Store
       // NEW:
 let quizId = {{ $quiz->id ?? 'null' }};
@@ -445,6 +483,9 @@ let quizData = {
     btn.className = "w-full text-left flex items-center gap-4 py-3 px-4 text-primary dark:text-primary-fixed border-l-4 border-primary dark:border-primary-fixed font-bold bg-surface-container-high transition-colors opacity-90";
     
     if(tabId === 'review-summary') renderReviewList();
+
+    // Close the mobile sidebar automatically after choosing a section
+    closeSideNav();
 }
 
 
@@ -603,14 +644,14 @@ async function saveQuestion() {
             container.innerHTML = "";
             quizData.questions.forEach((q, idx) => {
                 const div = document.createElement('div');
-                div.className = "p-4 bg-white border border-outline-variant rounded-lg hover:border-primary transition-all cursor-pointer flex justify-between items-center group";
+                div.className = "p-4 bg-white border border-outline-variant rounded-lg hover:border-primary transition-all cursor-pointer flex justify-between items-center gap-2 group";
                 div.onclick = () => editQuestion(idx);
                 div.innerHTML = `
-                    <div>
+                    <div class="min-w-0">
                         <p class="font-label-md text-label-md ${currentEditingIndex === idx ? 'text-primary font-bold' : 'text-on-surface'}">Question ${idx + 1}</p>
                         <p class="text-on-surface-variant font-caption text-caption truncate w-32">${q.prompt}</p>
                     </div>
-                    <span class="material-symbols-outlined text-on-surface-variant text-sm">edit</span>
+                    <span class="material-symbols-outlined text-on-surface-variant text-sm flex-shrink-0">edit</span>
                 `;
                 container.appendChild(div);
             });
@@ -657,9 +698,9 @@ async function saveQuestion() {
 
             quizData.questions.forEach((q, idx) => {
                 const card = document.createElement('div');
-                card.className = "review-item p-4 bg-surface-container-low border border-outline-variant rounded-xl flex justify-between items-start";
+                card.className = "review-item p-4 bg-surface-container-low border border-outline-variant rounded-xl flex flex-col sm:flex-row justify-between items-start gap-3";
                 card.innerHTML = `
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="bg-primary-container text-on-primary-container text-[10px] px-2 py-0.5 rounded font-bold uppercase">${q.type}</span>
                             <p class="font-label-md text-label-md text-primary">Question ${idx + 1}</p>
@@ -667,7 +708,7 @@ async function saveQuestion() {
                         <p class="font-body-md text-on-surface mb-2">${q.prompt}</p>
                         <p class="font-caption text-caption text-on-surface-variant"><span class="font-bold">Grading Key:</span> ${q.correctKey}</p>
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 self-end sm:self-start">
                         <button onclick="switchTab('add-questions', document.getElementById('btn-add-questions')); editQuestion(${idx})" class="p-1 hover:text-primary transition-colors">
                             <span class="material-symbols-outlined text-sm">edit</span>
                         </button>

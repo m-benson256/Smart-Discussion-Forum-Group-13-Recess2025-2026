@@ -39,51 +39,73 @@
     body { font-family: 'Manrope', sans-serif; }
     .sidebar-active { background-color: #3e638d; color: white; }
     .transition-all-200 { transition: all 0.2s ease-in-out; }
+
+    /* Sidebar slides in/out on mobile, always visible from lg breakpoint up */
+    #sidebar {
+      transition: transform 0.25s ease-in-out;
+      transform: translateX(-100%);
+    }
+    #sidebar.sidebar-open {
+      transform: translateX(0);
+    }
+    @media (min-width: 1024px) {
+      #sidebar {
+        transform: translateX(0) !important;
+      }
+    }
   </style>
 </head>
 <body class="h-full overflow-hidden text-[#152f53]">
 <!-- BEGIN: Main Layout -->
-<div class="flex h-screen overflow-hidden">
+<div class="flex h-screen overflow-hidden relative">
+<!-- BEGIN: Sidebar Overlay (mobile only) -->
+<div class="hidden fixed inset-0 bg-black/40 z-30 lg:hidden" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<!-- END: Sidebar Overlay -->
 <!-- BEGIN: Sidebar -->
-<aside class="w-64 bg-brand flex-shrink-0 flex flex-col transition-all-200">
-<div class="p-6">
+<aside class="w-64 bg-brand flex-shrink-0 flex flex-col fixed inset-y-0 left-0 z-40 lg:static lg:z-auto" id="sidebar">
+<div class="p-6 flex items-center justify-between">
+<div>
 <h1 class="text-white text-xl font-bold leading-tight">Smart Discussion Forum</h1>
 <p class="text-brand-accent text-sm">Lecturer Dashboard</p>
 </div>
-<nav class="flex-1 px-4 space-y-2 mt-4" data-purpose="navigation-menu">
+<button class="text-gray-300 hover:text-white lg:hidden" onclick="closeSidebar()" aria-label="Close menu">
+<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto" data-purpose="navigation-menu">
 <button class="sidebar-active w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent" data-nav="dashboard" onclick="switchView('dashboard')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Dashboard
         </button>
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="quizzes" onclick="switchView('quizzes')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Quizzes
         </button>
-<button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="groups" onclick="switchView('groups')"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="groups" onclick="switchView('groups')"><svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Groups</button>
 
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="participation" onclick="switchView('participation')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Participation
         </button>          
 
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="discussions" onclick="switchView('discussions')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Discussions
         </button>          
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="reports" onclick="switchView('reports')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Reports
         </button>
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-brand-accent hover:text-white" data-nav="announcements" onclick="switchView('announcements')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Announcements
         </button>
 </nav>
 <div class="px-4 py-6 border-t border-brand-accent/30 space-y-2">
 
 <button class="text-gray-300 w-full flex items-center gap-3 px-4 py-3 rounded-custom text-sm font-medium transition-all-200 hover:bg-red-500 hover:text-white" onclick="toggleModal('logoutModal')">
-<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+<svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
           Logout
         </button>
 </div>
@@ -92,59 +114,63 @@
 <!-- BEGIN: Main Content Area -->
 <main class="flex-1 flex flex-col min-w-0 bg-surface overflow-y-auto">
 <!-- BEGIN: Top Bar -->
-<header class="h-16 flex items-center justify-between px-8 py-10">
-<div class="relative w-1/3">
+<header class="flex items-center justify-between gap-4 px-4 sm:px-8 py-4 sm:py-10">
+<button class="lg:hidden text-brand flex-shrink-0" onclick="openSidebar()" aria-label="Open menu">
+<svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+<div class="relative w-full sm:w-2/3 lg:w-1/3">
 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
 </span>
-<input id="searchInput" class="block w-full pl-10 pr-3 py-2 border-none bg-surface-low rounded-lg text-sm focus:ring-brand focus:ring-2" placeholder="Search for quizzes, students, or reports... (press Enter)" type="text" onkeydown="if(event.key === 'Enter') runSearch()">
-<div id="searchResults" class="hidden absolute top-full mt-2 w-[28rem] max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4"></div>
+<input id="searchInput" class="block w-full pl-10 pr-3 py-2 border-none bg-surface-low rounded-lg text-sm focus:ring-brand focus:ring-2" placeholder="Search quizzes, students, reports..." type="text" onkeydown="if(event.key === 'Enter') runSearch()">
+<div id="searchResults" class="hidden absolute top-full mt-2 w-full sm:w-[28rem] max-h-96 overflow-y-auto bg-white rounded-xl shadow-2xl border border-gray-100 z-50 p-4"></div>
 </div>
 
 </header>
 <!-- END: Top Bar -->
-<div class="p-8" id="view-container">
+<div class="p-4 sm:p-8" id="view-container">
 <!-- BEGIN: Dashboard View -->
-<section class="space-y-8" id="view-dashboard">
+<section class="space-y-6 sm:space-y-8" id="view-dashboard">
 <!-- Welcome Bar -->
-<div class="flex gap-6 items-stretch">
-<div class="flex-1 bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
-<h2 class="text-3xl font-bold mb-1">Welcome Lecturer, {{ $lecturerName }}</h2>
+<div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-stretch">
+<div class="flex-1 bg-white p-6 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100">
+<h2 class="text-2xl sm:text-3xl font-bold mb-1">Welcome Lecturer, {{ $lecturerName }}</h2>
 </div>
 <!-- Stats -->
-<div class="w-32 lg:w-48 bg-[#f1f6f6] p-6 rounded-[2rem] flex flex-col justify-between">
+<div class="flex gap-4 sm:contents">
+<div class="flex-1 sm:flex-none sm:w-32 lg:w-48 bg-[#f1f6f6] p-4 sm:p-6 rounded-[2rem] flex flex-col justify-between">
 <div class="text-[#4c7c7c]"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a7 7 0 00-7 7v1h12v-1a7 7 0 00-7-7z"></path></svg></div>
 <div>
 <p class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total Students</p>
-<p class="text-2xl font-bold">{{ number_format($totalStudents) }}</p>
+<p class="text-xl sm:text-2xl font-bold">{{ number_format($totalStudents) }}</p>
 </div>
 </div>
-<div class="w-32 lg:w-48 bg-[#f5faf1] p-6 rounded-[2rem] flex flex-col justify-between">
+<div class="flex-1 sm:flex-none sm:w-32 lg:w-48 bg-[#f5faf1] p-4 sm:p-6 rounded-[2rem] flex flex-col justify-between">
 <div class="text-[#72924c]"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path clip-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" fill-rule="evenodd"></path></svg></div>
 <div>
 <p class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Topics</p>
-<p class="text-2xl font-bold">{{ number_format($activeDiscussions) }}</p>
+<p class="text-xl sm:text-2xl font-bold">{{ number_format($activeDiscussions) }}</p>
 </div>
 </div>
-
 </div>
-<div class="grid grid-cols-12 gap-8">
+</div>
+<div class="grid grid-cols-12 gap-6 sm:gap-8">
 <!-- Left Col: Quiz List -->
-<div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 col-span-12">
-<div class="flex justify-between items-start mb-6">
+<div class="bg-white rounded-[2rem] p-5 sm:p-8 shadow-sm border border-gray-100 col-span-12">
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-6">
 <div>
-<h3 class="text-2xl font-bold">Quiz Configuration</h3>
-<p class="text-gray-500">Manage, create, and schedule student assessments.</p>
+<h3 class="text-xl sm:text-2xl font-bold">Quiz Configuration</h3>
+<p class="text-gray-500 text-sm sm:text-base">Manage, create, and schedule student assessments.</p>
 </div>
-<a href="{{ route('quiz.create') }}" class="bg-brand text-white px-6 py-3 rounded-full font-bold flex items-center gap-2 hover:bg-brand-dark transition-all-200">
+<a href="{{ route('quiz.create') }}" class="bg-brand text-white px-6 py-3 rounded-full font-bold flex items-center justify-center gap-2 hover:bg-brand-dark transition-all-200 whitespace-nowrap">
 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
                   Create New Quiz
                 </a>
 </div>
-<div class="flex border-b border-gray-100 mb-8 gap-6">
-<button id="quiz-tab-all" class="pb-4 border-b-2 border-brand font-bold" onclick="setQuizTab('all')">All Quizzes</button>
-<button id="quiz-tab-scheduled" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand" onclick="setQuizTab('scheduled')">Scheduled</button>
-<button id="quiz-tab-pastdue" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand" onclick="setQuizTab('pastdue')">Past Due</button>
+<div class="flex border-b border-gray-100 mb-8 gap-6 overflow-x-auto">
+<button id="quiz-tab-all" class="pb-4 border-b-2 border-brand font-bold whitespace-nowrap" onclick="setQuizTab('all')">All Quizzes</button>
+<button id="quiz-tab-scheduled" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand whitespace-nowrap" onclick="setQuizTab('scheduled')">Scheduled</button>
+<button id="quiz-tab-pastdue" class="pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand whitespace-nowrap" onclick="setQuizTab('pastdue')">Past Due</button>
 </div>
 <div class="space-y-4" id="quiz-list-container">
 <div class="text-center text-gray-400 py-8">Loading quizzes...</div>
@@ -156,12 +182,12 @@
 </section>
 <!-- END: Dashboard View -->
 <!-- BEGIN: Quizzes View -->
-<section class="hidden space-y-8" id="view-quizzes">
-<div class="flex justify-between items-center bg-white p-8 rounded-[2rem] border border-gray-100">
+<section class="hidden space-y-6 sm:space-y-8" id="view-quizzes">
+<div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-white p-5 sm:p-8 rounded-[2rem] border border-gray-100">
 <div>
-<h2 class="text-3xl font-bold">Quiz Management</h2>
+<h2 class="text-2xl sm:text-3xl font-bold">Quiz Management</h2>
 </div>
-<a href="{{ route('quiz.create') }}" class="bg-brand text-white px-8 py-4 rounded-full font-bold flex items-center gap-3 hover:scale-105 transition-all-200">
+<a href="{{ route('quiz.create') }}" class="bg-brand text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold flex items-center justify-center gap-3 hover:scale-105 transition-all-200 whitespace-nowrap">
 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
               Create New Assessment
             </a>
@@ -173,24 +199,24 @@
 <!-- END: Quizzes View -->
 <!-- BEGIN: Groups (Students) View -->
 <section class="hidden h-full" id="view-groups">
-<div class="grid grid-cols-12 gap-8 items-start">
+<div class="grid grid-cols-12 gap-6 sm:gap-8 items-start">
 <!-- Right: Data Table -->
 <div class="col-span-12 lg:col-span-8 bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-<div class="p-8 border-b border-gray-100 flex justify-between items-center">
+<div class="p-5 sm:p-8 border-b border-gray-100 flex justify-between items-center">
 <h3 class="text-xl font-bold">All Groups</h3>
 <div class="text-sm text-gray-500" id="groups-count-label"></div>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full text-left">
+<table class="w-full text-left min-w-[480px]">
 <thead class="bg-surface-low text-[10px] uppercase font-bold text-gray-500">
 <tr>
-<th class="px-8 py-4">Group Name</th>
-<th class="px-8 py-4">Created By</th>
-<th class="px-8 py-4">Members</th>
+<th class="px-5 sm:px-8 py-4">Group Name</th>
+<th class="px-5 sm:px-8 py-4">Created By</th>
+<th class="px-5 sm:px-8 py-4">Members</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="groups-table-body">
-<tr><td class="px-8 py-4 text-gray-400" colspan="4">Loading groups...</td></tr>
+<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">Loading groups...</td></tr>
 </tbody>
 </table>
 </div>
@@ -200,11 +226,11 @@
 <!-- END: Groups (Students) View -->
  <!-- BEGIN: Participation View -->
 <section class="hidden space-y-6" id="view-participation">
-<div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+<div class="bg-white p-5 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100">
 <h3 class="text-xl font-bold mb-1">Participation Criteria</h3>
 <p class="text-gray-500 text-sm mb-6">Set how discussion activity translates into participation marks.</p>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-6">
 <div>
 <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Points per Message</label>
 <input type="number" id="points-per-message" min="0" class="w-full rounded-lg border-gray-200 focus:ring-brand focus:border-brand p-2">
@@ -219,27 +245,27 @@
 </div>
 </div>
 
-<button onclick="saveParticipationCriteria()" class="bg-brand text-white px-6 py-3 rounded-full font-bold hover:bg-brand-dark transition-all-200">
+<button onclick="saveParticipationCriteria()" class="w-full sm:w-auto bg-brand text-white px-6 py-3 rounded-full font-bold hover:bg-brand-dark transition-all-200">
 Save Criteria
 </button>
 </div>
 
 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-<div class="p-8 border-b border-gray-100">
+<div class="p-5 sm:p-8 border-b border-gray-100">
 <h3 class="text-xl font-bold">Student Participation Scores</h3>
 </div>
 <div class="overflow-x-auto">
-<table class="w-full text-left">
+<table class="w-full text-left min-w-[560px]">
 <thead class="bg-surface-low text-[10px] uppercase font-bold text-gray-500">
 <tr>
-<th class="px-8 py-4">Student</th>
-<th class="px-8 py-4">Messages Posted</th>
-<th class="px-8 py-4">Reactions Given</th>
-<th class="px-8 py-4">Score</th>
+<th class="px-5 sm:px-8 py-4">Student</th>
+<th class="px-5 sm:px-8 py-4">Messages Posted</th>
+<th class="px-5 sm:px-8 py-4">Reactions Given</th>
+<th class="px-5 sm:px-8 py-4">Score</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="participation-table-body">
-<tr><td class="px-8 py-4 text-gray-400" colspan="4">Loading...</td></tr>
+<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">Loading...</td></tr>
 </tbody>
 </table>
 </div>
@@ -248,7 +274,7 @@ Save Criteria
 <!-- END: Participation View -->
  <!-- BEGIN: Discussions View -->
 <section class="hidden space-y-6" id="view-discussions">
-<div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+<div class="bg-white p-5 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100">
 <h3 class="text-xl font-bold mb-1">All Discussions</h3>
 <p class="text-gray-500 text-sm">Topics currently active across your groups.</p>
 </div>
@@ -262,34 +288,36 @@ Save Criteria
 <!-- BEGIN: Reports View -->
 <section class="hidden" id="view-reports">
 <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
-<div class="p-8 border-b border-gray-100 flex justify-between items-center">
+<div class="p-5 sm:p-8 border-b border-gray-100 flex justify-between items-center">
 <h3 class="text-xl font-bold">Performance Analytics</h3>
 </div>
-<table class="w-full text-left">
+<div class="overflow-x-auto">
+<table class="w-full text-left min-w-[560px]">
 <thead class="bg-surface-low text-[10px] uppercase font-bold text-gray-500">
 <tr>
-<th class="px-8 py-4">Student Name</th>
-<th class="px-8 py-4">Quiz Title</th>
-<th class="px-8 py-4">Score</th>
-<th class="px-8 py-4">Status</th>
+<th class="px-5 sm:px-8 py-4">Student Name</th>
+<th class="px-5 sm:px-8 py-4">Quiz Title</th>
+<th class="px-5 sm:px-8 py-4">Score</th>
+<th class="px-5 sm:px-8 py-4">Status</th>
 </tr>
 </thead>
 <tbody class="divide-y divide-gray-100" id="reports-table-body">
-<tr><td class="px-8 py-4 text-gray-400" colspan="4">Loading reports...</td></tr>
+<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">Loading reports...</td></tr>
 </tbody>
 </table>
+</div>
 </div>
 </section>
 <!-- END: Reports View -->
 <!-- BEGIN: Announcements View -->
 <section class="hidden" id="view-announcements">
-<div class="max-w-3xl mx-auto space-y-8">
+<div class="max-w-3xl mx-auto space-y-6 sm:space-y-8">
 <!-- Feed (read-only) -->
 <div class="space-y-6">
     @forelse($announcements as $announcement)
-        <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100">
+        <div class="bg-white p-5 sm:p-8 rounded-[2rem] shadow-sm border border-gray-100">
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-10 h-10 rounded-full bg-brand-accent flex items-center justify-center text-white font-bold">
+                <div class="w-10 h-10 flex-shrink-0 rounded-full bg-brand-accent flex items-center justify-center text-white font-bold">
                     {{ strtoupper(substr($announcement->user->name ?? 'U', 0, 1)) }}
                 </div>
                 <div>
@@ -321,7 +349,7 @@ Save Criteria
 <div aria-labelledby="modal-title" aria-modal="true" class="hidden fixed inset-0 z-50 overflow-y-auto" id="logoutModal" role="dialog">
 <div class="flex items-center justify-center min-h-screen px-4">
 <div class="fixed inset-0 bg-brand/40 backdrop-blur-sm transition-opacity" onclick="toggleModal('logoutModal')"></div>
-<div class="relative bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
+<div class="relative bg-white rounded-[2rem] p-6 sm:p-8 max-w-sm w-full shadow-2xl">
 <div class="text-center">
 <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 text-red-600 mb-6">
 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
@@ -344,6 +372,19 @@ Save Criteria
 <!-- BEGIN: State Control Script -->
 <script data-purpose="navigation-logic">
     /**
+     * Mobile sidebar controls
+     */
+    function openSidebar() {
+      document.getElementById('sidebar').classList.add('sidebar-open');
+      document.getElementById('sidebarOverlay').classList.remove('hidden');
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('sidebar-open');
+      document.getElementById('sidebarOverlay').classList.add('hidden');
+    }
+
+    /**
      * Toggles visibility between different views
      * @param {string} viewId - The ID of the view to show
      */
@@ -364,6 +405,9 @@ Save Criteria
           navBtn.classList.add('text-gray-300');
         }
       });
+
+      // Close the mobile sidebar automatically after choosing a section
+      closeSidebar();
 
       if (viewId === 'dashboard') {
     loadQuizzes();
@@ -415,15 +459,15 @@ Save Criteria
         countLabel.innerText = `${groups.length} group${groups.length === 1 ? '' : 's'}`;
 
         if (groups.length === 0) {
-            tbody.innerHTML = `<tr><td class="px-8 py-4 text-gray-400" colspan="4">No groups yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">No groups yet.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = groups.map(group => `
     <tr class="hover:bg-surface-low transition-colors">
-        <td class="px-8 py-4 font-medium">${group.name}</td>
-        <td class="px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
-        <td class="px-8 py-4">
+        <td class="px-5 sm:px-8 py-4 font-medium">${group.name}</td>
+        <td class="px-5 sm:px-8 py-4 text-gray-500">${group.creator?.name ?? 'Unknown'}</td>
+        <td class="px-5 sm:px-8 py-4">
             <span class="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold rounded">
                 ${group.members_count} member${group.members_count === 1 ? '' : 's'}
             </span>
@@ -432,7 +476,7 @@ Save Criteria
 `).join('');
     } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load groups.</td></tr>`;
+        tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-red-500" colspan="4">Could not load groups.</td></tr>`;
     }
 }
 async function loadDiscussions() {
@@ -453,13 +497,13 @@ async function loadDiscussions() {
         }
 
         container.innerHTML = topics.map(topic => `
-            <div class="bg-white p-6 rounded-[1.5rem] shadow-sm border border-gray-100">
-                <div class="flex justify-between items-start mb-2 cursor-pointer" onclick="toggleTopic(${topic.id})">
+            <div class="bg-white p-5 sm:p-6 rounded-[1.5rem] shadow-sm border border-gray-100">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 mb-2 cursor-pointer" onclick="toggleTopic(${topic.id})">
                     <h4 class="font-bold text-lg">${topic.title}</h4>
-                    <span class="text-xs text-gray-400">${topic.messages_count} message${topic.messages_count === 1 ? '' : 's'}</span>
+                    <span class="text-xs text-gray-400 whitespace-nowrap">${topic.messages_count} message${topic.messages_count === 1 ? '' : 's'}</span>
                 </div>
                 <p class="text-sm text-gray-600 mb-3 cursor-pointer" onclick="toggleTopic(${topic.id})">${topic.content}</p>
-                <div class="flex items-center gap-2 text-xs text-gray-500 mb-3">
+                <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-3">
                     <span>Started by ${topic.user?.name ?? 'Unknown'}</span>
                     ${topic.group ? `<span>&middot; Group: ${topic.group.name}</span>` : ''}
                 </div>
@@ -484,7 +528,7 @@ async function loadReports() {
         const reports = await response.json();
 
         if (reports.length === 0) {
-            tbody.innerHTML = `<tr><td class="px-8 py-4 text-gray-400" colspan="4">No submitted quizzes yet.</td></tr>`;
+            tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">No submitted quizzes yet.</td></tr>`;
             return;
         }
 
@@ -496,16 +540,16 @@ async function loadReports() {
 
             return `
                 <tr>
-                    <td class="px-8 py-4 font-medium">${r.student_name}</td>
-                    <td class="px-8 py-4">${r.quiz_title}</td>
-                    <td class="px-8 py-4 ${passed ? 'text-brand' : 'text-red-500'} font-bold">${scoreDisplay}</td>
-                    <td class="px-8 py-4"><span class="px-3 py-1 ${badgeClass} rounded-full text-xs font-bold">${badgeText}</span></td>
+                    <td class="px-5 sm:px-8 py-4 font-medium">${r.student_name}</td>
+                    <td class="px-5 sm:px-8 py-4">${r.quiz_title}</td>
+                    <td class="px-5 sm:px-8 py-4 ${passed ? 'text-brand' : 'text-red-500'} font-bold">${scoreDisplay}</td>
+                    <td class="px-5 sm:px-8 py-4"><span class="px-3 py-1 ${badgeClass} rounded-full text-xs font-bold">${badgeText}</span></td>
                 </tr>
             `;
         }).join('');
     } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load reports.</td></tr>`;
+        tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-red-500" colspan="4">Could not load reports.</td></tr>`;
     }
 }
 async function runSearch() {
@@ -646,7 +690,7 @@ async function loadTopicMessages(topicId) {
 
         panel.innerHTML = `
             <div class="mb-3 max-h-64 overflow-y-auto">${messagesHtml}</div>
-            <div class="flex gap-2">
+            <div class="flex flex-col sm:flex-row gap-2">
                 <input type="text" id="reply-input-${topicId}" placeholder="Write a reply..." class="flex-1 rounded-lg border-gray-200 focus:ring-brand focus:border-brand text-sm p-2" onkeydown="if(event.key === 'Enter') postReply(${topicId})">
                 <button onclick="postReply(${topicId})" class="bg-brand text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-brand-dark">Reply</button>
             </div>
@@ -713,9 +757,9 @@ function setQuizTab(tab) {
     tabs.forEach(t => {
         const btn = document.getElementById(`quiz-tab-${t}`);
         if (t === tab) {
-            btn.className = 'pb-4 border-b-2 border-brand font-bold';
+            btn.className = 'pb-4 border-b-2 border-brand font-bold whitespace-nowrap';
         } else {
-            btn.className = 'pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand';
+            btn.className = 'pb-4 border-b-2 border-transparent text-gray-400 hover:text-brand whitespace-nowrap';
         }
     });
 
@@ -744,12 +788,12 @@ function renderQuizList() {
     }
 
     container.innerHTML = filtered.map(q => `
-    <div class="flex items-center gap-4 p-6 bg-surface-low rounded-[1.5rem] border border-transparent hover:border-brand/20 transition-all-200 group cursor-pointer" onclick="window.location.href='/lecturer/quizzes/${q.id}/edit'">
-        <div class="w-12 h-12 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand">
+    <div class="flex items-center gap-4 p-4 sm:p-6 bg-surface-low rounded-[1.5rem] border border-transparent hover:border-brand/20 transition-all-200 group cursor-pointer" onclick="window.location.href='/lecturer/quizzes/${q.id}/edit'">
+        <div class="w-12 h-12 flex-shrink-0 bg-white rounded-xl shadow-sm flex items-center justify-center text-brand">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
         </div>
-        <div class="flex-1">
-            <h4 class="font-bold">${q.title}</h4>
+        <div class="flex-1 min-w-0">
+            <h4 class="font-bold truncate">${q.title}</h4>
             <p class="text-sm text-gray-500">
                 ${q.status === 'draft' ? 'Draft' : (q.start_time ? new Date(q.start_time).toLocaleDateString() : 'No start time')}
                 &bull; ${q.questions_count} Question${q.questions_count === 1 ? '' : 's'}
@@ -864,21 +908,21 @@ async function loadParticipationScores() {
         const scores = await response.json();
 
         if (scores.length === 0) {
-            tbody.innerHTML = `<tr><td class="px-8 py-4 text-gray-400" colspan="4">No students found.</td></tr>`;
+            tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-gray-400" colspan="4">No students found.</td></tr>`;
             return;
         }
 
         tbody.innerHTML = scores.map(s => `
             <tr class="hover:bg-surface-low transition-colors">
-                <td class="px-8 py-4 font-medium">${s.student_name}</td>
-                <td class="px-8 py-4 text-gray-500">${s.message_count}</td>
-                <td class="px-8 py-4 text-gray-500">${s.reactions_given_count}</td>
-                <td class="px-8 py-4 font-bold text-brand">${s.score}/${s.max_score}</td>
+                <td class="px-5 sm:px-8 py-4 font-medium">${s.student_name}</td>
+                <td class="px-5 sm:px-8 py-4 text-gray-500">${s.message_count}</td>
+                <td class="px-5 sm:px-8 py-4 text-gray-500">${s.reactions_given_count}</td>
+                <td class="px-5 sm:px-8 py-4 font-bold text-brand">${s.score}/${s.max_score}</td>
             </tr>
         `).join('');
     } catch (err) {
         console.error(err);
-        tbody.innerHTML = `<tr><td class="px-8 py-4 text-red-500" colspan="4">Could not load scores.</td></tr>`;
+        tbody.innerHTML = `<tr><td class="px-5 sm:px-8 py-4 text-red-500" colspan="4">Could not load scores.</td></tr>`;
     }
 }
 
