@@ -226,6 +226,12 @@ Route::delete('/messages/{message}', [MessageController::class, 'destroy']);
 Route::delete('/groups/{group}', [GroupController::class, 'destroy']);
 Route::delete('/topics/{topic}', [TopicController::class, 'destroy']);
 
+Route::get('/debug-announcements-table', function () {
+    return response()->json([
+        'columns' => \Illuminate\Support\Facades\Schema::getColumnListing('announcements'),
+        'raw_rows' => \DB::table('announcements')->get(),
+    ]);
+});
 
  Route::get('/internal/interaction-data', [RecommendationController::class, 'interactionData']);
 
