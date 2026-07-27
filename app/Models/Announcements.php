@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Announcements extends Model
 {
+    protected $primaryKey = 'ID';
+
     protected $table = 'announcements'; // explicit, avoids any pluralization guessing issues
 
     protected $fillable = ['user_id', 'quiz_id', 'content','recipient_id'];
