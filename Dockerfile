@@ -23,7 +23,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
-    && docker-php-ext-install pdo pdo_pgsql zip gd \
+     && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip gd \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
