@@ -19,6 +19,7 @@
 
     <TableView fx:id="groupsTable" VBox.vgrow="ALWAYS">
         <columns>
+            <TableColumn fx:id="indexColumn" text="#" prefWidth="50"/>
             <TableColumn fx:id="nameColumn" text="Name" prefWidth="150"/>
             <TableColumn fx:id="descriptionColumn" text="Description" prefWidth="250"/>
             <TableColumn fx:id="visibilityColumn" text="Visibility" prefWidth="100"/>

@@ -23,6 +23,7 @@ public class AdminGroupsController implements Initializable {
     private static final String GROUPS_URL = "http://127.0.0.1:8000/api/desktop/admin/groups";
 
     @FXML private TableView<GroupRow> groupsTable;
+    @FXML private TableColumn<GroupRow, Number> indexColumn;
     @FXML private TableColumn<GroupRow, String> nameColumn;
     @FXML private TableColumn<GroupRow, String> descriptionColumn;
     @FXML private TableColumn<GroupRow, String> visibilityColumn;
@@ -34,6 +35,13 @@ public class AdminGroupsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<GroupRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         visibilityColumn.setCellValueFactory(new PropertyValueFactory<>("visibility"));

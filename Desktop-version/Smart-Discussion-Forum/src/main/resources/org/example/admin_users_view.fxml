@@ -14,6 +14,7 @@
 
     <TableView fx:id="usersTable" VBox.vgrow="ALWAYS">
         <columns>
+            <TableColumn fx:id="indexCol" text="#" prefWidth="50" />
             <TableColumn fx:id="nameCol" text="Name" prefWidth="140" />
             <TableColumn fx:id="emailCol" text="Email" prefWidth="200" />
             <TableColumn fx:id="roleCol" text="Role" prefWidth="80" />

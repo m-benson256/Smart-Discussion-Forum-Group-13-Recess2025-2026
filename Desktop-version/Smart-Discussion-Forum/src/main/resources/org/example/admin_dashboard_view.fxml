@@ -10,6 +10,7 @@
 <BorderPane xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml"
             fx:controller="org.example.AdminDashboardController"
             stylesheets="@admin.css"
+            style="-fx-background-color: #a64b41;"
             prefWidth="1100" prefHeight="750">
 
     <left>
@@ -27,7 +28,7 @@
     </left>
 
     <center>
-        <StackPane fx:id="contentArea">
+        <StackPane fx:id="contentArea" id="contentArea">
             <padding>
                 <Insets top="24" right="24" bottom="24" left="24" />
             </padding>

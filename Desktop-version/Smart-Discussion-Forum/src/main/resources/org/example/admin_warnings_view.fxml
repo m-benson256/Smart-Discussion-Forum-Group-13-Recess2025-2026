@@ -19,6 +19,7 @@
 
     <TableView fx:id="warningsTable" VBox.vgrow="ALWAYS">
         <columns>
+            <TableColumn fx:id="indexColumn" text="#" prefWidth="50"/>
             <TableColumn fx:id="userNameColumn" text="User" prefWidth="150"/>
             <TableColumn fx:id="userEmailColumn" text="Email" prefWidth="200"/>
             <TableColumn fx:id="warningNumberColumn" text="Warning #" prefWidth="90"/>

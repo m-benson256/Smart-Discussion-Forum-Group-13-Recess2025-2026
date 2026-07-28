@@ -22,6 +22,7 @@ public class AdminWarningsController implements Initializable {
     private static final String WARNINGS_URL = "http://127.0.0.1:8000/api/desktop/admin/warnings";
 
     @FXML private TableView<WarningRow> warningsTable;
+    @FXML private TableColumn<WarningRow, Number> indexColumn;
     @FXML private TableColumn<WarningRow, String> userNameColumn;
     @FXML private TableColumn<WarningRow, String> userEmailColumn;
     @FXML private TableColumn<WarningRow, Number> warningNumberColumn;
@@ -34,6 +35,13 @@ public class AdminWarningsController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<WarningRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
         userEmailColumn.setCellValueFactory(new PropertyValueFactory<>("userEmail"));
         warningNumberColumn.setCellValueFactory(new PropertyValueFactory<>("warningNumber"));

@@ -31,6 +31,7 @@ public class AdminUsersController implements Initializable {
 
     @FXML private Label statusLabel;
     @FXML private TableView<AdminUserRow> usersTable;
+    @FXML private TableColumn<AdminUserRow, Number> indexCol;
     @FXML private TableColumn<AdminUserRow, String> nameCol;
     @FXML private TableColumn<AdminUserRow, String> emailCol;
     @FXML private TableColumn<AdminUserRow, String> roleCol;
@@ -44,6 +45,13 @@ public class AdminUsersController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        indexCol.setCellFactory(col -> new javafx.scene.control.TableCell<AdminUserRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
