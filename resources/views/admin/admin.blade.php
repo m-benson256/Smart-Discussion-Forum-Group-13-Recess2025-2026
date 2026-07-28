@@ -1014,12 +1014,34 @@ function toggleGroupStatus(id) {
         }
 
         function removeWarning(id) {
-            if (confirm('Remove this warning?')) {
+            if (!confirm('Remove this warning?')) {
+                return;
+            }
+
+            fetch(`/admin/warnings/${id}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to delete warning');
+                }
+                return response.json();
+            })
+            .then(() => {
                 warnings = warnings.filter(w => w.id !== id);
                 renderWarnings();
                 updateBadges();
                 alert('🗑️ Warning removed.');
-            }
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error(error);
+                alert('❌ Failed to delete the warning. Please try again.');
+            });
         }
 
         // ===== SETTINGS =====
@@ -1052,7 +1074,7 @@ function toggleGroupStatus(id) {
                         <label>User</label>
                         <select id="mUser">
                             ${users.filter(u => u.status === 'active' || u.status === 'warned').map(u => 
-                                `<option value="${u.name}" ${data?.user === u.name ? 'selected' : ''}>${u.name}</option>`
+                                `<option value="${u.id}" ${data?.user === u.name ? 'selected' : ''}>${u.name}</option>`
                             ).join('')}
                         </select>
                         <label>Reason</label>
@@ -1104,7 +1126,12 @@ function toggleGroupStatus(id) {
                     if (w) { w.user = user; w.reason = reason; w.number = number; }
                 }
                  else {
-    const selectedUser = users.find(u => u.name === user);
+    const selectedUser = users.find(u => u.id === parseInt(user, 10));
+    if (!selectedUser) {
+        alert('⚠️ Could not identify the selected user. Please refresh and try again.');
+        closeModal();
+        return;
+    }
 
     fetch('/admin/warnings', {
         method: 'POST',

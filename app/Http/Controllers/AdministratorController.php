@@ -94,12 +94,20 @@ public function storeWarning(Request $request)
         'status' => 'active',
     ]);
     \App\Models\Announcements::create([
+        'user_id' => auth()->id(),
         'recipient_id' => $request->user_id,
         'content' => "You have received warning #{$request->warning_number} for the following reason: {$request->reason}. Please take necessary action to avoid further warnings.",
     ]);
 
     return response()->json(['success' => true, 'warning' => $warnings]);
 }
+
+public function destroyWarning(Warnings $warning)
+{
+    $warning->delete();
+    return response()->json(['success' => true]);
+}
+
 public function toggleGroupStatus($id)
 {
     $group = Group::findOrFail($id);

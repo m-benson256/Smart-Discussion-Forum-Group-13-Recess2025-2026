@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Warnings;
+use App\Models\Warnings\Announcement;
 use Illuminate\Http\Request;
 
 class WarningsController extends Controller
@@ -40,7 +40,35 @@ class WarningsController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedData = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'warning_number' => 'required|integer',
+            'reason' => 'required|string',
+            'issued_at' => 'required|date',
+            'expires_at' => 'nullable|date',
+            'status' => 'required|string',
+        ]);
+
+        Warnings::create($validatedData)([
+            'user_id' => $request->input('user_id'),
+            'warning_number' => $request->input('warning_number'),
+            'reason' => $request->input('reason'),
+            'issued_at' => $request->input('issued_at'),
+            'expires_at' => $request->input('expires_at'),
+            'status' => $request->input('status'),
+        ]);
+        //CREATE THE LINKED ANNOUNCEMENT HERE
+        Announcement::create([
+            'title' => 'Warning Issued',
+            'content' => 'A warning has been issued to user ID: ' . $request->input('user_id') . '. Reason: ' . $request->input('reason'),
+            'user_id' => $request->input('user_id'),
+        ]);
+        return response()->json(['message' => 'Warning created successfully'], 201);
+
+
+
+
+        
     }
 
     /**

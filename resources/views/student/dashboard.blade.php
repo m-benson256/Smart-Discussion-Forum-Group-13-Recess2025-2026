@@ -582,6 +582,10 @@ document.getElementById('save-topic')?.addEventListener('click', async () => {
          if (viewName === 'performance') {
             fetchPerformanceStats();
         }
+
+        if (viewName === 'announcements') {
+            fetchAnnouncements();
+        }
     }
 
    function openGroup(groupId) {
@@ -1886,10 +1890,10 @@ async function fetchPerformanceStats() {
 
 async function fetchAnnouncements() {
     try {
-        const response = await fetch('/announcements');
+        const response = await fetch('/announcements', { cache: 'no-store' });
         const data = await response.json();
 
-        state.announcements = data;
+        state.announcements = Array.isArray(data) ? data : [];
         renderView();
     } catch (err) {
         console.error('Failed to load announcements:', err);
