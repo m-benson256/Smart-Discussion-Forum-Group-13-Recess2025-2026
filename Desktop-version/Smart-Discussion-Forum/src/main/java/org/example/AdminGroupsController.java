@@ -42,6 +42,30 @@ public class AdminGroupsController implements Initializable {
                 setText(empty ? null : String.valueOf(getIndex() + 1));
             }
         });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<GroupRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<GroupRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<GroupRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
         descriptionColumn.setCellValueFactory(new PropertyValueFactory<>("description"));
         visibilityColumn.setCellValueFactory(new PropertyValueFactory<>("visibility"));
