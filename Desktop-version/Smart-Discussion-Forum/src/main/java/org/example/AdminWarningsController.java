@@ -66,6 +66,30 @@ public class AdminWarningsController implements Initializable {
                 setText(empty ? null : String.valueOf(getIndex() + 1));
             }
         });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<WarningRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<WarningRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexColumn.setCellFactory(col -> new javafx.scene.control.TableCell<WarningRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         userNameColumn.setCellValueFactory(new PropertyValueFactory<>("userName"));
         userEmailColumn.setCellValueFactory(new PropertyValueFactory<>("userEmail"));
         warningNumberColumn.setCellValueFactory(new PropertyValueFactory<>("warningNumber"));

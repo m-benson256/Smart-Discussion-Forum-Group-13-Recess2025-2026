@@ -76,6 +76,30 @@ public class AdminUsersController implements Initializable {
                 setText(empty ? null : String.valueOf(getIndex() + 1));
             }
         });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexCol.setCellFactory(col -> new javafx.scene.control.TableCell<AdminUserRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexCol.setCellFactory(col -> new javafx.scene.control.TableCell<AdminUserRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
+    public void initialize(URL location, ResourceBundle resources) {
+        indexCol.setCellFactory(col -> new javafx.scene.control.TableCell<AdminUserRow, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                setText(empty ? null : String.valueOf(getIndex() + 1));
+            }
+        });
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
         roleCol.setCellValueFactory(new PropertyValueFactory<>("role"));
